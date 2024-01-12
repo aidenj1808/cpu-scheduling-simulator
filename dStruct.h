@@ -7,14 +7,14 @@ typedef struct{
     int niceness;
     float cpuTime;
     float procTime;
-    //add the next thing pointer 
+	struct Data *next;
     //possibly need a node type idk check notes 
 } Data;
 
 /*
  *
  */
-Data createData();
+Data *createData();
 
 /*
  *
@@ -34,7 +34,7 @@ Data getEntryByIndex(Data *dataArray, int index);
 /*
  *
  */
-void pushData(unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime);
+void pushEntry(Data *dataArray, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime);
 
 /*
  *
