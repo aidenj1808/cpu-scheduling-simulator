@@ -1,5 +1,5 @@
-#include "stdio.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "dStruct.h"
 
 Data *createData() {
@@ -63,15 +63,15 @@ void setStatus(Data *dataArray, unsigned int pid) {
 	;
 }
 
-_Bool searchEntryByPID(Data *dataArray, unsigned int pid) {
+int searchEntryByPID(Data *dataArray, unsigned int pid) {
 	;
 }
 
-_Bool searchEntryByNiceness(Data *dataArray, int niceness) {
+int searchEntryByNiceness(Data *dataArray, int niceness) {
 	;
 }
 
-_Bool searchEntryByStatus(Data *dataArray, unsigned int status) {
+int searchEntryByStatus(Data *dataArray, unsigned int status) {
 	;
 }
 
