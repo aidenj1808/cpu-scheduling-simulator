@@ -14,7 +14,10 @@ dStruct: dStruct.o
 	$(CC) $(CFLAGS) dStruct.o -o dStruct 
 
 dStruct.o: dStruct.c #dStruct.h #might need might not see what works 
-	$(CC) $(CFLAGS) -c dStruct.c 
+	$(CC) $(CFLAGS) -g -c dStruct.c 
+
+valgrind: dStruct
+	valgrind --leak-check=yes ./dStruct
 
 clean:
 	rm -f *.o *~ 
