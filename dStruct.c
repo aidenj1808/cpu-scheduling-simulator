@@ -3,8 +3,11 @@
 #include "dStruct.h"
 
 Data *createData() {
-	Data *array = malloc(sizeof(Data));
-	return array;
+	Data *data = malloc(sizeof(Data));
+	if (data != NULL) {
+		data->next = NULL;
+	}
+	return data;
 }
 
 void destroyData(Data *dataArray) {
@@ -12,30 +15,31 @@ void destroyData(Data *dataArray) {
 }
 
 
-Data getEntryByPID(Data *dataArray, unsigned int pid) {
+Data getEntry(Data *dataArray, unsigned int pid, int index) {
 	;
 }
 
-Data getEntryByIndex(Data *dataArray, int index) {
-	;
-}
-
-void pushEntry(Data *dataArray, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
-	int length = sizeof(dataArray) / sizeof(dataArray[0]);
-	if (length == 0) {
-		dataArray[0].pid = pid;
-		dataArray[0].status = status;
-		dataArray[0].niceness = niceness;
-		dataArray[0].cpuTime = cpuTime;
-		dataArray[0].procTime = procTime;
-		dataArray[0].next = NULL;
+void pushEntry(Data *dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
+	if (dataList->next == NULL) {
+		dataList->pid = pid;
+		dataList->status = status;
+		dataList->niceness = niceness;
+		dataList->cpuTime = cpuTime;
+		dataList->procTime = procTime;
+	} else {
+		Data *newNode = malloc(sizeof(Data));
+		newNode->pid = pid;
+		newNode->status = status;
+		newNode->niceness = niceness;
+		newNode->cpuTime = cpuTime;
+		newNode->procTime = procTime;
+		
+		newNode->next = dataList;
+		dataList = newNode;
 	}
-
-
-	
 }
 
-Data popData() {
+Data *popData() {
 	;
 }
 
@@ -63,51 +67,39 @@ void setStatus(Data *dataArray, unsigned int pid) {
 	;
 }
 
-int searchEntryByPID(Data *dataArray, unsigned int pid) {
+int searchEntryPID(Data *dataArray, unsigned int pid) {
 	;
 }
 
-int searchEntryByNiceness(Data *dataArray, int niceness) {
+int searchEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status) {
 	;
 }
 
-int searchEntryByStatus(Data *dataArray, unsigned int status) {
-	;
-}
-
-void printAllEntries(Data *dataArray) {
-	;
-}
-
-void printEntryByPID(Data *dataArray, unsigned int pid) {
-	while (dataArray != NULL) {
-		if (dataArray->pid == pid) {
-			printf("Entry with pid %d\n", dataArray->pid);
-			printf("%u\n", dataArray->pid);
-			printf("%u\n", dataArray->status);
-			printf("%d\n", dataArray->niceness);
-			printf("%f\n", dataArray->cpuTime);
-			printf("%f\n", dataArray->procTime);
-			dataArray = dataArray->next;
-		} else {
-			dataArray = dataArray->next;
-		}
+void printAllEntries(Data *dataList) {
+	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
+	//for (dataList; dataList->next == NULL; dataList = dataList->next) {
+	Data *current = dataList;
+	printf("%u\n", current->pid);
+	while (current != NULL) {
+		printf("%u%12u%13d%23f%14f\n", current->pid, current->status, \
+				current->niceness, current->cpuTime, current->procTime);
+		current = current->next;
 	}
 }
 
-void printEntryByNiceness(Data *dataArray, int niceness) {
+void printEntryPID(Data *dataArray, unsigned int pid) {
 	;
 }
 
-void printEntryByStatus(Data *dataArray, unsigned int status) {
+void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status) {
 	;
 }
 
 int main(void) {
-	Data *my_array = createData();
-	pushEntry(my_array, 1, 1, 1, 1.0, 1.0);
-	printEntryByPID(my_array, 1);
-	pushEntry(my_array, 2, 2, 2, 2.0, 2.0);
-	printEntryByPID(my_array, 2);
+	Data *list = createData();
+	pushEntry(list, 1, 1, 1, 1.0, 1.0);
+	pushEntry(list, 2, 2, 2, 2.0, 2.0);
+	pushEntry(list, 3, 3, 3, 3.0, 3.0);
+	printAllEntries(list);
 	return 0;
 }

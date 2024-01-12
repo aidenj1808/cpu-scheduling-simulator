@@ -1,7 +1,7 @@
 #ifndef DSTRUCT_H
 #define DSTRUCT_H
 
-typedef struct{
+typedef struct Data {
     unsigned int pid;
     unsigned int status;
     int niceness;
@@ -24,12 +24,7 @@ void destroyData(Data *dataArray);
 /*
  *
  */
-Data getEntryByPID(Data *dataArray, unsigned int pid);
-
-/*
- *
- */
-Data getEntryByIndex(Data *dataArray, int index);
+Data getEntry(Data *dataArray, unsigned int pid, int index);
 
 /*
  *
@@ -39,7 +34,7 @@ void pushEntry(Data *dataArray, unsigned int pid, unsigned int status, int nicen
 /*
  *
  */
-Data popData();
+Data *popData();
 
 /*
  *
@@ -74,17 +69,12 @@ void setStatus(Data *dataArray, unsigned int pid);
 /*
  *
  */
-int searchEntryByPID(Data *dataArray, unsigned int pid);
+int searchEntryPID(Data *dataArray, unsigned int pid);
 
 /*
  *
  */
-int searchEntryByNiceness(Data *dataArray, int niceness);
-
-/*
- *
- */
-int searchEntryByStatus(Data *dataArray, unsigned int status);
+int searchEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status);
 
 /*
  *
@@ -94,15 +84,11 @@ void printAllEntries(Data *dataArray);
 /*
  *
  */
-void printEntryByPID(Data *dataArray, unsigned int pid);
+void printEntryPID(Data *dataArray, unsigned int pid);
 
 /*
  *
  */
-void printEntryByNiceness(Data *dataArray, int niceness);
+void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status);
 
-/*
- *
- */
-void printEntryByStatus(Data *dataArray, unsigned int status);
 #endif /* DSTRUCT_H */
