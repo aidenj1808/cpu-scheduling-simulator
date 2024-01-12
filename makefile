@@ -1,5 +1,5 @@
 #-------------------------
-# / Aidan / Taylor
+# / Aiden / Taylor
 # CMPT 360
 #--------------------------
 
@@ -18,7 +18,7 @@ dStruct.o: dStruct.c #dStruct.h #might need might not see what works
 
 clean:
 	rm -f *.o *~ 
-
+	rm dStruct
 test:
 
 

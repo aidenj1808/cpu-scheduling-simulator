@@ -19,7 +19,7 @@ Data createData();
 /*
  *
  */
-void destroyData();
+void destroyData(Data *dataArray);
 
 /*
  *
@@ -74,17 +74,17 @@ void setStatus(Data *dataArray, unsigned int pid);
 /*
  *
  */
-bool searchEntryByPID(Data *dataArray, unsigned int pid);
+_Bool searchEntryByPID(Data *dataArray, unsigned int pid);
 
 /*
  *
  */
-bool searchEntryByNiceness(Data *dataArray, int niceness);
+_Bool searchEntryByNiceness(Data *dataArray, int niceness);
 
 /*
  *
  */
-bool searchEntryByStatus(Data *dataArray, unsigned int status);
+_Bool searchEntryByStatus(Data *dataArray, unsigned int status);
 
 /*
  *
