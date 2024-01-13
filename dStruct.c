@@ -32,6 +32,7 @@ Data *getEntry(Data *dataList, unsigned int pid, int index) {
 			if (i == index) {
 				return dataList;
 			}
+			dataList = dataList->next;
 			i++;
 		}	
 	}
@@ -65,7 +66,7 @@ Data *popData() {
 float getCPUTime(Data *dataList, unsigned int pid) {
 	while (dataList != NULL) {
 		if (dataList->pid == pid) {
-			return dataList->pid;
+			return dataList->cpuTime;
 		}
 		dataList = dataList->next;
 	}
@@ -76,6 +77,7 @@ void setCPUTime(Data *dataList, unsigned int pid, float cpuTime) {
 		if (dataList->pid == pid) {
 			dataList->cpuTime = cpuTime;
 		}
+		dataList = dataList->next;
 	}
 }
 
@@ -93,6 +95,7 @@ void setNiceness(Data *dataList, unsigned int pid, int niceness) {
 		if (dataList->pid == pid) {
 			dataList->niceness = niceness;
 		}
+		dataList = dataList->next;
 	}
 }
 
@@ -110,6 +113,7 @@ void setStatus(Data *dataList, unsigned int pid, unsigned int status) {
 		if (dataList->pid == pid) {
 			dataList->status = status;
 		}
+		dataList = dataList->next;
 	}
 }
 
@@ -125,11 +129,11 @@ int searchEntryPID(Data *dataList, unsigned int pid) {
 
 int searchEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
 	while (dataList != NULL) {
-		if (dataList->niceness == niceness && status == -1) {
-			return 1
-		} else if (dataList->status == status && niceness == -1) {
-			return 1
-		} else if (dataList->niceness == niceness && dataList->status == status) {
+		if ((dataList->niceness == niceness) && ((int) status) == -1) {
+			return 1;
+		} else if ((dataList->status == status) && niceness == -1) {
+			return 1;
+		} else if ((dataList->niceness == niceness) && dataList->status == status) {
 			return 1;
 		}
 		dataList = dataList->next;
@@ -139,20 +143,51 @@ int searchEntryNicenessStatus(Data *dataList, int niceness, unsigned int status)
 
 void printAllEntries(Data *dataList) {
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
-	Data *current = dataList;
-	while (current != NULL) {
-		printf("%u%12u%13d%23f%14f\n", current->pid, current->status, \
-				current->niceness, current->cpuTime, current->procTime);
-		current = current->next;
+	while (dataList != NULL) {
+		printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
+				dataList->niceness, dataList->cpuTime, dataList->procTime);
+		dataList = dataList->next;
 	}
 }
 
 void printEntryPID(Data *dataList, unsigned int pid) {
-	;
+	while (dataList != NULL) {
+		if (dataList->pid == pid) {
+			break;
+		}
+		dataList = dataList->next;
+	}
+
+	if (dataList == NULL) {
+		printf("Data for PID:%u does not exist.", pid);
+		return;
+	}
+	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
+	printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
+		   dataList->niceness, dataList->cpuTime, dataList->procTime);
 }
 
 void printEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
-	;
+	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
+	while (dataList != NULL) {
+		if ((dataList->niceness = niceness) && ((int) status) == -1) {
+			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
+		           dataList->niceness, dataList->cpuTime, dataList->procTime);
+
+		} else if ((dataList->status == status) && niceness == -1) {
+			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
+		           dataList->niceness, dataList->cpuTime, dataList->procTime);
+
+		} else if ((dataList->niceness == niceness) && dataList->status == status) {
+			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
+		            dataList->niceness, dataList->cpuTime, dataList->procTime);
+		}
+		dataList = dataList->next;
+	}
+
+	if (!searchEntryNicenessStatus(dataList, niceness, status)) {
+		printf("niceness: %d or status: %u does not exist.\n", niceness, status);
+	}
 }
 
 int main(void) {
@@ -163,6 +198,15 @@ int main(void) {
 	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
 
 	printAllEntries(list);
+	printf("\n");
+	printEntryPID(list, 1);
+	printf("\n");
+	printEntryNicenessStatus(list, 1, -1);
+	printf("\n");
+	printEntryNicenessStatus(list, -1, 2);
+	printf("\n");
+	printEntryNicenessStatus(list, 2, 3);
+	printf("\n");
 
 	Data *entry1 = getEntry(list, 1, -1);
 	Data *entry2 = getEntry(list, -1, 2);
@@ -184,5 +228,12 @@ int main(void) {
 	printf("%u\n", status1);
 	printf("%u\n\n", status2);
 	destroyData(list);
+
+
+
+
+	unsigned int x = -1;
+	//x = (int) x;
+	printf("%d\n", x);
 	return 0;
 }
