@@ -12,9 +12,13 @@ Data *createData() {
 }
 
 void destroyData(Data *dataArray) {
-	;
+    //loop through save position to the next free current, do for each
+    while (dataArray != NULL){
+        Data * temp = dataArray;
+        dataArray = dataArray->next;
+        free(temp);
+    }
 }
-
 
 Data getEntry(Data *dataArray, unsigned int pid, int index) {
 	;
@@ -27,6 +31,7 @@ void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int nicen
 		(*dataList)->niceness = niceness;
 		(*dataList)->cpuTime = cpuTime;
 		(*dataList)->procTime = procTime;
+
 	} else {
 		Data *newNode = malloc(sizeof(Data));
 		newNode->pid = pid;
@@ -96,7 +101,7 @@ void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 int main(void) {
 	Data *list = createData();
-	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
+  pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
 	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
 	printAllEntries(list);
