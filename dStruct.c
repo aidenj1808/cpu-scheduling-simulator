@@ -11,17 +11,30 @@ Data *createData() {
 	return dataList;
 }
 
-void destroyData(Data *dataArray) {
+void destroyData(Data *dataList) {
     //loop through save position to the next free current, do for each
-    while (dataArray != NULL){
-        Data * temp = dataArray;
-        dataArray = dataArray->next;
+    while (dataList != NULL){
+        Data *temp = dataList;
+        dataList = dataList->next;
         free(temp);
     }
 }
 
-Data getEntry(Data *dataArray, unsigned int pid, int index) {
-	;
+Data *getEntry(Data *dataList, unsigned int pid, int index) {
+	if (index == -1) {
+		while (dataList->pid != pid) {
+			dataList = dataList->next;
+		}
+		return dataList;
+	} else {
+		int i = 0;
+		while (dataList != NULL) {
+			if (i == index) {
+				return dataList;
+			}
+			i++;
+		}	
+	}
 }
 
 void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
@@ -101,9 +114,14 @@ void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 int main(void) {
 	Data *list = createData();
-  pushEntry(&list, 1, 1, 1, 1.0, 1.0);
+  	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
 	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
 	printAllEntries(list);
+	Data *entry1 = getEntry(list, 1, -1);
+	printf("%d\n", entry1->pid);
+	Data *entry2 = getEntry(list, -1, 2);
+	printf("%d\n", entry2->pid);
+	destroyData(list);
 	return 0;
 }

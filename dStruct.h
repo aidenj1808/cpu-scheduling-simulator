@@ -24,7 +24,7 @@ void destroyData(Data *dataArray);
 /*
  *
  */
-Data getEntry(Data *dataArray, unsigned int pid, int index);
+Data *getEntry(Data *dataArray, unsigned int pid, int index);
 
 /*
  *
