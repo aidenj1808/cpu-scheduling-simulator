@@ -19,24 +19,33 @@ Data getEntry(Data *dataArray, unsigned int pid, int index) {
 	;
 }
 
-void pushEntry(Data *dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
-	if (dataList->next == NULL) {
+Data *pushEntry(Data **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
+	/*if (dataList->next == NULL) {
 		dataList->pid = pid;
 		dataList->status = status;
 		dataList->niceness = niceness;
 		dataList->cpuTime = cpuTime;
 		dataList->procTime = procTime;
-	} else {
+        return dataList;
+	} else {*/
 		Data *newNode = malloc(sizeof(Data));
+
+        if (newNode == NULL){
+            //print fail??
+            return NULL;
+        }
+
 		newNode->pid = pid;
 		newNode->status = status;
 		newNode->niceness = niceness;
 		newNode->cpuTime = cpuTime;
 		newNode->procTime = procTime;
 		
-		newNode->next = dataList;
-		dataList = newNode;
-	}
+		newNode->next = *dataList;
+		*dataList = newNode;
+       //dataList->next = NULL;
+        return newNode;
+	//}
 }
 
 Data *popData() {
@@ -79,7 +88,7 @@ void printAllEntries(Data *dataList) {
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
 	//for (dataList; dataList->next == NULL; dataList = dataList->next) {
 	Data *current = dataList;
-	printf("%u\n", current->pid);
+	//printf("%u\n", current->pid);
 	while (current != NULL) {
 		printf("%u%12u%13d%23f%14f\n", current->pid, current->status, \
 				current->niceness, current->cpuTime, current->procTime);
@@ -97,9 +106,9 @@ void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 int main(void) {
 	Data *list = createData();
-	pushEntry(list, 1, 1, 1, 1.0, 1.0);
-	pushEntry(list, 2, 2, 2, 2.0, 2.0);
-	pushEntry(list, 3, 3, 3, 3.0, 3.0);
+	list = pushEntry(&list, 1, 1, 1, 1.0, 1.0);
+	list = pushEntry(&list, 2, 2, 2, 2.0, 2.0);
+	list = pushEntry(&list, 3, 3, 3, 3.0, 3.0);
 	printAllEntries(list);
 	return 0;
 }
