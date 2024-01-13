@@ -29,7 +29,7 @@ Data getEntry(Data *dataArray, unsigned int pid, int index);
 /*
  *
  */
-void pushEntry(Data *dataArray, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime);
+Data *pushEntry(Data **dataArray, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime);
 
 /*
  *
