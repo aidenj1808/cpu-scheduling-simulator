@@ -59,8 +59,14 @@ void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int nicen
 	}
 }
 
-Data *popData() {
-	;
+Data *popData(Data *dataList) {	
+	while (dataList->next->next != NULL) {
+		dataList = dataList->next;
+	}
+	Data *lastNode = dataList->next;
+	free(dataList->next);
+	dataList->next = NULL;
+	return lastNode;
 }
 
 float getCPUTime(Data *dataList, unsigned int pid) {
@@ -194,6 +200,25 @@ void printEntryNicenessStatus(Data *dataList, int niceness, unsigned int status)
 int main(void) {
 	Data *list = createData();
 
+	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
+	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
+	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
+	pushEntry(&list, 4, 4, 4, 4.0, 4.0);
+	pushEntry(&list, 5, 5, 5, 5.0, 5.0);
+	pushEntry(&list, 6, 6, 6, 6.0, 6.0);
+	pushEntry(&list, 7, 7, 7, 7.0, 7.0);
+	pushEntry(&list, 8, 8, 8, 8.0, 8.0);
+	pushEntry(&list, 9, 9, 9, 9.0, 9.0);
+	Data *pop1 = popData(list);
+	Data *pop2 = popData(list);
+	Data *pop3 = popData(list);
+	Data *pop4 = popData(list);
+	Data *pop5 = popData(list);
+	printAllEntries(list);
+	destroyData(list);
+	/*
+	Data *list = createData();
+
   	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
 	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
@@ -229,12 +254,6 @@ int main(void) {
 	printf("%u\n", status1);
 	printf("%u\n\n", status2);
 	destroyData(list);
-
-
-
-
-	unsigned int x = -1;
-	//x = (int) x;
-	printf("%d\n", x);
+	*/
 	return 0;
 }

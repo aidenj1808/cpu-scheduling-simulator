@@ -34,7 +34,7 @@ void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int nicen
 /*
  *
  */
-Data *popData();
+Data *popData(Data *dataList);
 
 /*
  *
