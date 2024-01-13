@@ -129,11 +129,11 @@ int searchEntryPID(Data *dataList, unsigned int pid) {
 
 int searchEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
 	while (dataList != NULL) {
-		if ((dataList->niceness == niceness) && ((int) status) == -1) {
+		if (dataList->niceness == niceness && status == -1) {
 			return 1;
-		} else if ((dataList->status == status) && niceness == -1) {
+		} else if (dataList->status == status && niceness == -1) {
 			return 1;
-		} else if ((dataList->niceness == niceness) && dataList->status == status) {
+		} else if (dataList->niceness == niceness || dataList->status == status) {
 			return 1;
 		}
 		dataList = dataList->next;
@@ -168,24 +168,25 @@ void printEntryPID(Data *dataList, unsigned int pid) {
 }
 
 void printEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
+	Data *searchCheck = dataList;
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
 	while (dataList != NULL) {
-		if ((dataList->niceness = niceness) && ((int) status) == -1) {
+		if (dataList->niceness == niceness && status == -1) {
 			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
 		           dataList->niceness, dataList->cpuTime, dataList->procTime);
 
-		} else if ((dataList->status == status) && niceness == -1) {
+		} else if (dataList->status == status && niceness == -1) {
 			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
 		           dataList->niceness, dataList->cpuTime, dataList->procTime);
 
-		} else if ((dataList->niceness == niceness) && dataList->status == status) {
+		} else if (dataList->niceness == niceness || dataList->status == status) {
 			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
 		            dataList->niceness, dataList->cpuTime, dataList->procTime);
 		}
 		dataList = dataList->next;
 	}
 
-	if (!searchEntryNicenessStatus(dataList, niceness, status)) {
+	if (!searchEntryNicenessStatus(searchCheck, niceness, status)) {
 		printf("niceness: %d or status: %u does not exist.\n", niceness, status);
 	}
 }
