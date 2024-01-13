@@ -17,7 +17,7 @@ dStruct.o: dStruct.c #dStruct.h #might need might not see what works
 	$(CC) $(CFLAGS) -g -c dStruct.c 
 
 valgrind: dStruct
-	valgrind --leak-check=yes ./dStruct
+	valgrind -s --leak-check=yes ./dStruct
 
 clean:
 	rm -f *.o *~ 
