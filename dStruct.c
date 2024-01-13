@@ -3,11 +3,12 @@
 #include "dStruct.h"
 
 Data *createData() {
-	Data *data = malloc(sizeof(Data));
-	if (data != NULL) {
-		data->next = NULL;
+	Data *dataList = malloc(sizeof(Data));
+	if (dataList != NULL) {
+		dataList->pid = NULL;
+		dataList->next = NULL;
 	}
-	return data;
+	return dataList;
 }
 
 void destroyData(Data *dataArray) {
@@ -19,13 +20,13 @@ Data getEntry(Data *dataArray, unsigned int pid, int index) {
 	;
 }
 
-void pushEntry(Data *dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
-	if (dataList->next == NULL) {
-		dataList->pid = pid;
-		dataList->status = status;
-		dataList->niceness = niceness;
-		dataList->cpuTime = cpuTime;
-		dataList->procTime = procTime;
+void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
+	if (!((*dataList)->pid)) {
+		(*dataList)->pid = pid;
+		(*dataList)->status = status;
+		(*dataList)->niceness = niceness;
+		(*dataList)->cpuTime = cpuTime;
+		(*dataList)->procTime = procTime;
 	} else {
 		Data *newNode = malloc(sizeof(Data));
 		newNode->pid = pid;
@@ -34,8 +35,8 @@ void pushEntry(Data *dataList, unsigned int pid, unsigned int status, int nicene
 		newNode->cpuTime = cpuTime;
 		newNode->procTime = procTime;
 		
-		newNode->next = dataList;
-		dataList = newNode;
+		newNode->next = *dataList;
+		*dataList = newNode;
 	}
 }
 
@@ -77,9 +78,7 @@ int searchEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 void printAllEntries(Data *dataList) {
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
-	//for (dataList; dataList->next == NULL; dataList = dataList->next) {
 	Data *current = dataList;
-	printf("%u\n", current->pid);
 	while (current != NULL) {
 		printf("%u%12u%13d%23f%14f\n", current->pid, current->status, \
 				current->niceness, current->cpuTime, current->procTime);
@@ -97,9 +96,9 @@ void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 int main(void) {
 	Data *list = createData();
-	pushEntry(list, 1, 1, 1, 1.0, 1.0);
-	pushEntry(list, 2, 2, 2, 2.0, 2.0);
-	pushEntry(list, 3, 3, 3, 3.0, 3.0);
+	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
+	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
+	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
 	printAllEntries(list);
 	return 0;
 }
