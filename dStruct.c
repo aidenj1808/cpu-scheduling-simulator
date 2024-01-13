@@ -62,24 +62,39 @@ Data *popData() {
 	;
 }
 
-float getCPUTime(Data *dataArray, unsigned int pid) {
-	;
+float getCPUTime(Data *dataList, unsigned int pid) {
+	while (dataList != NULL) {
+		if (dataList->pid == pid) {
+			return dataList->pid;
+		}
+		dataList = dataList->next;
+	}
 }
 
 void setCPUTime(unsigned int pid, float cpuTime) {
 	;
 }
 
-int getNiceness(Data *dataArray, unsigned int pid) {
-	;
+int getNiceness(Data *dataList, unsigned int pid) {
+	while (dataList != NULL) {
+		if (dataList->pid == pid) {
+			return dataList->niceness;
+		}
+		dataList = dataList->next;
+	}
 }
 
 void setNiceness(unsigned int pid, int niceness) {
 	;
 }
 
-unsigned int getStatus(Data *dataArray, unsigned int pid) {
-	;
+unsigned int getStatus(Data *dataList, unsigned int pid) {
+	while (dataList != NULL) {
+		if (dataList->pid == pid) {
+			return dataList->status;
+		}
+		dataList = dataList->next;
+	}
 }
 
 void setStatus(Data *dataArray, unsigned int pid) {
@@ -114,14 +129,32 @@ void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 int main(void) {
 	Data *list = createData();
+
   	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
 	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
+
 	printAllEntries(list);
+
 	Data *entry1 = getEntry(list, 1, -1);
-	printf("%d\n", entry1->pid);
 	Data *entry2 = getEntry(list, -1, 2);
-	printf("%d\n", entry2->pid);
+	printf("%d\n", entry1->pid);
+	printf("%d\n\n", entry2->pid);
+
+	float time1 = getCPUTime(list, 1); 
+	float time2 = getCPUTime(list, 3); 
+	printf("%f\n", time1);
+	printf("%f\n\n", time2);
+
+	int niceness1 = getNiceness(list, 1);
+	int niceness2 = getNiceness(list, 3);
+	printf("%d\n", niceness1);
+	printf("%d\n\n", niceness2);
+
+	unsigned int status1 = getStatus(list, 1);
+	unsigned int status2 = getStatus(list, 3);
+	printf("%u\n", status1);
+	printf("%u\n\n", status2);
 	destroyData(list);
 	return 0;
 }
