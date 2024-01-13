@@ -114,11 +114,27 @@ void setStatus(Data *dataList, unsigned int pid, unsigned int status) {
 }
 
 int searchEntryPID(Data *dataList, unsigned int pid) {
-	;
+	while (dataList != NULL) {
+		if (dataList->pid == pid) {
+			return 1;
+		}
+		dataList = dataList->next;
+	}
+	return 0;
 }
 
 int searchEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
-	;
+	while (dataList != NULL) {
+		if (dataList->niceness == niceness && status == -1) {
+			return 1
+		} else if (dataList->status == status && niceness == -1) {
+			return 1
+		} else if (dataList->niceness == niceness && dataList->status == status) {
+			return 1;
+		}
+		dataList = dataList->next;
+	}
+	return 0;
 }
 
 void printAllEntries(Data *dataList) {
