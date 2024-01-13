@@ -11,7 +11,12 @@ Data *createData() {
 }
 
 void destroyData(Data *dataArray) {
-	;
+    //loop through save position to the next free current, do for each
+    while (dataArray != NULL){
+        Data * temp = dataArray;
+        dataArray = dataArray->next;
+        free(temp);
+    }
 }
 
 
@@ -19,20 +24,20 @@ Data getEntry(Data *dataArray, unsigned int pid, int index) {
 	;
 }
 
-Data *pushEntry(Data **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
-	/*if (dataList->next == NULL) {
-		dataList->pid = pid;
-		dataList->status = status;
-		dataList->niceness = niceness;
-		dataList->cpuTime = cpuTime;
-		dataList->procTime = procTime;
-        return dataList;
+void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
+	/*if ((*dataList)->pid == NULL) {
+		(*dataList)->pid = pid;
+		(*dataList)->status = status;
+		(*dataList)->niceness = niceness;
+		(*dataList)->cpuTime = cpuTime;
+		(*dataList)->procTime = procTime;
+        
 	} else {*/
 		Data *newNode = malloc(sizeof(Data));
 
         if (newNode == NULL){
             //print fail??
-            return NULL;
+            //return NULL;
         }
 
 		newNode->pid = pid;
@@ -44,7 +49,7 @@ Data *pushEntry(Data **dataList, unsigned int pid, unsigned int status, int nice
 		newNode->next = *dataList;
 		*dataList = newNode;
        //dataList->next = NULL;
-        return newNode;
+        //return newNode;
 	//}
 }
 
@@ -106,9 +111,13 @@ void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 int main(void) {
 	Data *list = createData();
-	list = pushEntry(&list, 1, 1, 1, 1.0, 1.0);
-	list = pushEntry(&list, 2, 2, 2, 2.0, 2.0);
-	list = pushEntry(&list, 3, 3, 3, 3.0, 3.0);
+	//list = pushEntry(&list, 1, 1, 1, 1.0, 1.0);
+	//list = pushEntry(&list, 2, 2, 2, 2.0, 2.0);
+	//list = pushEntry(&list, 3, 3, 3, 3.0, 3.0);
+
+    pushEntry(&list, 1, 1, 1, 1.0, 1.0);
+	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
+	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
 	printAllEntries(list);
 	return 0;
 }
