@@ -71,8 +71,12 @@ float getCPUTime(Data *dataList, unsigned int pid) {
 	}
 }
 
-void setCPUTime(unsigned int pid, float cpuTime) {
-	;
+void setCPUTime(Data *dataList, unsigned int pid, float cpuTime) {
+	while (dataList != NULL) {
+		if (dataList->pid == pid) {
+			dataList->cpuTime = cpuTime;
+		}
+	}
 }
 
 int getNiceness(Data *dataList, unsigned int pid) {
@@ -84,8 +88,12 @@ int getNiceness(Data *dataList, unsigned int pid) {
 	}
 }
 
-void setNiceness(unsigned int pid, int niceness) {
-	;
+void setNiceness(Data *dataList, unsigned int pid, int niceness) {
+	while (dataList != NULL) {
+		if (dataList->pid == pid) {
+			dataList->niceness = niceness;
+		}
+	}
 }
 
 unsigned int getStatus(Data *dataList, unsigned int pid) {
@@ -97,15 +105,19 @@ unsigned int getStatus(Data *dataList, unsigned int pid) {
 	}
 }
 
-void setStatus(Data *dataArray, unsigned int pid) {
+void setStatus(Data *dataList, unsigned int pid, unsigned int status) {
+	while (dataList != NULL) {
+		if (dataList->pid == pid) {
+			dataList->status = status;
+		}
+	}
+}
+
+int searchEntryPID(Data *dataList, unsigned int pid) {
 	;
 }
 
-int searchEntryPID(Data *dataArray, unsigned int pid) {
-	;
-}
-
-int searchEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status) {
+int searchEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
 	;
 }
 
@@ -119,11 +131,11 @@ void printAllEntries(Data *dataList) {
 	}
 }
 
-void printEntryPID(Data *dataArray, unsigned int pid) {
+void printEntryPID(Data *dataList, unsigned int pid) {
 	;
 }
 
-void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status) {
+void printEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
 	;
 }
 
