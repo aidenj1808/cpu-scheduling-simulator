@@ -3,11 +3,12 @@
 #include "dStruct.h"
 
 Data *createData() {
-	Data *data = malloc(sizeof(Data));
-	if (data != NULL) {
-		data->next = NULL;
+	Data *dataList = malloc(sizeof(Data));
+	if (dataList != NULL) {
+		dataList->pid = NULL;
+		dataList->next = NULL;
 	}
-	return data;
+	return dataList;
 }
 
 void destroyData(Data *dataArray) {
@@ -19,27 +20,20 @@ void destroyData(Data *dataArray) {
     }
 }
 
-
 Data getEntry(Data *dataArray, unsigned int pid, int index) {
 	;
 }
 
 void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
-	/*if ((*dataList)->pid == NULL) {
+	if (!((*dataList)->pid)) {
 		(*dataList)->pid = pid;
 		(*dataList)->status = status;
 		(*dataList)->niceness = niceness;
 		(*dataList)->cpuTime = cpuTime;
 		(*dataList)->procTime = procTime;
-        
-	} else {*/
+
+	} else {
 		Data *newNode = malloc(sizeof(Data));
-
-        if (newNode == NULL){
-            //print fail??
-            //return NULL;
-        }
-
 		newNode->pid = pid;
 		newNode->status = status;
 		newNode->niceness = niceness;
@@ -48,9 +42,7 @@ void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int nicen
 		
 		newNode->next = *dataList;
 		*dataList = newNode;
-       //dataList->next = NULL;
-        //return newNode;
-	//}
+	}
 }
 
 Data *popData() {
@@ -91,9 +83,7 @@ int searchEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 void printAllEntries(Data *dataList) {
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
-	//for (dataList; dataList->next == NULL; dataList = dataList->next) {
 	Data *current = dataList;
-	//printf("%u\n", current->pid);
 	while (current != NULL) {
 		printf("%u%12u%13d%23f%14f\n", current->pid, current->status, \
 				current->niceness, current->cpuTime, current->procTime);
@@ -111,11 +101,7 @@ void printEntryNicenessStatus(Data *dataArray, int niceness, unsigned int status
 
 int main(void) {
 	Data *list = createData();
-	//list = pushEntry(&list, 1, 1, 1, 1.0, 1.0);
-	//list = pushEntry(&list, 2, 2, 2, 2.0, 2.0);
-	//list = pushEntry(&list, 3, 3, 3, 3.0, 3.0);
-
-    pushEntry(&list, 1, 1, 1, 1.0, 1.0);
+  pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
 	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
 	printAllEntries(list);
