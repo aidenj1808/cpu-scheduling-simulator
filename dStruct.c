@@ -5,7 +5,7 @@
 DataList *createDataList() {
 	DataList *dataList = malloc(sizeof(DataList));
 	if (dataList == NULL) {
-		printf("could not allocate memory for data list.");
+		printf("could not allocate memory for data list.\n");
 		exit(EXIT_FAILURE);
 	}
 	dataList->first = NULL;
@@ -31,7 +31,7 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 			node = node->next;
 		}
 		if (!node) {
-			printf("Data does not exist with PID: %u", pid);
+			printf("Data does not exist with PID: %u\n", pid);
 			exit(EXIT_FAILURE);
 		} else {
 			return node;
@@ -47,7 +47,7 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 		}	
 
 		if (!node) {
-			printf("Data does not exist with Index: %d", index);
+			printf("Data does not exist with Index: %d\n", index);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -55,13 +55,13 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 
 void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
 	if ((*dataList)->size == 100) {
-		printf("DataList is full.");
+		printf("DataList is full.\n");
 		exit(EXIT_FAILURE);
 	}
 
 	Node *newNode = malloc(sizeof(Node));
 	if (newNode == NULL) {
-		printf("could not allocate memory for new node.");
+		printf("could not allocate memory for new node.\n");
 		exit(EXIT_FAILURE);
 	}
 	newNode->pid = pid;
@@ -197,7 +197,7 @@ void printEntryPID(DataList *dataList, unsigned int pid) {
 	}
 
 	if (node == NULL) {
-		printf("Data for PID:%u does not exist.", pid);
+		printf("Data for PID:%u does not exist.\n", pid);
 		return;
 	}
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
@@ -231,7 +231,7 @@ void printEntryNicenessStatus(DataList *dataList, int niceness, unsigned int sta
 
 int main(void) {
 	DataList *list = createDataList();
-
+	/*
 	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
 	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
@@ -247,6 +247,11 @@ int main(void) {
 	popData(list);
 	printAllEntries(list);
 	destroyDataList(list);
+	*/
+	for (int i = 1; i < 101; i++) {
+		pushEntry(&list, i, i, i, (float) i, (float) i);
+	}
+	pushEntry(&list, 101, 101, 101, 101.0, 101.0);
 	/*
 	Data *pop1 = popData(list);
 	Data *pop2 = popData(list);
