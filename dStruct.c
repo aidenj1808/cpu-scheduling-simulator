@@ -2,203 +2,235 @@
 #include <stdlib.h>
 #include "dStruct.h"
 
-Data *createData() {
-	Data *dataList = malloc(sizeof(Data));
-	if (dataList != NULL) {
-		dataList->pid = NULL;
-		dataList->next = NULL;
+DataList *createDataList() {
+	DataList *dataList = malloc(sizeof(DataList));
+	if (dataList == NULL) {
+		printf("could not allocate memory for data list.");
+		exit(EXIT_FAILURE);
 	}
+	dataList->first = NULL;
+	dataList->size = 0;
 	return dataList;
 }
 
-void destroyData(Data *dataList) {
+void destroyDataList(DataList *dataList) {
     //loop through save position to the next free current, do for each
-    while (dataList != NULL){
-        Data *temp = dataList;
-        dataList = dataList->next;
+	Node *node = dataList->first;
+    while (node != NULL){
+        Node *temp = node;
+        node = node->next;
         free(temp);
     }
+	free(dataList);
 }
 
-Data *getEntry(Data *dataList, unsigned int pid, int index) {
+Node *getEntry(DataList *dataList, unsigned int pid, int index) {
+	Node *node = dataList->first;
 	if (index == -1) {
-		while (dataList->pid != pid) {
-			dataList = dataList->next;
+		while (node->pid != pid) {
+			node = node->next;
 		}
-		return dataList;
+		if (!node) {
+			printf("Data does not exist with PID: %u", pid);
+			exit(EXIT_FAILURE);
+		} else {
+			return node;
+		}
 	} else {
 		int i = 0;
-		while (dataList != NULL) {
+		while (node != NULL) {
 			if (i == index) {
-				return dataList;
+				return node;
 			}
-			dataList = dataList->next;
+			node = node->next;
 			i++;
 		}	
+
+		if (!node) {
+			printf("Data does not exist with Index: %d", index);
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
-void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
-	if (!((*dataList)->pid)) {
-		(*dataList)->pid = pid;
-		(*dataList)->status = status;
-		(*dataList)->niceness = niceness;
-		(*dataList)->cpuTime = cpuTime;
-		(*dataList)->procTime = procTime;
+void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
+	if ((*dataList)->size == 100) {
+		printf("DataList is full.");
+		exit(EXIT_FAILURE);
+	}
 
+	Node *newNode = malloc(sizeof(Node));
+	if (newNode == NULL) {
+		printf("could not allocate memory for new node.");
+		exit(EXIT_FAILURE);
+	}
+	newNode->pid = pid;
+	newNode->status = status;
+	newNode->niceness = niceness;
+	newNode->cpuTime = cpuTime;
+	newNode->procTime = procTime;
+	if ((*dataList)->size == 0) {
+		newNode->next = NULL;
+		(*dataList)->first = newNode;
 	} else {
-		Data *newNode = malloc(sizeof(Data));
-		newNode->pid = pid;
-		newNode->status = status;
-		newNode->niceness = niceness;
-		newNode->cpuTime = cpuTime;
-		newNode->procTime = procTime;
-		
-		newNode->next = *dataList;
-		*dataList = newNode;
+		newNode->next = (*dataList)->first;
+		(*dataList)->first = newNode;
 	}
+	(*dataList)->size++;
 }
 
-Data *popData(Data *dataList) {	
-	while (dataList->next->next != NULL) {
-		dataList = dataList->next;
+Node *popData(DataList *dataList) {	
+	Node *node = dataList->first;
+	while (node->next->next != NULL) {
+		node = node->next;
 	}
-	Data *lastNode = dataList->next;
-	free(dataList->next);
-	dataList->next = NULL;
+	Node *lastNode = node->next;
+	free(node->next);
+	node->next = NULL;
+	dataList->size--;
 	return lastNode;
 }
 
-float getCPUTime(Data *dataList, unsigned int pid) {
-	while (dataList != NULL) {
-		if (dataList->pid == pid) {
-			return dataList->cpuTime;
+float getCPUTime(DataList *dataList, unsigned int pid) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			return node->cpuTime;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 }
 
-void setCPUTime(Data *dataList, unsigned int pid, float cpuTime) {
-	while (dataList != NULL) {
-		if (dataList->pid == pid) {
-			dataList->cpuTime = cpuTime;
+void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			node->cpuTime = cpuTime;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 }
 
-int getNiceness(Data *dataList, unsigned int pid) {
-	while (dataList != NULL) {
-		if (dataList->pid == pid) {
-			return dataList->niceness;
+int getNiceness(DataList *dataList, unsigned int pid) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			return node->niceness;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 }
 
-void setNiceness(Data *dataList, unsigned int pid, int niceness) {
-	while (dataList != NULL) {
-		if (dataList->pid == pid) {
-			dataList->niceness = niceness;
+void setNiceness(DataList *dataList, unsigned int pid, int niceness) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			node->niceness = niceness;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 }
 
-unsigned int getStatus(Data *dataList, unsigned int pid) {
-	while (dataList != NULL) {
-		if (dataList->pid == pid) {
-			return dataList->status;
+unsigned int getStatus(DataList *dataList, unsigned int pid) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			return node->status;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 }
 
-void setStatus(Data *dataList, unsigned int pid, unsigned int status) {
-	while (dataList != NULL) {
-		if (dataList->pid == pid) {
-			dataList->status = status;
+void setStatus(DataList *dataList, unsigned int pid, unsigned int status) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			node->status = status;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 }
 
-int searchEntryPID(Data *dataList, unsigned int pid) {
-	while (dataList != NULL) {
-		if (dataList->pid == pid) {
+int searchEntryPID(DataList *dataList, unsigned int pid) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
 			return 1;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 	return 0;
 }
 
-int searchEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
-	while (dataList != NULL) {
-		if (dataList->niceness == niceness && status == -1) {
+int searchEntryNicenessStatus(DataList *dataList, int niceness, unsigned int status) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->niceness == niceness && status == -1) {
 			return 1;
-		} else if (dataList->status == status && niceness == -1) {
+		} else if (node->status == status && niceness == -1) {
 			return 1;
-		} else if (dataList->niceness == niceness || dataList->status == status) {
+		} else if (node->niceness == niceness || node->status == status) {
 			return 1;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 	return 0;
 }
 
-void printAllEntries(Data *dataList) {
+void printAllEntries(DataList *dataList) {
+	Node *node = dataList->first;
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
-	while (dataList != NULL) {
-		printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
-				dataList->niceness, dataList->cpuTime, dataList->procTime);
-		dataList = dataList->next;
+	while (node != NULL) {
+		printf("%u%12u%13d%23f%14f\n", node->pid, node->status, \
+				node->niceness, node->cpuTime, node->procTime);
+		node = node->next;
 	}
 }
 
-void printEntryPID(Data *dataList, unsigned int pid) {
-	while (dataList != NULL) {
-		if (dataList->pid == pid) {
+void printEntryPID(DataList *dataList, unsigned int pid) {
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
 			break;
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 
-	if (dataList == NULL) {
+	if (node == NULL) {
 		printf("Data for PID:%u does not exist.", pid);
 		return;
 	}
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
-	printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
-		   dataList->niceness, dataList->cpuTime, dataList->procTime);
+	printf("%u%12u%13d%23f%14f\n", node->pid, node->status, \
+		   node->niceness, node->cpuTime, node->procTime);
 }
 
-void printEntryNicenessStatus(Data *dataList, int niceness, unsigned int status) {
-	Data *searchCheck = dataList;
+void printEntryNicenessStatus(DataList *dataList, int niceness, unsigned int status) {
+	Node *node = dataList->first;
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
-	while (dataList != NULL) {
-		if (dataList->niceness == niceness && status == -1) {
-			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
-		           dataList->niceness, dataList->cpuTime, dataList->procTime);
+	while (node != NULL) {
+		if (node->niceness == niceness && status == -1) {
+			printf("%u%12u%13d%23f%14f\n", node->pid, node->status, \
+		           node->niceness, node->cpuTime, node->procTime);
 
-		} else if (dataList->status == status && niceness == -1) {
-			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
-		           dataList->niceness, dataList->cpuTime, dataList->procTime);
+		} else if (node->status == status && niceness == -1) {
+			printf("%u%12u%13d%23f%14f\n", node->pid, node->status, \
+		           node->niceness, node->cpuTime, node->procTime);
 
-		} else if (dataList->niceness == niceness || dataList->status == status) {
-			printf("%u%12u%13d%23f%14f\n", dataList->pid, dataList->status, \
-		            dataList->niceness, dataList->cpuTime, dataList->procTime);
+		} else if (node->niceness == niceness || node->status == status) {
+			printf("%u%12u%13d%23f%14f\n", node->pid, node->status, \
+		            node->niceness, node->cpuTime, node->procTime);
 		}
-		dataList = dataList->next;
+		node = node->next;
 	}
 
-	if (!searchEntryNicenessStatus(searchCheck, niceness, status)) {
+	if (!searchEntryNicenessStatus(dataList, niceness, status)) {
 		printf("niceness: %d or status: %u does not exist.\n", niceness, status);
 	}
 }
 
 int main(void) {
-	Data *list = createData();
+	DataList *list = createDataList();
 
 	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
@@ -209,6 +241,13 @@ int main(void) {
 	pushEntry(&list, 7, 7, 7, 7.0, 7.0);
 	pushEntry(&list, 8, 8, 8, 8.0, 8.0);
 	pushEntry(&list, 9, 9, 9, 9.0, 9.0);
+	printAllEntries(list);
+	popData(list);
+	popData(list);
+	popData(list);
+	printAllEntries(list);
+	destroyDataList(list);
+	/*
 	Data *pop1 = popData(list);
 	Data *pop2 = popData(list);
 	Data *pop3 = popData(list);
@@ -216,6 +255,7 @@ int main(void) {
 	Data *pop5 = popData(list);
 	printAllEntries(list);
 	destroyData(list);
+	*/
 	/*
 	Data *list = createData();
 
