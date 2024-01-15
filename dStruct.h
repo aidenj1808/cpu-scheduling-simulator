@@ -1,94 +1,98 @@
 #ifndef DSTRUCT_H
 #define DSTRUCT_H
 
-typedef struct Data {
+typedef struct Node {
     unsigned int pid;
     unsigned int status;
     int niceness;
     float cpuTime;
     float procTime;
-	struct Data *next;
-    //possibly need a node type idk check notes 
-} Data;
+	struct Node *next;
+} Node;
+
+typedef struct DataList {
+	struct Node *first;
+	int size;
+} DataList;
 
 /*
  *
  */
-Data *createData();
+DataList *createDataList();
 
 /*
  *
  */
-void destroyData(Data *dataList);
+void destroyDataList(DataList *dataList);
 
 /*
  *
  */
-Data *getEntry(Data *dataList, unsigned int pid, int index);
+Node *getEntry(DataList *dataList, unsigned int pid, int index);
 
 /*
  *
  */
-void pushEntry(Data **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime);
+void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime);
 
 /*
  *
  */
-Data *popData(Data *dataList);
+Node *popData(DataList *dataList);
 
 /*
  *
  */
-float getCPUTime(Data *dataList, unsigned int pid);
+float getCPUTime(DataList *dataList, unsigned int pid);
 
 /*
  *
  */
-void setCPUTime(Data *dataList, unsigned int pid, float cpuTime);
+void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime);
 
 /*
  *
  */
-int getNiceness(Data *dataList, unsigned int pid);
+int getNiceness(DataList *dataList, unsigned int pid);
 
 /*
  *
  */
-void setNiceness(Data *dataList, unsigned int pid, int niceness);
+void setNiceness(DataList *dataList, unsigned int pid, int niceness);
 
 /*
  *
  */
-unsigned int getStatus(Data *dataList, unsigned int pid);
+unsigned int getStatus(DataList *dataList, unsigned int pid);
 
 /*
  *
  */
-void setStatus(Data *dataList, unsigned int pid, unsigned int status);
+void setStatus(DataList *dataList, unsigned int pid, unsigned int status);
 
 /*
  *
  */
-int searchEntryPID(Data *dataList, unsigned int pid);
+int searchEntryPID(DataList *dataList, unsigned int pid);
 
 /*
  *
  */
-int searchEntryNicenessStatus(Data *dataList, int niceness, unsigned int status);
+int searchEntryNicenessStatus(DataList *dataList, int niceness, unsigned int status);
 
 /*
  *
  */
-void printAllEntries(Data *dataList);
+void printAllEntries(DataList *dataList);
 
 /*
  *
  */
-void printEntryPID(Data *dataList, unsigned int pid);
+void printEntryPID(DataList *dataList, unsigned int pid);
 
 /*
  *
  */
-void printEntryNicenessStatus(Data *dataList, int niceness, unsigned int status);
+void printEntryNicenessStatus(DataList *dataList, int niceness, unsigned int status);
 
 #endif /* DSTRUCT_H */
