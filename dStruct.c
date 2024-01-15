@@ -51,6 +51,7 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 			exit(EXIT_FAILURE);
 		}
 	}
+	return node;
 }
 
 void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
@@ -99,6 +100,11 @@ float getCPUTime(DataList *dataList, unsigned int pid) {
 		}
 		node = node->next;
 	}
+	if (!node) {
+		printf("Data for PID: %u does not exist\n", pid);
+		exit(EXIT_FAILURE);
+	}
+	return 0.0;
 }
 
 void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
@@ -119,6 +125,11 @@ int getNiceness(DataList *dataList, unsigned int pid) {
 		}
 		node = node->next;
 	}
+	if (!node) {
+		printf("Data for PID: %u does not exist.\n", pid);
+		exit(EXIT_FAILURE);
+	}
+	return 0;
 }
 
 void setNiceness(DataList *dataList, unsigned int pid, int niceness) {
@@ -139,6 +150,11 @@ unsigned int getStatus(DataList *dataList, unsigned int pid) {
 		}
 		node = node->next;
 	}
+	if (!node) {
+		printf("Data for PID: %u does not exist.\n", pid);
+		exit(EXIT_FAILURE);
+	}
+	return 0;
 }
 
 void setStatus(DataList *dataList, unsigned int pid, unsigned int status) {
