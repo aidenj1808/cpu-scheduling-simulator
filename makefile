@@ -10,11 +10,14 @@
 CFLAGS= -Wall -std=c11 
 CC= gcc 
 
-dStruct: dStruct.o 
-	$(CC) $(CFLAGS) dStruct.o -o dStruct 
+dStruct: dStruct.o test.o
+	$(CC) $(CFLAGS) dStruct.o test.o -o dStruct 
 
 dStruct.o: dStruct.c #dStruct.h #might need might not see what works 
 	$(CC) $(CFLAGS) -g -c dStruct.c 
+
+test.o: test.c #dStruct.h #might need might not see what works 
+	$(CC) $(CFLAGS) -g -c test.c 
 
 valgrind: dStruct
 	valgrind -s --leak-check=yes ./dStruct

@@ -38,7 +38,7 @@ void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int n
 /*
  *
  */
-Node *popData(DataList *dataList);
+Node *popEntry(DataList *dataList);
 
 /*
  *

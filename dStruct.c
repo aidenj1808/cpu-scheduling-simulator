@@ -80,7 +80,7 @@ void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int n
 	(*dataList)->size++;
 }
 
-Node *popData(DataList *dataList) {	
+Node *popEntry(DataList *dataList) {	
 	Node *node = dataList->first;
 	while (node->next->next != NULL) {
 		node = node->next;
@@ -244,10 +244,10 @@ void printEntryNicenessStatus(DataList *dataList, int niceness, unsigned int sta
 		printf("niceness: %d or status: %u does not exist.\n", niceness, status);
 	}
 }
-
+/*
 int main(void) {
 	DataList *list = createDataList();
-	/*
+	
 	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
 	pushEntry(&list, 3, 3, 3, 3.0, 3.0);
@@ -263,12 +263,12 @@ int main(void) {
 	popData(list);
 	printAllEntries(list);
 	destroyDataList(list);
-	*/
+	
 	for (int i = 1; i < 101; i++) {
 		pushEntry(&list, i, i, i, (float) i, (float) i);
 	}
 	pushEntry(&list, 101, 101, 101, 101.0, 101.0);
-	/*
+	
 	Data *pop1 = popData(list);
 	Data *pop2 = popData(list);
 	Data *pop3 = popData(list);
@@ -276,8 +276,8 @@ int main(void) {
 	Data *pop5 = popData(list);
 	printAllEntries(list);
 	destroyData(list);
-	*/
-	/*
+	
+	
 	Data *list = createData();
 
   	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
@@ -315,6 +315,7 @@ int main(void) {
 	printf("%u\n", status1);
 	printf("%u\n\n", status2);
 	destroyData(list);
-	*/
+	
 	return 0;
 }
+*/
