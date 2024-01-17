@@ -3,11 +3,7 @@
 
 /******************************
  * TODO
- * test searching through empty datalist 
- * test searching for non existent
- * test for something at the start/middle/end
- * test for max entries of 100
- * do we need to add stuff to test for proper args?
+ * 
 */
 
 int main(void) {
@@ -15,8 +11,11 @@ int main(void) {
  	printf("  *  test: createDataList()  *\n");
     printf("  ****************************\n");
 	//Test here
+	/**************
+	 * TODO 
+	 * i think can't do more testing than this?
+	**************/
 	DataList *list = createDataList();
-	//if list isnt null and successfully created will print success
 	if(list){
 		printf("Success creating DL\n");
 	}
@@ -29,7 +28,10 @@ int main(void) {
  	printf("  *  test: pushEntry()  *\n");
     printf("  ***********************\n");
 	//Test here
-	//TODO test max of 100 but maybe do it after testing print? so dont have to print out all entries
+	/**************
+	 * TODO 
+	 * i think can't do more testing than this?
+	**************/
 	printf("Pushing entries 1-9 in format x, x, x, x.0, x.0\n");
 	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
@@ -48,18 +50,24 @@ int main(void) {
  	printf("  *  test: getEntry()  *\n");
     printf("  **********************\n");
 	//Test here
-	//TODO search for pid not in 
+	/**************
+	 * TODO 
+	 * get entry with pid that DNE, seg faults currently
+	 * i think otherwise enough tests
+	**************/ 
 	printf("Search for entry by pid 1\n");
 	Node *entry1 = getEntry(list, 1, -1);//search by pid
 	printEntryPID(list, entry1->pid);
+
 	printf("Search for entry by pid 20, which does not exist\n");
 	//TODO this seg faults when passed pid that dne
-	
+	/*
 	Node *entry2 = getEntry(list, 20, -1);//search by pid
 	if(entry2){
 		printEntryPID(list, entry2->pid);
 	}
-	
+	*/
+
 	printf("Search for entry by index 2\n");
 	Node *entry3 = getEntry(list, -1, 2);//search by index
 	printEntryPID(list, entry3->pid);
@@ -74,14 +82,25 @@ int main(void) {
  	printf("  *  test: popEntry()  *\n");
     printf("  **********************\n");
 	//Test here
-	//TODO pop empty?, pop until past empty?
-	//*********** im dub what is this returning....
+	/**************
+	 * TODO 
+	 * down at bottom try to pop when only one entry get seg fault
+	 * not sure what it is returning
+	 * should we have a function to print the popped entry or?? 
+	 * do something with the popped data? if statements just there to stop the warnings
+	**************/
 	printf("popEntry() will pop off the oldest process and return the data\n");
 	printf("Pop pid 1\n");
-	Node *pop1 = popEntry(list);//pop the last and return the data 
+	Node *pop1 = popEntry(list); 
 	printf("Popped entry: %u	%u	%d	%f	%f\n",pop1->pid, pop1->status, pop1->niceness, pop1->cpuTime, pop1->procTime);
 	Node *pop2 = popEntry(list);
+	if(pop2){
+		;
+	}
 	Node *pop3 = popEntry(list);
+	if(pop3){
+		;
+	}
 	printAllEntries(list);
 	printf("\n");
 	
@@ -89,21 +108,27 @@ int main(void) {
  	printf("  *  test: getCPUTime()  *\n");
     printf("  ************************\n");
 	//Test here
-	//TODO test pid that dne
-	float time1 = getCPUTime(list, 9); //are these pids popped already?
+	/**************
+	 * TODO 
+	 * i think nothing left unless we want to add a way to handle invalid args and test that
+	**************/ 
+	float time1 = getCPUTime(list, 9); 
 	printf("Get CPU time for PID 9: %f\n", time1);
 	float time2 = getCPUTime(list, 1); 
-	printf("Get CPU for PID 1 (which was popped) %f\n\n", time2); // maybe dont need to print idk
+	printf("Get CPU for PID 1 (which does not exist) %f\n\n", time2); 
 	printf("\n");
 	
     printf("  ************************\n");
  	printf("  *  test: setCPUTime()  *\n");
     printf("  ************************\n");
 	//Test here
-	//TODO test pid dne ****add a statement to the function that notifies it dne 
-	//maybe print out then change then print the change?or i guess just change the ones pulled from above
+	/**************
+	 * TODO 
+	 * in the function add a statement like the other functions
+	 * again nothing else unless we do valid arg check
+	**************/ 
+	printf("Set CPUTime for PID 1 to 4.5(which does not exist)\n");
 	setCPUTime(list, 1, 4.5); 
-	//pid 1 dne so maybe add a statement like all the other ones to say it dne ??
 	
 	printf("The entry for PID 7 before:\n");
 	printEntryPID(list, 7);
@@ -116,7 +141,11 @@ int main(void) {
  	printf("  *  test: getNiceness()  *\n");
     printf("  *************************\n");
 	//Test here
-	//TODO chnage the pids cause pretty sure these gone, keep one to test for DNE
+	/**************
+	 * TODO 
+	 * make sure the DNE return of -1 works
+	 * again nothing else unless we do valid arg check
+	**************/ 
 	int niceness1 = getNiceness(list, 1);
 	printf("Get niceness that does not exist (1): %d\n", niceness1);
 	int niceness2 = getNiceness(list, 8);
@@ -127,7 +156,12 @@ int main(void) {
  	printf("  *  test: setNiceness()  *\n");
     printf("  *************************\n");
 	//Test here
-	printf("Testing pid 1 which does not exist, nothing will happen program will continue..\n");
+	/**************
+	 * TODO 
+	 * add a DNE statement to function like others
+	 * again nothing else unless we do valid arg check
+	**************/ 
+	printf("Setting PID 1 to niceness 10 (which does not exist)\n");
 	setNiceness(list, 1, 10);
 	printf("PID 8 before: \n");
 	printEntryPID(list, 8);
@@ -140,7 +174,11 @@ int main(void) {
  	printf("  *  test: getStatus()  *\n");
     printf("  ***********************\n");
 	//Test here
-	//TODO test DNE
+	/**************
+	 * TODO 
+	 * make sure the DNE return of 0 works
+	 * again nothing else unless we do valid arg check
+	**************/ 
 	unsigned int status1 = getStatus(list, 1);
 	printf("Getting status of PID 1 (does not exist): %u\n", status1);
 	unsigned int status2 = getStatus(list, 5);
@@ -151,8 +189,12 @@ int main(void) {
  	printf("  *  test: setStatus()  *\n");
     printf("  ***********************\n");
 	//Test here
-	//same notes as the last few...
-	printf("Testing pid 1 which does not exist, nothing will happen program will continue..\n");
+	/**************
+	 * TODO 
+	 * add DNE statement to function like others
+	 * again nothing else unless we do valid arg check
+	**************/ 
+	printf("Setting PID 1 to status 10(which does not exist)\n");
 	setStatus(list, 1, 10);
 	printf("PID 5 before: \n");
 	printEntryPID(list, 5);
@@ -165,7 +207,11 @@ int main(void) {
  	printf("  *  test: searchEntryPID()  *\n");
     printf("  ****************************\n");
 	//Test here
-	//TODO DNE, some statement using the return to show if found or not
+	/**************
+	 * TODO 
+	 * print a DNE statement in the function? or if exists print the entry?
+	 * again nothing else unless we do valid arg check
+	**************/ 
 	int isvalid1 = searchEntryPID(list, 2);
 	int isvalid2 = searchEntryPID(list, 8);
 	printf("Searching for PID 2:\n");
@@ -188,7 +234,12 @@ int main(void) {
  	printf("  *  test: searchEntryNicenessStatus()  *\n");
     printf("  ***************************************\n");
 	//Test here
-	//TODO DNE, some statement using the return to show if found or not
+	/**************
+	 * TODO 
+	 * print a DNE statement in the function? or if exists print the entry?
+	 * again nothing else unless we do valid arg check
+	 * when searching by both have it better show which one exists since it is an OR not AND??
+	**************/
 	//testing by niceness
 	isvalid1 = searchEntryNicenessStatus(list, 2, -2); //same as above should we add a statement to function
 	isvalid2 = searchEntryNicenessStatus(list, 7, -1);
@@ -206,6 +257,7 @@ int main(void) {
 	else{
 		printf("niceness 7 does not exist\n");
 	}
+
 	//testing by status
 	isvalid1 = searchEntryNicenessStatus(list, -1, 2);
 	isvalid2 = searchEntryNicenessStatus(list, -1, 8);
@@ -223,6 +275,7 @@ int main(void) {
 	else{
 		printf("status 8 does not exist\n");
 	}
+
 	//search by niceness or status //should the function be && 
 	isvalid1 = searchEntryNicenessStatus(list, 4, 2);
 	isvalid2 = searchEntryNicenessStatus(list, 2, 8);
@@ -246,6 +299,10 @@ int main(void) {
  	printf("  *  test: printAllEntries()  *\n");
     printf("  *****************************\n");
 	//Test here
+	/**************
+	 * TODO 
+	 * i think all we can test
+	**************/ 
 	printAllEntries(list);
 	printf("\n");
 
@@ -253,6 +310,10 @@ int main(void) {
  	printf("  *  test: printEntryPID()  *\n");
     printf("  ***************************\n");
 	//Test here
+	/**************
+	 * TODO 
+	 * again nothing else unless we do valid arg check
+	**************/ 
 	printf("Print entry of PID 1 (does not exist) and PID 9 (exists):\n");
 	printEntryPID(list, 1);
 	printEntryPID(list, 9);
@@ -262,7 +323,12 @@ int main(void) {
  	printf("  *  test: printEntryNicenessStatus()  *\n");
     printf("  **************************************\n");
 	//Test here
-	//TODO outliers usual...
+	/**************
+	 * TODO 
+	 * print a DNE statement in the function? or if exists print the entry?
+	 * again nothing else unless we do valid arg check
+	 * for pass tests what combinations do we need?
+	**************/ 
 	//fail tests
 	printf("Try to search for niceness 1, then try status 2, then try niceness 2 and status 3:\nAll combinations do not exist\n\n");
 	printEntryNicenessStatus(list, 1, -1);
@@ -270,25 +336,97 @@ int main(void) {
 	printEntryNicenessStatus(list, -1, 2);
 	printf("\n");
 	printEntryNicenessStatus(list, 2, 3);
-	//TODO STILL
-	printf("Try to search for niceness 1, then try status 2, then try niceness 2 and status 3:\nAll combinations do not exist\n\n");
-	printEntryNicenessStatus(list, 1, -1);
 	printf("\n");
-	printEntryNicenessStatus(list, -1, 2);
+
+	//pass tests
+	printf("Passing tests:\n");
+
+	printf("Try to search for niceness 6:\n");
+	printEntryNicenessStatus(list, 6, -1);//niceness exist
 	printf("\n");
-	printEntryNicenessStatus(list, 2, 3);
+
+	printf("Try to search for status 4\n");
+	printEntryNicenessStatus(list, -1, 4);//status exist
+	printf("\n");
+
+	printf("Try to search for niceness 9 (exists) and status 3 (does not exist)\n");
+	printEntryNicenessStatus(list, 9, 3);//niceness exists but status doesnt
+	printf("\n");
+
+	printf("Try to search for niceness 2 (does not exist) and status 25 (exists)\n");
+	printEntryNicenessStatus(list, 2, 25);//niceness DNE and status exists
+	printf("\n");
+
+	printf("Try to search for niceness 300 (exists) and status 8 (exists)\n");
+	printEntryNicenessStatus(list, 300, 8);//both niceness and status exist in the same entry
+	printf("\n");
+
+	printf("Try to search for niceness 4 (exists) and status 25 (exists)\n");
+	printEntryNicenessStatus(list, 4, 25);//both niceness and status exist but in different entries
+	printf("\n");
+
+	printf("Changing multiple entries to status 9 then search:\n");
+	setStatus(list, 6, 9);
+	setStatus(list, 4, 9);
+	printEntryNicenessStatus(list, -1, 9);//double status
+	printf("\n");
+
+	printf("Changing multiple entries to niceness 4 then search:\n");
+	setNiceness(list, 8, 4);
+	printEntryNicenessStatus(list, 4, -1);//double niceness
 	printf("\n");
 	printf("\n");
-/*
-	//TODO test the max capacity here??
+
+	printf("  *****************************\n");
+ 	printf("  *  test: max capacity  *\n");
+    printf("  *****************************\n");
+	//Test here
+	/**************
+	 * TODO 
+	 * should have a null check at the start of function? maybe make sure all functions have?
+	 * print a DNE statement in the function? or if exists print the entry?
+	 * 
+	 * Popping the last one results in seg fault 
+	 * only get told full if doing a bunch concurrently??? or so it seems idk maybe i am missing
+	 * 	something but it lets me keep adding entries...
+	**************/ 
+	printf("First will pop until empty\n");
+	pop1 = popEntry(list);
+	pop1 = popEntry(list);
+	pop1 = popEntry(list);
+	pop1 = popEntry(list);
+	pop1 = popEntry(list);
+	//pop1 = popEntry(list); //last entry
+	//TODO seg faults if trying to pop all off
+	printAllEntries(list);
+
+	printf("If try to have over 100 entries entry will not be pushed\n");
+	for (int i = 1; i < 101; i++) {
+		pushEntry(&list, i, i, i, (float) i, (float) i);
+	}//here we get told datalist is full because there is 100 consecutive?? why does it allow more below 
+	pushEntry(&list, 101, 101, 101, 101.0, 101.0);
+	pushEntry(&list, 102, 101, 101, 101.0, 101.0);
+	pushEntry(&list, 103, 101, 101, 101.0, 101.0);//after this it will have 104 entires it keeps letting entries 
+	printAllEntries(list);
+
+	printf("\n");
 
 	printf("  *****************************\n");
  	printf("  *  test: destoryDataList()  *\n");
     printf("  *****************************\n");
 	//Test here
-	//TODO like another if null success type print
-	destroyDataList(list);
-	printf("\n");*/
+	/**************
+	 * TODO 
+	 * i think good no other tests
+	**************/ 
+	destroyDataList(&list);
+	if(!list){
+		printf("Datalist destroyed.\n");
+	}
+	else{
+		printf("Datalist could not be destroyed.\n");
+	}
+	printf("\n");
 
 	return 0;
 }

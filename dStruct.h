@@ -23,7 +23,7 @@ DataList *createDataList();
 /*
  *
  */
-void destroyDataList(DataList *dataList);
+void destroyDataList(DataList **dataList);
 
 /*
  *
