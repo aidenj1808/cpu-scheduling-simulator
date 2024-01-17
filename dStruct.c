@@ -32,7 +32,8 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 		}
 		if (!node) {
 			printf("Data does not exist with PID: %u\n", pid);
-			exit(EXIT_FAILURE);
+            return node;
+			//exit(EXIT_FAILURE); if use this stops the program i think returning null node better?
 		} else {
 			return node;
 		}
@@ -48,7 +49,8 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 
 		if (!node) {
 			printf("Data does not exist with Index: %d\n", index);
-			exit(EXIT_FAILURE);
+            return node;
+			//exit(EXIT_FAILURE);
 		}
 	}
 	return node;
@@ -101,10 +103,11 @@ float getCPUTime(DataList *dataList, unsigned int pid) {
 		node = node->next;
 	}
 	if (!node) {
-		printf("Data for PID: %u does not exist\n", pid);
-		exit(EXIT_FAILURE);
+		printf("Data for PID: %u does not exist.\n", pid);
+        return -0.0;
+		//exit(EXIT_FAILURE);
 	}
-	return 0.0;
+	return 0.0; //what is this it will never return this? is it meant to ne if not found?
 }
 
 void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
@@ -127,9 +130,9 @@ int getNiceness(DataList *dataList, unsigned int pid) {
 	}
 	if (!node) {
 		printf("Data for PID: %u does not exist.\n", pid);
-		exit(EXIT_FAILURE);
+		//exit(EXIT_FAILURE);
 	}
-	return 0;
+	return -1; //changed to -1 idk if can have negative i remeber him saying some could be ?
 }
 
 void setNiceness(DataList *dataList, unsigned int pid, int niceness) {
@@ -152,7 +155,7 @@ unsigned int getStatus(DataList *dataList, unsigned int pid) {
 	}
 	if (!node) {
 		printf("Data for PID: %u does not exist.\n", pid);
-		exit(EXIT_FAILURE);
+		//exit(EXIT_FAILURE);
 	}
 	return 0;
 }
@@ -185,8 +188,8 @@ int searchEntryNicenessStatus(DataList *dataList, int niceness, unsigned int sta
 			return 1;
 		} else if (node->status == status && niceness == -1) {
 			return 1;
-		} else if (node->niceness == niceness || node->status == status) {
-			return 1;
+		} else if (node->niceness == niceness || node->status == status) { //should this be &&
+			return 1;//how will you know which exists?? do you just run this again 50/50 get right??
 		}
 		node = node->next;
 	}
@@ -257,6 +260,7 @@ int main(void) {
 	pushEntry(&list, 7, 7, 7, 7.0, 7.0);
 	pushEntry(&list, 8, 8, 8, 8.0, 8.0);
 	pushEntry(&list, 9, 9, 9, 9.0, 9.0);
+
 	printAllEntries(list);
 	popData(list);
 	popData(list);
