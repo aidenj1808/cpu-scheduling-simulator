@@ -13,15 +13,21 @@ DataList *createDataList() {
 	return dataList;
 }
 
-void destroyDataList(DataList *dataList) {
+void destroyDataList(DataList **dataList) {
     //loop through save position to the next free current, do for each
-	Node *node = dataList->first;
+    if (dataList == NULL){
+        return;
+    }
+    DataList *list = *dataList;
+	Node *node = list->first;
     while (node != NULL){
         Node *temp = node;
         node = node->next;
         free(temp);
     }
-	free(dataList);
+	free(list);
+    //now point to NULL
+    *dataList = NULL;
 }
 
 Node *getEntry(DataList *dataList, unsigned int pid, int index) {
@@ -59,7 +65,7 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
 	if ((*dataList)->size == 100) {
 		printf("DataList is full.\n");
-		exit(EXIT_FAILURE);
+		//exit(EXIT_FAILURE);
 	}
 
 	Node *newNode = malloc(sizeof(Node));
