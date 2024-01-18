@@ -378,6 +378,7 @@ int main(void) {
 	 * Do we want to allow all to be popped? 
 	**************/ 
 	//printf("First will pop until empty\n");
+	printAllEntries(list);
 	
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
@@ -389,7 +390,7 @@ int main(void) {
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
 	
-	pop1 = popEntry(list); //last entry
+	//pop1 = popEntry(list); //last entry
 	printAllEntries(list);
 
 	printf("If try to have over 100 entries entry will not be pushed\n");
