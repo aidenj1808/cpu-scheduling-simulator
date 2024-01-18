@@ -50,32 +50,32 @@ int main(void) {
  	printf("  *  test: getEntry()  *\n");
     printf("  **********************\n");
 	//Test here
-	/**************
-	 * TODO 
-	 * get entry with pid that DNE, seg faults currently
-	 * i think otherwise enough tests
-	**************/ 
-	printf("Search for entry by pid 1\n");
-	Node *entry1 = getEntry(list, 1, -1);//search by pid
-	printEntryPID(list, entry1->pid);
+	printf("Get entry by pid 1\n");
+	Node *entry1 = getEntry(list, 1, -1);//get entry by pid
+	printf("Entry information from getEntry() with pid 1\n");
+	printf("PID: %u\n", entry1->pid);
+	printf("Status: %u\n", entry1->status);
+	printf("Niceness: %d\n", entry1->niceness);
+	printf("cpuTime: %f\n", entry1->cpuTime);
+	printf("procTime: %f\n\n", entry1->procTime);
+	
+	printf("Get entry by pid 20, which does not exist\n");
+	Node *entry2 = getEntry(list, 20, -1);
+	printf("Get entry with pid 20 that does not exist returns NULL: %p\n", entry2);
+	printf("\n");
 
-	printf("Search for entry by pid 20, which does not exist\n");
-	//TODO this seg faults when passed pid that dne
-	/*
-	Node *entry2 = getEntry(list, 20, -1);//search by pid
-	if(entry2){
-		printEntryPID(list, entry2->pid);
-	}
-	*/
+	printf("Get entry by index 2\n");
+	Node *entry3 = getEntry(list, -1, 2);//get entry by index
+	printf("Entry information from getEntry() with index 2\n");
+	printf("PID: %u\n", entry3->pid);
+	printf("Status: %u\n", entry3->status);
+	printf("Niceness: %d\n", entry3->niceness);
+	printf("cpuTime: %f\n", entry3->cpuTime);
+	printf("procTime: %f\n\n", entry3->procTime);
 
-	printf("Search for entry by index 2\n");
-	Node *entry3 = getEntry(list, -1, 2);//search by index
-	printEntryPID(list, entry3->pid);
-	printf("Search for entry by index 15, which does not exist\n");
-	Node *entry4 = getEntry(list, -1, 15);//search by index
-	if(entry4){
-		printEntryPID(list, entry4->pid);
-	}
+	printf("Get entry by index 15, which does not exist\n");
+	Node *entry4 = getEntry(list, -1, 15);//get entry by index
+	printf("Get entry with index 15 that does not exist returns NULL: %p\n", entry4);
 	printf("\n");
 	
     printf("  **********************\n");
