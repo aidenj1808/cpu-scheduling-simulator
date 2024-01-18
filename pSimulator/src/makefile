@@ -30,4 +30,4 @@ testing: test #if we want a file to diff good.txt
 	./test > testOut.txt 
 
 tar:
-	tar -czvf ../lab01.tar.gz -C ../ lab01
+	tar --exclude .git -czvf ../lab01.tar.gz -C ../ lab01
