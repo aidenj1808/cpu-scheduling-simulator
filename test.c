@@ -34,6 +34,7 @@ int main(void) {
 	 * TODO 
 	 * i think can't do more testing than this?
 	**************/
+
 	printf("Pushing entries 1-9 in format x, x, x, x.0, x.0\n");
 	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
@@ -96,6 +97,10 @@ int main(void) {
 	 * should we have a function to print the popped entry or?? 
 	 * do something with the popped data? if statements just there to stop the warnings
 	**************/
+	printf("Try to pop an empty Datalist\n");
+	popEntry(emptyList);
+	printf("\n");
+
 	printf("popEntry() will pop off the oldest process and return the data\n");
 	printf("Pop pid 1\n");
 	Node *pop1 = popEntry(list); 
@@ -119,6 +124,10 @@ int main(void) {
 	 * TODO 
 	 * i think nothing left unless we want to add a way to handle invalid args and test that
 	**************/ 
+	printf("Try to get CPU from an empty Datalist\n");
+	getCPUTime(emptyList,1);
+	printf("\n");
+
 	float time1 = getCPUTime(list, 9); 
 	printf("Get CPU time for PID 9: %f\n", time1);
 	float time2 = getCPUTime(list, 1); 
@@ -133,6 +142,10 @@ int main(void) {
 	 * TODO 
 	 * again nothing else unless we do valid arg check
 	**************/ 
+	printf("Try to set CPU for an empty Datalist\n");
+	setCPUTime(emptyList,1,10.0);
+	printf("\n");
+
 	printf("Set CPUTime for PID 1 to 4.5(which does not exist)\n");
 	setCPUTime(list, 1, 4.5); 
 	printf("\n");
@@ -152,6 +165,10 @@ int main(void) {
 	 * make sure the DNE return of -1 works
 	 * again nothing else unless we do valid arg check
 	**************/ 
+	printf("Try to get niceness from an empty Datalist\n");
+	getNiceness(emptyList,1);
+	printf("\n");
+
 	int niceness1 = getNiceness(list, 1);
 	printf("Get niceness that does not exist (1): %d\n", niceness1);
 	int niceness2 = getNiceness(list, 8);
@@ -167,6 +184,10 @@ int main(void) {
 	 * add a DNE statement to function like others
 	 * again nothing else unless we do valid arg check
 	**************/ 
+	printf("Try to set niceness for an empty Datalist\n");
+	setNiceness(emptyList,1,2);
+	printf("\n");
+
 	printf("Setting PID 1 to niceness 10 (which does not exist)\n");
 	setNiceness(list, 1, 10);
 	printf("PID 8 before: \n");
@@ -185,6 +206,10 @@ int main(void) {
 	 * make sure the DNE return of 0 works
 	 * again nothing else unless we do valid arg check
 	**************/ 
+	printf("Try to get status from an empty Datalist\n");
+	getStatus(emptyList,1);
+	printf("\n");
+
 	unsigned int status1 = getStatus(list, 1);
 	printf("Getting status of PID 1 (does not exist): %u\n", status1);
 	unsigned int status2 = getStatus(list, 5);
@@ -200,6 +225,10 @@ int main(void) {
 	 * add DNE statement to function like others
 	 * again nothing else unless we do valid arg check
 	**************/ 
+	printf("Try to set status for an empty Datalist\n");
+	setStatus(emptyList,1,1);
+	printf("\n");
+
 	printf("Setting PID 1 to status 10(which does not exist)\n");
 	setStatus(list, 1, 10);
 	printf("PID 5 before: \n");
@@ -218,6 +247,10 @@ int main(void) {
 	 * print a DNE statement in the function? or if exists print the entry?
 	 * again nothing else unless we do valid arg check
 	**************/ 
+	printf("Try to search entry from an empty Datalist\n");
+	searchEntryPID(emptyList,1);
+	printf("\n");
+
 	int isvalid1 = searchEntryPID(list, 2);
 	int isvalid2 = searchEntryPID(list, 8);
 	printf("Searching for PID 2:\n");
@@ -246,6 +279,10 @@ int main(void) {
 	 * again nothing else unless we do valid arg check
 	 * when searching by both have it better show which one exists since it is an OR not AND??
 	**************/
+	printf("Try to search entry from an empty Datalist\n");
+	searchEntryNicenessStatus(emptyList,1,1);
+	printf("\n");
+
 	//testing by niceness
 	isvalid1 = searchEntryNicenessStatus(list, 2, -2); //same as above should we add a statement to function
 	isvalid2 = searchEntryNicenessStatus(list, 7, -1);
@@ -309,6 +346,10 @@ int main(void) {
 	 * TODO 
 	 * i think all we can test
 	**************/ 
+	printf("Try to print an empty Datalist\n");
+	printAllEntries(emptyList);
+	printf("\n");	
+
 	printAllEntries(list);
 	printf("\n");
 
@@ -320,6 +361,10 @@ int main(void) {
 	 * TODO 
 	 * again nothing else unless we do valid arg check
 	**************/ 
+	printf("Try to print from an empty Datalist\n");
+	printEntryPID(emptyList,1);
+	printf("\n");
+
 	printf("Print entry of PID 1 (does not exist) and PID 9 (exists):\n");
 	printEntryPID(list, 1);
 	printEntryPID(list, 9);
@@ -335,6 +380,10 @@ int main(void) {
 	 * again nothing else unless we do valid arg check
 	 * for pass tests what combinations do we need?
 	**************/ 
+	printf("Try to print from an empty Datalist\n");
+	printEntryNicenessStatus(emptyList,1,1);
+	printf("\n");
+
 	//fail tests
 	printf("Try to search for niceness 1, then try status 2, then try niceness 2 and status 3:\nAll combinations do not exist\n\n");
 	printEntryNicenessStatus(list, 1, -1);
@@ -393,8 +442,6 @@ int main(void) {
 	 * print a DNE statement in the function? or if exists print the entry?
 	 * 
 	 * Popping the last one results in seg fault 
-	 * only get told full if doing a bunch concurrently??? or so it seems idk maybe i am missing
-	 * 	something but it lets me keep adding entries...
 	**************/ 
 	printf("First will pop until empty\n");
 	pop1 = popEntry(list);
@@ -409,10 +456,8 @@ int main(void) {
 	printf("If try to have over 100 entries entry will not be pushed\n");
 	for (int i = 1; i < 101; i++) {
 		pushEntry(&list, i, i, i, (float) i, (float) i);
-	}//here we get told datalist is full because there is 100 consecutive?? why does it allow more below 
+	}
 	pushEntry(&list, 101, 101, 101, 101.0, 101.0);
-	pushEntry(&list, 102, 101, 101, 101.0, 101.0);
-	pushEntry(&list, 103, 101, 101, 101.0, 101.0);//after this it will have 104 entires it keeps letting entries 
 	printAllEntries(list);
 
 	printf("\n");
@@ -421,10 +466,6 @@ int main(void) {
  	printf("  *  test: destoryDataList()  *\n");
     printf("  *****************************\n");
 	//Test here
-	/**************
-	 * TODO 
-	 * i think good no other tests
-	**************/ 
 	destroyDataList(&list);
 	if(!list){
 		printf("Datalist destroyed.\n");
@@ -433,29 +474,9 @@ int main(void) {
 		printf("Datalist could not be destroyed.\n");
 	}
 	printf("\n");
+
 	printf("Attempt to destroy empty Datalist:\n");
 	destroyDataList(&list);
 
 	return 0;
 }
-
-
-
-
-/*void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
-    if(!dataList){
-        printf("Datalist is empty.\n");
-        return;
-    }
-	Node *node = dataList->first;
-	while (node != NULL) {
-		if (node->pid == pid) {
-			node->cpuTime = cpuTime;
-		}
-		node = node->next;
-	}
-    if (!node) {
-		printf("Data for PID: %u does not exist.\n", pid);
-        return;
-    }
-}*/
