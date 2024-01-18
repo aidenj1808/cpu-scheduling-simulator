@@ -93,17 +93,17 @@ void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int n
 }
 
 Node popEntry(DataList *dataList) {	
-  if(!dataList || !dataList->first){
-     printf("Datalist is empty.\n");
-     Node errorNode = {};
-     return errorNode;//return NULL??
+  	if(!dataList || !dataList->first){
+    	printf("Datalist is empty.\n");
+    	Node errorNode = {};
+    	return errorNode;
     }
     
 	if (dataList->size == 1) {
 		Node lastNode = *(dataList->first);
 		free(dataList->first);
-	    dataList->first = NULL;
-	    dataList->size--;
+		dataList->first = NULL;
+		dataList->size--;
 		return lastNode;	
 	}
   

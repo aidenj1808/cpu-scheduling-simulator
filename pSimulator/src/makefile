@@ -4,7 +4,7 @@
 #--------------------------
 
 # TODO
-# Test, clean not complete..., tar not fully written will need the folder name and to gzip
+#
 
 
 CFLAGS= -Wall -std=c11 
@@ -36,4 +36,4 @@ testing: test #if we want a file to diff good.txt
 	./test > testOut.txt 
 
 tar:
-	tar --exclude .git -czvf ../lab01.tar.gz -C ../ lab01
+	tar --exclude .git -czvf ../lab02.tar.gz -C ../ lab02
