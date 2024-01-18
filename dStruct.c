@@ -16,6 +16,7 @@ DataList *createDataList() {
 void destroyDataList(DataList **dataList) {
     //loop through save position to the next free current, do for each
     if (dataList == NULL){
+        printf("Datalist is empty\n");
         return;
     }
     DataList *list = *dataList;
@@ -31,6 +32,10 @@ void destroyDataList(DataList **dataList) {
 }
 
 Node *getEntry(DataList *dataList, unsigned int pid, int index) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return NULL;//return NULL??
+    }
 	Node *node = dataList->first;
 	if (index == -1) {
 		while (node->pid != pid) {
@@ -117,6 +122,10 @@ float getCPUTime(DataList *dataList, unsigned int pid) {
 }
 
 void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return;
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
@@ -124,6 +133,10 @@ void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
 		}
 		node = node->next;
 	}
+    if (!node) {
+		printf("Data for PID: %u does not exist.\n", pid);
+        return;
+    }
 }
 
 int getNiceness(DataList *dataList, unsigned int pid) {
