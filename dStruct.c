@@ -32,9 +32,9 @@ void destroyDataList(DataList **dataList) {
 }
 
 Node *getEntry(DataList *dataList, unsigned int pid, int index) {
-    if(!dataList){
-        printf("Datalist is empty.\n");
-        return NULL;//return NULL??
+  if(!dataList){
+      printf("Datalist is empty.\n");
+      return NULL;//return NULL??
     }
 	Node *node = dataList->first;
 	if (index == -1) {
@@ -69,14 +69,13 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
 	if ((*dataList)->size == 100) {
 		printf("DataList is full.\n");
-		//exit(EXIT_FAILURE);
-        return; 
+		return;
 	}
 
 	Node *newNode = malloc(sizeof(Node));
 	if (newNode == NULL) {
 		printf("could not allocate memory for new node.\n");
-		exit(EXIT_FAILURE);
+		return;
 	}
 	newNode->pid = pid;
 	newNode->status = status;
@@ -93,17 +92,22 @@ void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int n
 	(*dataList)->size++;
 }
 
-Node *popEntry(DataList *dataList) {	
-    if(!dataList){
-        printf("Datalist is empty.\n");
-        return NULL;//return NULL??
+Node popEntry(DataList *dataList) {	
+  if(!dataList){
+     printf("Datalist is empty.\n");
+     return NULL;//return NULL??
     }
-
+    
+	if (dataList->size == 1) {
+		Node lastNode = *(dataList->first);
+		return lastNode;	
+	}
+  
 	Node *node = dataList->first;
 	while (node->next->next != NULL) {
 		node = node->next;
 	}
-	Node *lastNode = node->next;
+	Node lastNode = *(node->next);
 	free(node->next);
 	node->next = NULL;
 	dataList->size--;
@@ -124,10 +128,9 @@ float getCPUTime(DataList *dataList, unsigned int pid) {
 	}
 	if (!node) {
 		printf("Data for PID: %u does not exist.\n", pid);
-        return -0.0;
-		//exit(EXIT_FAILURE);
+        return -1;
 	}
-	return 0.0; //what is this it will never return this? is it meant to ne if not found?
+	return -1;
 }
 
 void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
@@ -139,13 +142,15 @@ void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
 	while (node != NULL) {
 		if (node->pid == pid) {
 			node->cpuTime = cpuTime;
+			break;
 		}
 		node = node->next;
 	}
-    if (!node) {
-		printf("Data for PID: %u does not exist.\n", pid);
-        return;
-    }
+  
+	if (node == NULL) {
+		printf("PID: %u does not exist\n", pid);
+		return;
+	}
 }
 
 int getNiceness(DataList *dataList, unsigned int pid) {
@@ -162,9 +167,8 @@ int getNiceness(DataList *dataList, unsigned int pid) {
 	}
 	if (!node) {
 		printf("Data for PID: %u does not exist.\n", pid);
-		//exit(EXIT_FAILURE);
 	}
-	return -1; //changed to -1 idk if can have negative i remeber him saying some could be ?
+	return -1; 
 }
 
 void setNiceness(DataList *dataList, unsigned int pid, int niceness) {
@@ -176,8 +180,13 @@ void setNiceness(DataList *dataList, unsigned int pid, int niceness) {
 	while (node != NULL) {
 		if (node->pid == pid) {
 			node->niceness = niceness;
+			break;
 		}
 		node = node->next;
+	}
+
+	if (node == NULL) {
+		printf("PID: %u does not exist.\n", pid);
 	}
 }
 
@@ -195,7 +204,6 @@ unsigned int getStatus(DataList *dataList, unsigned int pid) {
 	}
 	if (!node) {
 		printf("Data for PID: %u does not exist.\n", pid);
-		//exit(EXIT_FAILURE);
 	}
 	return 0;
 }
@@ -209,8 +217,12 @@ void setStatus(DataList *dataList, unsigned int pid, unsigned int status) {
 	while (node != NULL) {
 		if (node->pid == pid) {
 			node->status = status;
+			break;
 		}
 		node = node->next;
+	}
+	if (node == NULL) {
+		printf("PID: %u does not exist.\n", pid);
 	}
 }
 
