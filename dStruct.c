@@ -38,15 +38,15 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
     }
 	Node *node = dataList->first;
 	if (index == -1) {
-		while (node->pid != pid) {
-			node = node->next;
+		while (node != NULL) {
+			if (node->pid == pid) {
+				return node;
+			} else {
+				node = node->next;
+			}
 		}
 		if (!node) {
 			printf("Data does not exist with PID: %u\n", pid);
-            return node;
-			//exit(EXIT_FAILURE); if use this stops the program i think returning null node better?
-		} else {
-			return node;
 		}
 	} else {
 		int i = 0;
@@ -61,7 +61,6 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 		if (!node) {
 			printf("Data does not exist with Index: %d\n", index);
             return node;
-			//exit(EXIT_FAILURE);
 		}
 	}
 	return node;
