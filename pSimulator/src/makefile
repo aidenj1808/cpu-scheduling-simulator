@@ -10,14 +10,20 @@
 CFLAGS= -Wall -std=c11 
 CC= gcc 
 
-test: dStruct.o test.o
-	$(CC) $(CFLAGS) dStruct.o test.o -o test
+proc: test	
+	./test
+
+test: procSim.o dStruct.o
+	$(CC) $(CFLAGS) procSim.o dStruct.o -o test
 
 dStruct.o: dStruct.c dStruct.h
 	$(CC) $(CFLAGS) -g -c dStruct.c 
 
 test.o: test.c dStruct.h 
 	$(CC) $(CFLAGS) -g -c test.c 
+
+procSim.o: procSim.c dStruct.h 
+	$(CC) $(CFLAGS) -g -c procSim.c 
 
 valgrindTest: test
 	valgrind -s --leak-check=yes ./test
