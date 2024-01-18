@@ -221,18 +221,12 @@ int main(void) {
  	printf("  *  test: searchEntryNicenessStatus()  *\n");
     printf("  ***************************************\n");
 	//Test here
-	/**************
-	 * TODO 
-	 * print a DNE statement in the function? or if exists print the entry?
-	 * again nothing else unless we do valid arg check
-	 * when searching by both have it better show which one exists since it is an OR not AND??
-	**************/
 	printf("Try to search entry from an empty Datalist\n");
 	searchEntryNicenessStatus(emptyList,1,1);
 	printf("\n");
 
 	//testing by niceness
-	isvalid1 = searchEntryNicenessStatus(list, 2, -2); //same as above should we add a statement to function
+	isvalid1 = searchEntryNicenessStatus(list, 12, -2); 
 	isvalid2 = searchEntryNicenessStatus(list, 7, -1);
 	printf("Searching for niceness 2:\n");
 	if(isvalid1){
@@ -250,7 +244,7 @@ int main(void) {
 	}
 
 	//testing by status
-	isvalid1 = searchEntryNicenessStatus(list, -1, 2);
+	isvalid1 = searchEntryNicenessStatus(list, -1, 1);
 	isvalid2 = searchEntryNicenessStatus(list, -1, 8);
 	printf("\nSearching for status 2:\n");
 	if(isvalid1){
@@ -267,33 +261,38 @@ int main(void) {
 		printf("status 8 does not exist\n");
 	}
 
-	//search by niceness or status //should the function be && 
-	isvalid1 = searchEntryNicenessStatus(list, 4, 2);
-	isvalid2 = searchEntryNicenessStatus(list, 2, 8);
-	printf("\nSearching for status 2 and niceness 4:\n");
+	//search by niceness or status 
+	isvalid1 = searchEntryNicenessStatus(list, 4, 1);
+	isvalid2 = searchEntryNicenessStatus(list, 1, 8);
+	printf("\nSearching for status 2 or niceness 4:\n");
 	if(isvalid1){
 		printf("status 2 exists\n");
 	}
 	else{
 		printf("status 2 does not exist\n");
 	}
-	printf("\nSearching for status 8 and niceness 2:\n");
+	printf("\nSearching for status 8 or niceness 2:\n");
 	if(isvalid2){
-		printf("status 8 exists\n");//TODO
+		printf("status 8 or niceness 2 exists\n");
 	}
 	else{
-		printf("status 8 does not exist\n");//TODO
+		printf("status 8 or niceness 2 does not exist\n");
+	}
+	printf("\n");
+	printf("\nSearching for status 1 or niceness 1:\n");
+	isvalid2 = searchEntryNicenessStatus(list, 1, 1);
+	if(isvalid2){
+		printf("status 1 or niceness 1 exists\n");
+	}
+	else{
+		printf("status 1 or niceness 1 does not exist\n");
 	}
 	printf("\n");
 
     printf("  *****************************\n");
  	printf("  *  test: printAllEntries()  *\n");
     printf("  *****************************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * i think all we can test
-	**************/ 
+	//Test here 
 	printf("Try to print an empty Datalist\n");
 	printAllEntries(emptyList);
 	printf("\n");	
@@ -305,10 +304,6 @@ int main(void) {
  	printf("  *  test: printEntryPID()  *\n");
     printf("  ***************************\n");
 	//Test here
-	/**************
-	 * TODO 
-	 * again nothing else unless we do valid arg check
-	**************/ 
 	printf("Try to print from an empty Datalist\n");
 	printEntryPID(emptyList,1);
 	printf("\n");
@@ -322,12 +317,6 @@ int main(void) {
  	printf("  *  test: printEntryNicenessStatus()  *\n");
     printf("  **************************************\n");
 	//Test here
-	/**************
-	 * TODO 
-	 * print a DNE statement in the function? or if exists print the entry?
-	 * again nothing else unless we do valid arg check
-	 * for pass tests what combinations do we need?
-	**************/ 
 	printf("Try to print from an empty Datalist\n");
 	printEntryNicenessStatus(emptyList,1,1);
 	printf("\n");
@@ -336,9 +325,9 @@ int main(void) {
 	printf("Try to search for niceness 1, then try status 2, then try niceness 2 and status 3:\nAll combinations do not exist\n\n");
 	printEntryNicenessStatus(list, 1, -1);
 	printf("\n");
-	printEntryNicenessStatus(list, -1, 2);
+	printEntryNicenessStatus(list, -1, 12);
 	printf("\n");
-	printEntryNicenessStatus(list, 2, 3);
+	printEntryNicenessStatus(list, 20, 1);
 	printf("\n");
 
 	//pass tests
@@ -386,21 +375,21 @@ int main(void) {
 	//Test here
 	/**************
 	 * TODO 
-	 * should have a null check at the start of function? maybe make sure all functions have?
-	 * print a DNE statement in the function? or if exists print the entry?
-	 * 
-	 * Popping the last one results in seg fault 
+	 * Do we want to allow all to be popped? 
 	**************/ 
-	printf("First will pop until empty\n");
-	/*
+	//printf("First will pop until empty\n");
+	
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
-	*/
-	//pop1 = popEntry(list); //last entry
-	//TODO seg faults if trying to pop all off
+	pop1 = popEntry(list);
+	pop1 = popEntry(list);
+	pop1 = popEntry(list);
+	pop1 = popEntry(list);
+	
+	pop1 = popEntry(list); //last entry
 	printAllEntries(list);
 
 	printf("If try to have over 100 entries entry will not be pushed\n");
@@ -417,6 +406,7 @@ int main(void) {
     printf("  *****************************\n");
 	//Test here
 	destroyDataList(&list);
+	destroyDataList(&list2);
 	if(!list){
 		printf("Datalist destroyed.\n");
 	}
