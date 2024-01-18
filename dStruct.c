@@ -15,7 +15,7 @@ DataList *createDataList() {
 
 void destroyDataList(DataList **dataList) {
     //loop through save position to the next free current, do for each
-    if (dataList == NULL){
+    if (!*dataList){
         printf("Datalist is empty\n");
         return;
     }
@@ -71,6 +71,7 @@ void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int n
 	if ((*dataList)->size == 100) {
 		printf("DataList is full.\n");
 		//exit(EXIT_FAILURE);
+        return; 
 	}
 
 	Node *newNode = malloc(sizeof(Node));
@@ -94,6 +95,11 @@ void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int n
 }
 
 Node *popEntry(DataList *dataList) {	
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return NULL;//return NULL??
+    }
+
 	Node *node = dataList->first;
 	while (node->next->next != NULL) {
 		node = node->next;
@@ -106,6 +112,10 @@ Node *popEntry(DataList *dataList) {
 }
 
 float getCPUTime(DataList *dataList, unsigned int pid) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return -0.0;//return 
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
@@ -140,6 +150,10 @@ void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
 }
 
 int getNiceness(DataList *dataList, unsigned int pid) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return -1;
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
@@ -155,6 +169,10 @@ int getNiceness(DataList *dataList, unsigned int pid) {
 }
 
 void setNiceness(DataList *dataList, unsigned int pid, int niceness) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return;
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
@@ -165,6 +183,10 @@ void setNiceness(DataList *dataList, unsigned int pid, int niceness) {
 }
 
 unsigned int getStatus(DataList *dataList, unsigned int pid) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return 0;
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
@@ -180,6 +202,10 @@ unsigned int getStatus(DataList *dataList, unsigned int pid) {
 }
 
 void setStatus(DataList *dataList, unsigned int pid, unsigned int status) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return;
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
@@ -190,6 +216,10 @@ void setStatus(DataList *dataList, unsigned int pid, unsigned int status) {
 }
 
 int searchEntryPID(DataList *dataList, unsigned int pid) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return 0;
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
@@ -201,6 +231,10 @@ int searchEntryPID(DataList *dataList, unsigned int pid) {
 }
 
 int searchEntryNicenessStatus(DataList *dataList, int niceness, unsigned int status) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return 0;
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->niceness == niceness && status == -1) {
@@ -216,6 +250,10 @@ int searchEntryNicenessStatus(DataList *dataList, int niceness, unsigned int sta
 }
 
 void printAllEntries(DataList *dataList) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return;
+    }
 	Node *node = dataList->first;
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
 	while (node != NULL) {
@@ -226,6 +264,10 @@ void printAllEntries(DataList *dataList) {
 }
 
 void printEntryPID(DataList *dataList, unsigned int pid) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return;
+    }
 	Node *node = dataList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
@@ -244,6 +286,10 @@ void printEntryPID(DataList *dataList, unsigned int pid) {
 }
 
 void printEntryNicenessStatus(DataList *dataList, int niceness, unsigned int status) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return;
+    }
 	Node *node = dataList->first;
 	printf("%s%15s%15s%15s%15s\n", "pid", "status", "niceness", "cputime", "proctime");
 	while (node != NULL) {
