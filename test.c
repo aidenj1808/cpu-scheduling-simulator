@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "dStruct.h"
 
 /******************************
@@ -10,11 +11,6 @@ int main(void) {
     printf("  ****************************\n");
  	printf("  *  test: createDataList()  *\n");
     printf("  ****************************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * i think can't do more testing than this?
-	**************/
 	DataList *list = createDataList();
 	if(list){
 		printf("Success creating DL\n");
@@ -27,11 +23,6 @@ int main(void) {
     printf("  ***********************\n");
  	printf("  *  test: pushEntry()  *\n");
     printf("  ***********************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * i think can't do more testing than this?
-	**************/
 	printf("Pushing entries 1-9 in format x, x, x, x.0, x.0\n");
 	pushEntry(&list, 1, 1, 1, 1.0, 1.0);
 	pushEntry(&list, 2, 2, 2, 2.0, 2.0);
@@ -49,7 +40,6 @@ int main(void) {
 	printf("  **********************\n");
  	printf("  *  test: getEntry()  *\n");
     printf("  **********************\n");
-	//Test here
 	printf("Get entry by pid 1\n");
 	Node *entry1 = getEntry(list, 1, -1);//get entry by pid
 	printf("Entry information from getEntry() with pid 1\n");
@@ -81,52 +71,41 @@ int main(void) {
     printf("  **********************\n");
  	printf("  *  test: popEntry()  *\n");
     printf("  **********************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * down at bottom try to pop when only one entry get seg fault
-	 * not sure what it is returning
-	 * should we have a function to print the popped entry or?? 
-	 * do something with the popped data? if statements just there to stop the warnings
-	**************/
 	printf("popEntry() will pop off the oldest process and return the data\n");
-	printf("Pop pid 1\n");
-	Node *pop1 = popEntry(list); 
-	printf("Popped entry: %u	%u	%d	%f	%f\n",pop1->pid, pop1->status, pop1->niceness, pop1->cpuTime, pop1->procTime);
-	Node *pop2 = popEntry(list);
-	if(pop2){
-		;
-	}
-	Node *pop3 = popEntry(list);
-	if(pop3){
-		;
-	}
+	Node pop1 = popEntry(list); 
+	printf("First pop information:\n");
+	printf("PID: %u\n", pop1.pid);
+	printf("Status: %u\n", pop1.status);
+	printf("Niceness: %d\n", pop1.niceness);
+	printf("cpuTime: %f\n", pop1.cpuTime);
+	printf("procTime: %f\n", pop1.procTime);
+	printf("DataList:\n");
 	printAllEntries(list);
-	printf("\n");
 	
+	printf("Pop entry with one entry in list:\n");
+	DataList *list2 = createDataList();
+	pushEntry(&list2, 1, 1, 1, 1.0, 1.0);
+	Node pop2 = popEntry(list2);
+	printf("Pop entry with one entry in list information:\n");
+	printf("PID: %u\n", pop2.pid);
+	printf("Status: %u\n", pop2.status);
+	printf("Niceness: %d\n", pop2.niceness);
+	printf("cpuTime: %f\n", pop2.cpuTime);
+	printf("procTime: %f\n", pop2.procTime);
+	printf("\n");
+
     printf("  ************************\n");
  	printf("  *  test: getCPUTime()  *\n");
     printf("  ************************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * i think nothing left unless we want to add a way to handle invalid args and test that
-	**************/ 
 	float time1 = getCPUTime(list, 9); 
 	printf("Get CPU time for PID 9: %f\n", time1);
 	float time2 = getCPUTime(list, 1); 
-	printf("Get CPU for PID 1 (which does not exist) %f\n\n", time2); 
+	printf("Get CPU for PID 1 (which does not exist) %f\n\n", time2); // returns -1 (invalid pid)
 	printf("\n");
-	
+
     printf("  ************************\n");
  	printf("  *  test: setCPUTime()  *\n");
     printf("  ************************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * in the function add a statement like the other functions
-	 * again nothing else unless we do valid arg check
-	**************/ 
 	printf("Set CPUTime for PID 1 to 4.5(which does not exist)\n");
 	setCPUTime(list, 1, 4.5); 
 	
@@ -136,32 +115,21 @@ int main(void) {
 	printf("\nThe entry for PID 7 after changing CPU time to 10.254376:\n");
 	printEntryPID(list, 7);
 	printf("\n");
-	
+
     printf("  *************************\n");
  	printf("  *  test: getNiceness()  *\n");
     printf("  *************************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * make sure the DNE return of -1 works
-	 * again nothing else unless we do valid arg check
-	**************/ 
+	printf("Get niceness with pid that does not exist:\n");
 	int niceness1 = getNiceness(list, 1);
-	printf("Get niceness that does not exist (1): %d\n", niceness1);
+	printf("Get niceness with pid that does not exist (1) returns: %d\n", niceness1);
 	int niceness2 = getNiceness(list, 8);
 	printf("Get niceness that does exist (8): %d\n", niceness2);
 	printf("\n");
-	
+
     printf("  *************************\n");
  	printf("  *  test: setNiceness()  *\n");
     printf("  *************************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * add a DNE statement to function like others
-	 * again nothing else unless we do valid arg check
-	**************/ 
-	printf("Setting PID 1 to niceness 10 (which does not exist)\n");
+	printf("Setting PID 1 to niceness 10 (which PID does not exist)\n");
 	setNiceness(list, 1, 10);
 	printf("PID 8 before: \n");
 	printEntryPID(list, 8);
@@ -169,32 +137,20 @@ int main(void) {
 	printf("\nPID 8 after changing niceness to 300: \n");
 	printEntryPID(list, 8);
 	printf("\n");
-	
+
     printf("  ***********************\n");
  	printf("  *  test: getStatus()  *\n");
     printf("  ***********************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * make sure the DNE return of 0 works
-	 * again nothing else unless we do valid arg check
-	**************/ 
 	unsigned int status1 = getStatus(list, 1);
 	printf("Getting status of PID 1 (does not exist): %u\n", status1);
 	unsigned int status2 = getStatus(list, 5);
 	printf("Getting status of PID 5: %u\n", status2);
 	printf("\n");
-	
+
     printf("  ***********************\n");
  	printf("  *  test: setStatus()  *\n");
     printf("  ***********************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * add DNE statement to function like others
-	 * again nothing else unless we do valid arg check
-	**************/ 
-	printf("Setting PID 1 to status 10(which does not exist)\n");
+	printf("Setting PID 1 to status 10(which PID does not exist)\n");
 	setStatus(list, 1, 10);
 	printf("PID 5 before: \n");
 	printEntryPID(list, 5);
@@ -206,20 +162,15 @@ int main(void) {
     printf("  ****************************\n");
  	printf("  *  test: searchEntryPID()  *\n");
     printf("  ****************************\n");
-	//Test here
-	/**************
-	 * TODO 
-	 * print a DNE statement in the function? or if exists print the entry?
-	 * again nothing else unless we do valid arg check
-	**************/ 
-	int isvalid1 = searchEntryPID(list, 2);
+	printAllEntries(list);
+	int isvalid1 = searchEntryPID(list, 1);
 	int isvalid2 = searchEntryPID(list, 8);
-	printf("Searching for PID 2:\n");
+	printf("Searching for PID 1:\n");
 	if(isvalid1){
-		printf("PID 2 exists\n");//should we put statement in the function like the others?
+		printf("PID 1 exists\n");
 	}
 	else{
-		printf("PID 2 does not exist\n");
+		printf("PID 1 does not exist\n");
 	}
 	printf("Searching for PID 8:\n");
 	if(isvalid2){
@@ -391,11 +342,13 @@ int main(void) {
 	 * 	something but it lets me keep adding entries...
 	**************/ 
 	printf("First will pop until empty\n");
+	/*
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
 	pop1 = popEntry(list);
+	*/
 	//pop1 = popEntry(list); //last entry
 	//TODO seg faults if trying to pop all off
 	printAllEntries(list);
