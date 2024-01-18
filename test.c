@@ -16,6 +16,8 @@ int main(void) {
 	 * i think can't do more testing than this?
 	**************/
 	DataList *list = createDataList();
+	DataList *emptyList = NULL; //for use testing NULL DataList
+
 	if(list){
 		printf("Success creating DL\n");
 	}
@@ -50,6 +52,11 @@ int main(void) {
  	printf("  *  test: getEntry()  *\n");
     printf("  **********************\n");
 	//Test here
+
+	printf("Get entry from empty DataList\n");
+	getEntry(emptyList, 1, -1);
+	printf("\n");
+
 	printf("Get entry by pid 1\n");
 	Node *entry1 = getEntry(list, 1, -1);//get entry by pid
 	printf("Entry information from getEntry() with pid 1\n");
@@ -124,19 +131,18 @@ int main(void) {
 	//Test here
 	/**************
 	 * TODO 
-	 * in the function add a statement like the other functions
 	 * again nothing else unless we do valid arg check
 	**************/ 
 	printf("Set CPUTime for PID 1 to 4.5(which does not exist)\n");
 	setCPUTime(list, 1, 4.5); 
-	
+	printf("\n");
 	printf("The entry for PID 7 before:\n");
 	printEntryPID(list, 7);
 	setCPUTime(list, 7, 10.254376);
 	printf("\nThe entry for PID 7 after changing CPU time to 10.254376:\n");
 	printEntryPID(list, 7);
 	printf("\n");
-	
+
     printf("  *************************\n");
  	printf("  *  test: getNiceness()  *\n");
     printf("  *************************\n");
@@ -427,6 +433,29 @@ int main(void) {
 		printf("Datalist could not be destroyed.\n");
 	}
 	printf("\n");
+	printf("Attempt to destroy empty Datalist:\n");
+	destroyDataList(&list);
 
 	return 0;
 }
+
+
+
+
+/*void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
+    if(!dataList){
+        printf("Datalist is empty.\n");
+        return;
+    }
+	Node *node = dataList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			node->cpuTime = cpuTime;
+		}
+		node = node->next;
+	}
+    if (!node) {
+		printf("Data for PID: %u does not exist.\n", pid);
+        return;
+    }
+}*/
