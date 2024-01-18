@@ -12,6 +12,8 @@ int main(void) {
  	printf("  *  test: createDataList()  *\n");
     printf("  ****************************\n");
 	DataList *list = createDataList();
+	DataList *emptyList = NULL; //for use testing NULL DataList
+
 	if(list){
 		printf("Success creating DL\n");
 	}
@@ -40,6 +42,10 @@ int main(void) {
 	printf("  **********************\n");
  	printf("  *  test: getEntry()  *\n");
     printf("  **********************\n");
+	printf("Get entry from empty DataList\n");
+	getEntry(emptyList, 1, -1);
+	printf("\n");
+
 	printf("Get entry by pid 1\n");
 	Node *entry1 = getEntry(list, 1, -1);//get entry by pid
 	printf("Entry information from getEntry() with pid 1\n");
@@ -71,6 +77,10 @@ int main(void) {
     printf("  **********************\n");
  	printf("  *  test: popEntry()  *\n");
     printf("  **********************\n");
+	printf("Try to pop an empty Datalist\n");
+	popEntry(emptyList);
+	printf("\n");
+
 	printf("popEntry() will pop off the oldest process and return the data\n");
 	Node pop1 = popEntry(list); 
 	printf("First pop information:\n");
@@ -97,6 +107,10 @@ int main(void) {
     printf("  ************************\n");
  	printf("  *  test: getCPUTime()  *\n");
     printf("  ************************\n");
+	printf("Try to get CPU from an empty Datalist\n");
+	getCPUTime(emptyList,1);
+	printf("\n");
+  
 	float time1 = getCPUTime(list, 9); 
 	printf("Get CPU time for PID 9: %f\n", time1);
 	float time2 = getCPUTime(list, 1); 
@@ -106,9 +120,13 @@ int main(void) {
     printf("  ************************\n");
  	printf("  *  test: setCPUTime()  *\n");
     printf("  ************************\n");
+	printf("Try to set CPU for an empty Datalist\n");
+	setCPUTime(emptyList,1,10.0);
+	printf("\n");
+  
 	printf("Set CPUTime for PID 1 to 4.5(which does not exist)\n");
 	setCPUTime(list, 1, 4.5); 
-	
+	printf("\n");
 	printf("The entry for PID 7 before:\n");
 	printEntryPID(list, 7);
 	setCPUTime(list, 7, 10.254376);
@@ -119,7 +137,10 @@ int main(void) {
     printf("  *************************\n");
  	printf("  *  test: getNiceness()  *\n");
     printf("  *************************\n");
-	printf("Get niceness with pid that does not exist:\n");
+	printf("Try to get niceness from an empty Datalist\n");
+	getNiceness(emptyList,1);
+	printf("\n");
+  
 	int niceness1 = getNiceness(list, 1);
 	printf("Get niceness with pid that does not exist (1) returns: %d\n", niceness1);
 	int niceness2 = getNiceness(list, 8);
@@ -129,6 +150,10 @@ int main(void) {
     printf("  *************************\n");
  	printf("  *  test: setNiceness()  *\n");
     printf("  *************************\n");
+  printf("Try to set niceness for an empty Datalist\n");
+	setNiceness(emptyList,1,2);
+	printf("\n");
+
 	printf("Setting PID 1 to niceness 10 (which PID does not exist)\n");
 	setNiceness(list, 1, 10);
 	printf("PID 8 before: \n");
@@ -141,6 +166,10 @@ int main(void) {
     printf("  ***********************\n");
  	printf("  *  test: getStatus()  *\n");
     printf("  ***********************\n");
+	printf("Try to get status from an empty Datalist\n");
+	getStatus(emptyList,1);
+	printf("\n");
+
 	unsigned int status1 = getStatus(list, 1);
 	printf("Getting status of PID 1 (does not exist): %u\n", status1);
 	unsigned int status2 = getStatus(list, 5);
@@ -150,6 +179,10 @@ int main(void) {
     printf("  ***********************\n");
  	printf("  *  test: setStatus()  *\n");
     printf("  ***********************\n");
+  printf("Try to set status for an empty Datalist\n");
+	setStatus(emptyList,1,1);
+	printf("\n");
+
 	printf("Setting PID 1 to status 10(which PID does not exist)\n");
 	setStatus(list, 1, 10);
 	printf("PID 5 before: \n");
@@ -162,7 +195,10 @@ int main(void) {
     printf("  ****************************\n");
  	printf("  *  test: searchEntryPID()  *\n");
     printf("  ****************************\n");
-	printAllEntries(list);
+  printf("Try to search entry from an empty Datalist\n");
+	searchEntryPID(emptyList,1);
+	printf("\n");
+
 	int isvalid1 = searchEntryPID(list, 1);
 	int isvalid2 = searchEntryPID(list, 8);
 	printf("Searching for PID 1:\n");
@@ -191,6 +227,10 @@ int main(void) {
 	 * again nothing else unless we do valid arg check
 	 * when searching by both have it better show which one exists since it is an OR not AND??
 	**************/
+	printf("Try to search entry from an empty Datalist\n");
+	searchEntryNicenessStatus(emptyList,1,1);
+	printf("\n");
+
 	//testing by niceness
 	isvalid1 = searchEntryNicenessStatus(list, 2, -2); //same as above should we add a statement to function
 	isvalid2 = searchEntryNicenessStatus(list, 7, -1);
@@ -254,6 +294,10 @@ int main(void) {
 	 * TODO 
 	 * i think all we can test
 	**************/ 
+	printf("Try to print an empty Datalist\n");
+	printAllEntries(emptyList);
+	printf("\n");	
+
 	printAllEntries(list);
 	printf("\n");
 
@@ -265,6 +309,10 @@ int main(void) {
 	 * TODO 
 	 * again nothing else unless we do valid arg check
 	**************/ 
+	printf("Try to print from an empty Datalist\n");
+	printEntryPID(emptyList,1);
+	printf("\n");
+
 	printf("Print entry of PID 1 (does not exist) and PID 9 (exists):\n");
 	printEntryPID(list, 1);
 	printEntryPID(list, 9);
@@ -280,6 +328,10 @@ int main(void) {
 	 * again nothing else unless we do valid arg check
 	 * for pass tests what combinations do we need?
 	**************/ 
+	printf("Try to print from an empty Datalist\n");
+	printEntryNicenessStatus(emptyList,1,1);
+	printf("\n");
+
 	//fail tests
 	printf("Try to search for niceness 1, then try status 2, then try niceness 2 and status 3:\nAll combinations do not exist\n\n");
 	printEntryNicenessStatus(list, 1, -1);
@@ -338,8 +390,6 @@ int main(void) {
 	 * print a DNE statement in the function? or if exists print the entry?
 	 * 
 	 * Popping the last one results in seg fault 
-	 * only get told full if doing a bunch concurrently??? or so it seems idk maybe i am missing
-	 * 	something but it lets me keep adding entries...
 	**************/ 
 	printf("First will pop until empty\n");
 	/*
@@ -356,10 +406,8 @@ int main(void) {
 	printf("If try to have over 100 entries entry will not be pushed\n");
 	for (int i = 1; i < 101; i++) {
 		pushEntry(&list, i, i, i, (float) i, (float) i);
-	}//here we get told datalist is full because there is 100 consecutive?? why does it allow more below 
+	}
 	pushEntry(&list, 101, 101, 101, 101.0, 101.0);
-	pushEntry(&list, 102, 101, 101, 101.0, 101.0);
-	pushEntry(&list, 103, 101, 101, 101.0, 101.0);//after this it will have 104 entires it keeps letting entries 
 	printAllEntries(list);
 
 	printf("\n");
@@ -368,10 +416,6 @@ int main(void) {
  	printf("  *  test: destoryDataList()  *\n");
     printf("  *****************************\n");
 	//Test here
-	/**************
-	 * TODO 
-	 * i think good no other tests
-	**************/ 
 	destroyDataList(&list);
 	if(!list){
 		printf("Datalist destroyed.\n");
@@ -380,6 +424,9 @@ int main(void) {
 		printf("Datalist could not be destroyed.\n");
 	}
 	printf("\n");
+
+	printf("Attempt to destroy empty Datalist:\n");
+	destroyDataList(&list);
 
 	return 0;
 }
