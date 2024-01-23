@@ -25,6 +25,10 @@ test.o: test.c dStruct.h
 procSim.o: procSim.c dStruct.h 
 	$(CC) $(CFLAGS) -g -c procSim.c 
 
+files: files.sh
+	chmod +x files.sh
+	./files.sh
+
 valgrindTest: test
 	valgrind -s --leak-check=yes ./test
 
