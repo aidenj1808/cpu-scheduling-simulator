@@ -12,6 +12,7 @@ typedef struct Node {
 
 typedef struct DataList {
 	struct Node *first;
+    int type;
 	int size;
 } DataList;
 

@@ -10,7 +10,7 @@
 CFLAGS= -Wall -std=c11 
 CC= gcc 
 
-proc: test	
+proc: files test	
 	./test
 
 test: procSim.o dStruct.o
