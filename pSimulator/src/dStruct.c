@@ -67,11 +67,6 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index) {
 }
 
 void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime) {
-	//type 1 for running to only allow 1 to be pushed at a time
-	if ((*dataList)->type == 1 && (*dataList)->size == 1) {
-		printf("DataList is full.\n");
-		return;
-	}
 	if ((*dataList)->size == 100) {
 		printf("DataList is full.\n");
 		return;

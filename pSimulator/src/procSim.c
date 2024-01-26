@@ -32,7 +32,6 @@ float GLOBALTIME = 0.00; //do we want this name? or
 /*TODO
 loop of removing and adding to running
 updating log file 
-do we need to have a check to see if new files added to proc directory idk...
 increment global t
 checking running to pop (cpu>proc)
 increment cpu
@@ -44,39 +43,42 @@ made global t dont use it...
 file structure 
 file creation script
 create queues
-push entries to ready??? do we do it all at once or like one at a time?
+push entries to ready
 file removed after pushed
-added "type" to struct and changed pushentry function to check if it is type 1 not allow more than 1
 *********/
 
 int logFile(Node data){
-    ;
+    return 0;
     //i think here update the log file passign the popped data
     //change popped status to 3
     //idk if we are just adding the completed or if we add all further reading suggests add all?
 }
 
 int openDirTest(DataList *ready_queue){
-    DIR *dirp;
+    //maybe just open it each time so that if a new file appears it will be accounted for ??
+    DIR *dirpointer;
+
     FILE *fp; 
     char *line = NULL;
-    size_t len = 0;
-    //char *token;  
-    int tmpNice;
-    int tmpProc;
+    size_t len = 0;  
+    int tmpNice, tmpProc;
+    int empty = 0;
 
+    struct dirent *directory;
 
-    struct dirent *dir;
+    dirpointer = opendir("../newProc/");
+    printf("files:\n");
 
-    dirp = opendir("../newProc/"); //pathname??? yes...
-    //printf("files:\n");
-    if(dirp){
-        while ((dir = readdir(dirp)) != NULL){
+    if(dirpointer){
+        directory = readdir(dirpointer);//do it twice cause there will always be a current and parent file...
+        directory = readdir(dirpointer);//if dont do these it just ends without pushing file
+        if((directory = readdir(dirpointer)) != NULL){
+        //while ((directory = readdir(dirpointer)) != NULL){
             //since it also looks at the current and parent 
-            if(strcmp(dir->d_name, ".") && strcmp(dir->d_name, "..")){
+            if(strcmp(directory->d_name, ".") && strcmp(directory->d_name, "..")){
                 char filename[100] = "../newProc/";
 
-                strcat(filename, dir->d_name);
+                strcat(filename, directory->d_name);
                 
                 fp = fopen(filename, "r");
                 if(fp == NULL){
@@ -86,7 +88,7 @@ int openDirTest(DataList *ready_queue){
                 //it is only one line long 
                 getline(&line, &len, fp);
 
-                //printf("%s\n", dir->d_name);//prints can be removed later just here to test
+                printf("%s\n", directory->d_name);//prints can be removed later just here to test
                 //printf("Contents: %s", line);
                 //token = strtok(line, ", "); //idk what way is better?
                 //tmpProc = atoi(token);
@@ -103,40 +105,54 @@ int openDirTest(DataList *ready_queue){
                 remove(filename);
             }
         }
-        closedir(dirp);
+        else {
+            empty = 1;//nothing other than current and parent files, if file is added will change to 0 again on entry and return such
+        }
+        closedir(dirpointer);
     }
-
-    free(line);
-    return 0;
+    if(line){
+        free(line);
+    }
+    return empty;
 }
 
 int main(){
+    int emptyDir = 0;//if the flag anything other than 0 the directory is empty
+
     Node readyPop, runningPop;
     DataList *ready_queue = createDataList();
-    DataList *running_queue = createDataList();//maybe we can add type? to struct??
-    running_queue->type = 1;
+    DataList *running_queue = createDataList();
 
-    openDirTest(ready_queue);//reads all the files at once into ready idk if it is supposed to be done in the loop one at a time??
 
+    emptyDir = openDirTest(ready_queue);//reads all the files at once into ready idk if it is supposed to be done in the loop one at a time??
+    emptyDir = openDirTest(ready_queue);
     printAllEntries(ready_queue);
     //pushEntry(&running_queue, 8, 1, 1, 0, 12);
     //pushEntry(&running_queue, 3, 1, 12, 0, 3);
     //printAllEntries(running_queue);
 
 
-    //just testing stuff below will need to check times and all that
-        //maybe could do a while using ready->size??
     readyPop = popEntry(ready_queue);
     pushEntry(&running_queue, readyPop.pid, 2, readyPop.niceness, readyPop.cpuTime, readyPop.procTime);
-    //while ready && running not empty?
-    while(ready_queue->size > 0 && running_queue->size > 0){
-        //will need to do an if check for cputime just testing this atm
+    
+    while(ready_queue->size > 0 && running_queue->size > 0 && emptyDir == 0){
+        //may need to adjust or have an initial call of open dir then pop ready and push to running 
+        //otherwise will have to change the entry case
+        
+        emptyDir = openDirTest(ready_queue);
+        //should continue to check if new file until both queues are empty
         runningPop = popEntry(running_queue);
         readyPop = popEntry(ready_queue);
         //maybe pass the ready pop to a function that will add to log file 
         pushEntry(&running_queue, readyPop.pid, 2, readyPop.niceness, readyPop.cpuTime, readyPop.procTime);
         printAllEntries(ready_queue);
         printAllEntries(running_queue);
+        if(!emptyDir){
+            printf("Directory not empty\n");
+        }
+        else{
+            printf("Directory is empty\n");
+        }
     }
 
 
