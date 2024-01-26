@@ -84,7 +84,7 @@ void logFile(DataList *ready_queue, DataList *running_queue, float logTime){
 }
 
 int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
-	DIR *dirptr = opendir(path);
+	DIR *dirptr = opendir("../newProc/");
 	struct dirent *dp;
 	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
 	dp = readdir(dirptr);
@@ -110,6 +110,7 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	pushEntry(&ready_queue, pid, 1, niceness, 0.0, procTime);
 	fclose(fptr);
 	remove(path);
+	return 0;
 } 
 
 int openDirTest(DataList *ready_queue){
@@ -224,7 +225,7 @@ int main(){
 	pushEntry(&running_queue, 1, 2, 10, 5.0, 15.0);
 	logFile(ready_queue, running_queue, 5.00);
 	*/
-
+	/*
 	//Testing pushReadyQueue and logFile
 	DataList *ready_queue = createDataList();
 	DataList *running_queue = createDataList();
@@ -233,5 +234,6 @@ int main(){
 	pushReadyQueue(ready_queue, 2);
 	logFile(ready_queue, running_queue, 2.00);
 	printAllEntries(ready_queue);
+	*/
     return 0;
 }
