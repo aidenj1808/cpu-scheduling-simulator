@@ -36,6 +36,7 @@ clean:
 	rm -f *.o *~ *.txt
 	rm test 
 	rm ../log/log*
+	touch ../log/.gitkeep
 testing: test #if we want a file to diff good.txt 
 	./test > testOut.txt 
 

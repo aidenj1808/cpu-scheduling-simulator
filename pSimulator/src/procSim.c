@@ -225,7 +225,6 @@ int main(){
 	pushEntry(&running_queue, 1, 2, 10, 5.0, 15.0);
 	logFile(ready_queue, running_queue, 5.00);
 	*/
-	/*
 	//Testing pushReadyQueue and logFile
 	DataList *ready_queue = createDataList();
 	DataList *running_queue = createDataList();
@@ -234,6 +233,5 @@ int main(){
 	pushReadyQueue(ready_queue, 2);
 	logFile(ready_queue, running_queue, 2.00);
 	printAllEntries(ready_queue);
-	*/
     return 0;
 }
