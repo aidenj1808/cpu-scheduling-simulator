@@ -35,7 +35,7 @@ valgrindTest: test
 clean:
 	rm -f *.o *~ *.txt
 	rm test 
-
+	rm ../log/log*
 testing: test #if we want a file to diff good.txt 
 	./test > testOut.txt 
 

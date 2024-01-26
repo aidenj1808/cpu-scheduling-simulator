@@ -47,12 +47,70 @@ push entries to ready
 file removed after pushed
 *********/
 
-int logFile(Node data){
-    return 0;
-    //i think here update the log file passign the popped data
-    //change popped status to 3
-    //idk if we are just adding the completed or if we add all further reading suggests add all?
+
+void logFile(DataList *ready_queue, DataList *running_queue, float logTime){
+	int len = snprintf(NULL, 0, "../log/log%.2f.txt", logTime);
+	char *fileName = malloc(len + 1);
+	snprintf(fileName, len + 1, "../log/log%.2f.txt", logTime);
+	
+	FILE *fptr;
+	fptr = fopen(fileName, "w");
+	if (fptr == NULL) {
+		printf("File cannot be created.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	Node *readyNode = ready_queue->first;
+	while (readyNode != NULL) {
+		fprintf(fptr, "%.2f,%u,%u,%d,%.2f,%.2f\n", logTime, readyNode->pid,
+												   readyNode->status,
+												   readyNode->niceness,
+												   readyNode->cpuTime,
+												   readyNode->procTime);
+		readyNode = readyNode->next;
+	}
+
+	Node *runningNode = running_queue->first;
+	while (runningNode != NULL) {
+		fprintf(fptr, "%.2f,%u,%u,%d,%.2f,%.2f\n", logTime, runningNode->pid,
+												   runningNode->status,
+												   runningNode->niceness,
+												   runningNode->cpuTime,
+												   runningNode->procTime);
+		runningNode = runningNode->next;
+	}
+	fclose(fptr);
+	free(fileName);
 }
+
+int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
+	DIR *dirptr = opendir(path);
+	struct dirent *dp;
+	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
+	dp = readdir(dirptr);
+	if (!dp) {
+		closedir(dirptr);
+		return -1;
+	}
+
+	int newProcDirLen = strlen("../newProc/");
+	char *path = malloc(newProcDirLen + 1);
+ 	strcpy(path, "../newProc/");
+
+	int procFileLen = strlen(dp->d_name);
+	path = realloc(path, newProcDirLen + procFileLen + 1);
+	strcat(path, dp->d_name);
+	closedir(dirptr);
+
+	FILE *fptr = fopen(path, "r");
+	char line[50];
+	fgets(line, 50, fptr);
+	int niceness = atoi(strtok(line, ", "));
+	float procTime = atoi(strtok(NULL, ", "));
+	pushEntry(&ready_queue, pid, 1, niceness, 0.0, procTime);
+	fclose(fptr);
+	remove(path);
+} 
 
 int openDirTest(DataList *ready_queue){
     //maybe just open it each time so that if a new file appears it will be accounted for ??
@@ -117,6 +175,7 @@ int openDirTest(DataList *ready_queue){
 }
 
 int main(){
+	/*
     int emptyDir = 0;//if the flag anything other than 0 the directory is empty
 
     Node readyPop, runningPop;
@@ -154,7 +213,25 @@ int main(){
             printf("Directory is empty\n");
         }
     }
+	*/
+	/*
+	//Testing logFile
+	DataList *ready_queue = createDataList();
+	DataList *running_queue = createDataList();
+	pushEntry(&ready_queue, 2, 1, 10, 0.0, 15.0);
+	pushEntry(&ready_queue, 3, 1, 10, 0.0, 10.0);
+	pushEntry(&ready_queue, 4, 1, 10, 0.0, 5.0);
+	pushEntry(&running_queue, 1, 2, 10, 5.0, 15.0);
+	logFile(ready_queue, running_queue, 5.00);
+	*/
 
-
+	//Testing pushReadyQueue and logFile
+	DataList *ready_queue = createDataList();
+	DataList *running_queue = createDataList();
+	pushReadyQueue(ready_queue, 1);
+	logFile(ready_queue, running_queue, 1.00);
+	pushReadyQueue(ready_queue, 2);
+	logFile(ready_queue, running_queue, 2.00);
+	printAllEntries(ready_queue);
     return 0;
 }
