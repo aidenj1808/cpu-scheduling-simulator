@@ -30,7 +30,6 @@ float GLOBALTIME = 0.00; //do we want this name? or
  *********/
 
 /*TODO
-loop of removing and adding to running
 updating log file 
 increment global t
 checking running to pop (cpu>proc)
@@ -38,14 +37,6 @@ increment cpu
 .h for procSim???
 *********/
 
-/*DONE
-made global t dont use it...
-file structure 
-file creation script
-create queues
-push entries to ready
-file removed after pushed
-*********/
 
 int logFile(Node data){
     return 0;
@@ -67,7 +58,7 @@ int openDirTest(DataList *ready_queue){
     struct dirent *directory;
 
     dirpointer = opendir("../newProc/");
-    printf("files:\n");
+    //printf("files:\n");
 
     if(dirpointer){
         directory = readdir(dirpointer);//do it twice cause there will always be a current and parent file...
@@ -88,7 +79,7 @@ int openDirTest(DataList *ready_queue){
                 //it is only one line long 
                 getline(&line, &len, fp);
 
-                printf("%s\n", directory->d_name);//prints can be removed later just here to test
+                //printf("%s\n", directory->d_name);//prints can be removed later just here to test
                 //printf("Contents: %s", line);
                 //token = strtok(line, ", "); //idk what way is better?
                 //tmpProc = atoi(token);
@@ -119,39 +110,80 @@ int openDirTest(DataList *ready_queue){
 int main(){
     int emptyDir = 0;//if the flag anything other than 0 the directory is empty
 
-    Node readyPop, runningPop;
+    Node readyPop, runningPop; 
+    Node *currEntry;
     DataList *ready_queue = createDataList();
     DataList *running_queue = createDataList();
 
 
-    emptyDir = openDirTest(ready_queue);//reads all the files at once into ready idk if it is supposed to be done in the loop one at a time??
+    //below just putting an entry on not sure how we want to initialize stuff
+    //*********
     emptyDir = openDirTest(ready_queue);
+    emptyDir = openDirTest(ready_queue);
+    //readyqueue will have 2 entries here and running will have 0
     printAllEntries(ready_queue);
-    //pushEntry(&running_queue, 8, 1, 1, 0, 12);
-    //pushEntry(&running_queue, 3, 1, 12, 0, 3);
-    //printAllEntries(running_queue);
-
 
     readyPop = popEntry(ready_queue);
     pushEntry(&running_queue, readyPop.pid, 2, readyPop.niceness, readyPop.cpuTime, readyPop.procTime);
+    //both running and ready have one entry now
+    //************
     
-    while(ready_queue->size > 0 && running_queue->size > 0 && emptyDir == 0){
+    /*TODO loop logic idk what is best lol im dumb logic is hard*/
+    while(ready_queue->size > 0 || running_queue->size > 0 ){//&& emptyDir == 0){
+        GLOBALTIME++; //not sure what we want to increment by? or if its supposed to be done here
+
+        //get entry by pid
+        if(running_queue->size == 1){
+            currEntry = getEntry(running_queue, -1, 0);//to find pid
+
+            //print statements just for testing
+            printf("BEFORE:\n");
+            printf("PID: %u\n", currEntry->pid);
+	        printf("cpuTime: %f\n", currEntry->cpuTime);
+	        printf("procTime: %f\n\n", currEntry->procTime);
+
+            //are we supposed to use the global time or is it a different delta t?
+            setCPUTime(running_queue, currEntry->pid, ((currEntry->cpuTime) + GLOBALTIME));
+
+            printf("AFTER:\n");
+            printf("PID: %u\n", currEntry->pid);
+	        printf("cpuTime: %f\n", currEntry->cpuTime);//same as getcpu
+	        printf("procTime: %f\n\n", currEntry->procTime);
+            //just testing to see if both are the same not sure which we prefer to use
+            float time1 = getCPUTime(running_queue ,currEntry->pid); //this and above is the same thing
+            printf("Getting CPUTIME: %f\n", time1);
+
+            //checking to see if greater if yes pop and push running
+            if(currEntry->cpuTime > currEntry->procTime){
+                printf("Process finished\n");
+
+                //or log before?
+                runningPop = popEntry(running_queue);
+                //log info? do something with finished
+                readyPop = popEntry(ready_queue);
+                //do we set global back to 0??
+                pushEntry(&running_queue, readyPop.pid, 2, readyPop.niceness, readyPop.cpuTime, readyPop.procTime);
+            }
+        }
+
         //may need to adjust or have an initial call of open dir then pop ready and push to running 
         //otherwise will have to change the entry case
         
         emptyDir = openDirTest(ready_queue);
-        //should continue to check if new file until both queues are empty
-        runningPop = popEntry(running_queue);
-        readyPop = popEntry(ready_queue);
-        //maybe pass the ready pop to a function that will add to log file 
-        pushEntry(&running_queue, readyPop.pid, 2, readyPop.niceness, readyPop.cpuTime, readyPop.procTime);
+
         printAllEntries(ready_queue);
         printAllEntries(running_queue);
-        if(!emptyDir){
-            printf("Directory not empty\n");
-        }
-        else{
-            printf("Directory is empty\n");
+
+        //did this to exit loop cause it goes inf otherwise... idk
+        if(ready_queue->size == 0 == running_queue->size > 0 ){
+
+            if(!emptyDir){
+                printf("Directory not empty\n");
+            }
+            else{
+                printf("Directory is empty\n");
+                return 0;
+            }
         }
     }
 
