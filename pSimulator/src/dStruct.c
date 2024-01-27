@@ -131,7 +131,7 @@ float getCPUTime(DataList *dataList, unsigned int pid) {
 		node = node->next;
 	}
 	if (!node) {
-		printf("Data for PID: %u does not exist.\n", pid);
+		printf("getCPUTime error: Data for PID: %u does not exist.\n", pid);
         return -1;
 	}
 	return -1;
@@ -152,7 +152,7 @@ void setCPUTime(DataList *dataList, unsigned int pid, float cpuTime) {
 	}
   
 	if (node == NULL) {
-		printf("PID: %u does not exist\n", pid);
+		printf("setCPUTime error: PID: %u does not exist\n", pid);
 		return;
 	}
 }

@@ -6,6 +6,7 @@
 #include "dStruct.h"
 
 float GLOBALTIME = 0.00; //do we want this name? or
+float DELTAT = 1.00;
 
 /*******
  * loops adding and removing processes from running queue,
@@ -62,13 +63,13 @@ void logFile(DataList *ready_queue, DataList *running_queue, float logTime){
 	}
 
 	Node *runningNode = running_queue->first;
-	while (runningNode != NULL) {
-		fprintf(fptr, "%.2f,%u,%u,%d,%.2f,%.2f\n", logTime, runningNode->pid,
+	if(runningNode) {
+		fprintf(fptr, "%.2f,%u,%u,%d,%.2f,%.2f\n", logTime,
+												   runningNode->pid,
 												   runningNode->status,
 												   runningNode->niceness,
 												   runningNode->cpuTime,
 												   runningNode->procTime);
-		runningNode = runningNode->next;
 	}
 	fclose(fptr);
 	free(fileName);
@@ -96,77 +97,150 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	FILE *fptr = fopen(path, "r");
 	char line[50];
 	fgets(line, 50, fptr);
-	int niceness = atoi(strtok(line, ", "));
-	float procTime = atoi(strtok(NULL, ", "));
+	float procTime = atoi(strtok(line, ", "));
+	int niceness = atoi(strtok(NULL, ", "));
 	pushEntry(&ready_queue, pid, 1, niceness, 0.0, procTime);
 	fclose(fptr);
 	remove(path);
 	return 0;
 } 
 
-int openDirTest(DataList *ready_queue){
-    //maybe just open it each time so that if a new file appears it will be accounted for ??
-    DIR *dirpointer;
+void pushRunningQueue(DataList *running_queue, Node entry) {
+	pushEntry(&running_queue, entry.pid, 2, entry.niceness, entry.cpuTime,
+							  entry.procTime);
+}
 
-    FILE *fp; 
-    char *line = NULL;
-    size_t len = 0;  
-    int tmpNice, tmpProc;
-    int empty = 0;
+float *getGraphData(int fileCount) {
+	float *data = malloc(sizeof(float) * fileCount); 
+	int index = 0;
+	DIR *dirptr = opendir("../log/");
+	struct dirent *dp;
+	FILE *fptr;
+	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
+	while ((dp = readdir(dirptr)) != NULL) {
+		int len = strlen("../log/");
+		char *path = malloc(len + 1);
+ 		strcpy(path, "../log/");
 
-    struct dirent *directory;
+		int len2 = strlen(dp->d_name);
+		path = realloc(path, len + len2 + 1);
+		strcat(path, dp->d_name);
 
-    dirpointer = opendir("../newProc/");
-    //printf("files:\n");
+		fptr = fopen(path, "r");
+		char *buffer = malloc(100);
+		while (fgets(buffer, 100, fptr) != NULL) {
+			strtok(buffer, ",");
+			strtok(NULL, ",");
+			unsigned int status = atoi(strtok(NULL, ","));
+			strtok(NULL, ",");
+			float cpuTime = atoi(strtok(NULL, ","));
+			strtok(NULL, ",");
 
-    if(dirpointer){
-        directory = readdir(dirpointer);//do it twice cause there will always be a current and parent file...
-        directory = readdir(dirpointer);//if dont do these it just ends without pushing file
-        if((directory = readdir(dirpointer)) != NULL){
-        //while ((directory = readdir(dirpointer)) != NULL){
-            //since it also looks at the current and parent 
-            if(strcmp(directory->d_name, ".") && strcmp(directory->d_name, "..")){
-                char filename[100] = "../newProc/";
+			if (status == 3) {
+				data[index++] = cpuTime;
+				break;
+			}
+		}
+		fclose(fptr);
+		free(path);
+		free(buffer);
+	}
+	closedir(dirptr);
+	return data;
+}
 
-                strcat(filename, directory->d_name);
-                
-                fp = fopen(filename, "r");
-                if(fp == NULL){
-                    fprintf(stderr, "file cannot be openned\n");
-                    exit(EXIT_FAILURE);
-                }
-                //it is only one line long 
-                getline(&line, &len, fp);
+int getFileCount(char *path) {
+	int count = 0;
+	DIR *dirptr = opendir(path);
+	struct dirent *dp;
+	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
+	while ((dp = readdir(dirptr)) != NULL) {
+		int len = strlen(path);
+		char *fullpath = malloc(len + 1);
+ 		strcpy(fullpath, path);
 
-                //printf("%s\n", directory->d_name);//prints can be removed later just here to test
-                //printf("Contents: %s", line);
-                //token = strtok(line, ", "); //idk what way is better?
-                //tmpProc = atoi(token);
-                tmpProc = atoi(strtok(line, ", "));//technically an int but seems fine... maybe do another cast?
-                //printf("First token: %d\n", tmpProc);
-                //token = strtok(NULL, "\n");
-                //tmpNice = atoi(token);
-                tmpNice = atoi(strtok(NULL, "\n"));
-                //printf("Second token: %d\n", tmpNice);
+		int len2 = strlen(dp->d_name);
+		fullpath = realloc(fullpath, len + len2 + 1);
+		strcat(fullpath, dp->d_name);
 
-                pushEntry(&ready_queue, ready_queue->size + 1, 1, tmpNice, 0, tmpProc);
+		FILE *fptr = fopen(fullpath, "r");
+		char *buffer = malloc(100);
+		while (fgets(buffer, 100, fptr) != NULL) {
+			strtok(buffer, ",");
+			strtok(NULL, ",");
+			unsigned int status = atoi(strtok(NULL, ","));
+			strtok(NULL, ",");
+			atoi(strtok(NULL, ","));
+			strtok(NULL, ",");
 
-                fclose(fp); //close file then remove 
-                remove(filename);
-            }
-        }
-        else {
-            empty = 1;//nothing other than current and parent files, if file is added will change to 0 again on entry and return such
-        }
-        closedir(dirpointer);
-    }
-    if(line){
-        free(line);
-    }
-    return empty;
+			if (status == 3) {
+				count++;
+				break;
+			}
+		}
+		fclose(fptr);
+		free(fullpath);
+		free(buffer);
+	}
+	closedir(dirptr);
+	return count;
 }
 
 int main(){
+	
+	DataList *ready_queue = createDataList();
+	DataList *running_queue = createDataList();
+	unsigned int nextPID = 1;
+
+	//while ((ready_queue->size != 0 && running_queue->size != 0) || GLOBALTIME == 0.00) {
+	while (1) {
+		if (ready_queue->size == 0 && running_queue->size == 0 && GLOBALTIME != 0.00) {
+			break;
+		}
+
+		GLOBALTIME = GLOBALTIME + DELTAT;
+
+		int check = pushReadyQueue(ready_queue, nextPID);
+		if (GLOBALTIME == 0.00 + DELTAT) {
+			nextPID++;
+			logFile(ready_queue, running_queue, GLOBALTIME);
+			continue;
+		}
+		if (running_queue->size == 0 && ready_queue->size != 0) {
+			Node entry = popEntry(ready_queue);
+			pushRunningQueue(running_queue, entry);
+			setCPUTime(running_queue, entry.pid,
+					   getCPUTime(running_queue, entry.pid) + DELTAT);
+		} else {
+			unsigned int runningProcPID = running_queue->first->pid;
+			setCPUTime(running_queue, runningProcPID,
+				   	   getCPUTime(running_queue, runningProcPID) + DELTAT);
+		}
+
+		unsigned int runningProcPID = running_queue->first->pid;
+		if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
+			setStatus(running_queue, runningProcPID, 3);
+			logFile(ready_queue, running_queue, GLOBALTIME);
+			popEntry(running_queue);
+		} else {
+			logFile(ready_queue, running_queue, GLOBALTIME);
+		}
+
+		if (!(check == -1)) {
+			nextPID++;	
+		}
+	}
+	destroyDataList(&ready_queue);
+	destroyDataList(&running_queue);
+	int fileCount = getFileCount("../log/");
+	printf("%d\n", fileCount);
+	float *values = getGraphData(fileCount);
+	for (int i = 0; i < fileCount; i++) {
+		printf("%f\n", values[i]);
+	}
+	free(values);
+    return 0;
+	
 	/*
     int emptyDir = 0;//if the flag anything other than 0 the directory is empty
 
@@ -177,7 +251,7 @@ int main(){
 
 
     //below just putting an entry on not sure how we want to initialize stuff
-    //*********
+    // *********
     emptyDir = openDirTest(ready_queue);
     emptyDir = openDirTest(ready_queue);
     //readyqueue will have 2 entries here and running will have 0
@@ -186,9 +260,9 @@ int main(){
     readyPop = popEntry(ready_queue);
     pushEntry(&running_queue, readyPop.pid, 2, readyPop.niceness, readyPop.cpuTime, readyPop.procTime);
     //both running and ready have one entry now
-    //************
+    // ************
     
-    /*TODO loop logic idk what is best lol im dumb logic is hard*/
+    //TODO loop logic idk what is best lol im dumb logic is hard
     while(ready_queue->size > 0 || running_queue->size > 0 ){//&& emptyDir == 0){
         GLOBALTIME++; //not sure what we want to increment by? or if its supposed to be done here
 
@@ -257,6 +331,7 @@ int main(){
 	pushEntry(&running_queue, 1, 2, 10, 5.0, 15.0);
 	logFile(ready_queue, running_queue, 5.00);
 	*/
+	/*
 	//Testing pushReadyQueue and logFile
 	DataList *ready_queue = createDataList();
 	DataList *running_queue = createDataList();
@@ -265,5 +340,5 @@ int main(){
 	pushReadyQueue(ready_queue, 2);
 	logFile(ready_queue, running_queue, 2.00);
 	printAllEntries(ready_queue);
-    return 0;
+	*/
 }
