@@ -5,37 +5,12 @@
 
 #include "dStruct.h"
 
-float GLOBALTIME = 0.00; //do we want this name? or
+float GLOBALTIME = 0.00;
 float DELTAT = 1.00;
 
-/*******
- * loops adding and removing processes from running queue,
- *  adding and removing from a ready queue
- * updating log files until the queues are empty
- * main program contains 2 queues ready_queue and running_queue
- * file/directory structure outlined 
- * 
- * new process added by files in newProc folder (proctime, niceness)
- * 
- * each cycle of the simulator
- *  increment global time t
- *  read in information from the files in the folder creating new PID, status of READY, cputime 0
- *      status: 1=ready, 2=running, 3=complete
- *  information then stored by push onto ready queue
- *  once read in file can be removed 
- * when running is empty a new proccess is popped from ready and pushed to running
- * when proccess is done running (cputime>=proctime) 
- * each cycle the cputime should be incremented by a certain amount
- * 
- * a logfile should be kept containing all processes in both queues
- *********/
 
-/*TODO
-updating log file 
-increment global t
-checking running to pop (cpu>proc)
-increment cpu
-.h for procSim???
+/* TODO
+ * - works for DELTAT 1.00, need fix for 0.10 if possible.
 *********/
 
 
@@ -95,13 +70,14 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	closedir(dirptr);
 
 	FILE *fptr = fopen(path, "r");
-	char line[50];
-	fgets(line, 50, fptr);
-	float procTime = atoi(strtok(line, ", "));
+	char *buffer = malloc(50);
+	fgets(buffer, 50, fptr);
+	float procTime = atoi(strtok(buffer, ", "));
 	int niceness = atoi(strtok(NULL, ", "));
 	pushEntry(&ready_queue, pid, 1, niceness, 0.0, procTime);
 	fclose(fptr);
 	remove(path);
+	free(buffer);
 	return 0;
 } 
 
@@ -116,6 +92,7 @@ float *getGraphData(int fileCount) {
 	DIR *dirptr = opendir("../log/");
 	struct dirent *dp;
 	FILE *fptr;
+
 	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
 	while ((dp = readdir(dirptr)) != NULL) {
 		int len = strlen("../log/");
@@ -153,6 +130,7 @@ int getFileCount(char *path) {
 	int count = 0;
 	DIR *dirptr = opendir(path);
 	struct dirent *dp;
+
 	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
 	while ((dp = readdir(dirptr)) != NULL) {
 		int len = strlen(path);
@@ -187,17 +165,12 @@ int getFileCount(char *path) {
 }
 
 int main(){
-	
 	DataList *ready_queue = createDataList();
 	DataList *running_queue = createDataList();
 	unsigned int nextPID = 1;
 
 	//while ((ready_queue->size != 0 && running_queue->size != 0) || GLOBALTIME == 0.00) {
-	while (1) {
-		if (ready_queue->size == 0 && running_queue->size == 0 && GLOBALTIME != 0.00) {
-			break;
-		}
-
+	while (!(ready_queue->size == 0 && running_queue->size == 0 && GLOBALTIME != 0.00)) {
 		GLOBALTIME = GLOBALTIME + DELTAT;
 
 		int check = pushReadyQueue(ready_queue, nextPID);
@@ -206,6 +179,7 @@ int main(){
 			logFile(ready_queue, running_queue, GLOBALTIME);
 			continue;
 		}
+
 		if (running_queue->size == 0 && ready_queue->size != 0) {
 			Node entry = popEntry(ready_queue);
 			pushRunningQueue(running_queue, entry);
@@ -230,6 +204,7 @@ int main(){
 			nextPID++;	
 		}
 	}
+
 	destroyDataList(&ready_queue);
 	destroyDataList(&running_queue);
 	int fileCount = getFileCount("../log/");
@@ -240,105 +215,4 @@ int main(){
 	}
 	free(values);
     return 0;
-	
-	/*
-    int emptyDir = 0;//if the flag anything other than 0 the directory is empty
-
-    Node readyPop, runningPop; 
-    Node *currEntry;
-    DataList *ready_queue = createDataList();
-    DataList *running_queue = createDataList();
-
-
-    //below just putting an entry on not sure how we want to initialize stuff
-    // *********
-    emptyDir = openDirTest(ready_queue);
-    emptyDir = openDirTest(ready_queue);
-    //readyqueue will have 2 entries here and running will have 0
-    printAllEntries(ready_queue);
-
-    readyPop = popEntry(ready_queue);
-    pushEntry(&running_queue, readyPop.pid, 2, readyPop.niceness, readyPop.cpuTime, readyPop.procTime);
-    //both running and ready have one entry now
-    // ************
-    
-    //TODO loop logic idk what is best lol im dumb logic is hard
-    while(ready_queue->size > 0 || running_queue->size > 0 ){//&& emptyDir == 0){
-        GLOBALTIME++; //not sure what we want to increment by? or if its supposed to be done here
-
-        //get entry by pid
-        if(running_queue->size == 1){
-            currEntry = getEntry(running_queue, -1, 0);//to find pid
-
-            //print statements just for testing
-            printf("BEFORE:\n");
-            printf("PID: %u\n", currEntry->pid);
-	        printf("cpuTime: %f\n", currEntry->cpuTime);
-	        printf("procTime: %f\n\n", currEntry->procTime);
-
-            //are we supposed to use the global time or is it a different delta t?
-            setCPUTime(running_queue, currEntry->pid, ((currEntry->cpuTime) + GLOBALTIME));
-
-            printf("AFTER:\n");
-            printf("PID: %u\n", currEntry->pid);
-	        printf("cpuTime: %f\n", currEntry->cpuTime);//same as getcpu
-	        printf("procTime: %f\n\n", currEntry->procTime);
-            //just testing to see if both are the same not sure which we prefer to use
-            float time1 = getCPUTime(running_queue ,currEntry->pid); //this and above is the same thing
-            printf("Getting CPUTIME: %f\n", time1);
-
-            //checking to see if greater if yes pop and push running
-            if(currEntry->cpuTime > currEntry->procTime){
-                printf("Process finished\n");
-
-                //or log before?
-                runningPop = popEntry(running_queue);
-                //log info? do something with finished
-                readyPop = popEntry(ready_queue);
-                //do we set global back to 0??
-                pushEntry(&running_queue, readyPop.pid, 2, readyPop.niceness, readyPop.cpuTime, readyPop.procTime);
-            }
-        }
-
-        //may need to adjust or have an initial call of open dir then pop ready and push to running 
-        //otherwise will have to change the entry case
-        
-        emptyDir = openDirTest(ready_queue);
-
-        printAllEntries(ready_queue);
-        printAllEntries(running_queue);
-
-        //did this to exit loop cause it goes inf otherwise... idk
-        if(ready_queue->size == 0 == running_queue->size > 0 ){
-
-            if(!emptyDir){
-                printf("Directory not empty\n");
-            }
-            else{
-                printf("Directory is empty\n");
-                return 0;
-            }
-        }
-    }
-	*/
-	/*
-	//Testing logFile
-	DataList *ready_queue = createDataList();
-	DataList *running_queue = createDataList();
-	pushEntry(&ready_queue, 2, 1, 10, 0.0, 15.0);
-	pushEntry(&ready_queue, 3, 1, 10, 0.0, 10.0);
-	pushEntry(&ready_queue, 4, 1, 10, 0.0, 5.0);
-	pushEntry(&running_queue, 1, 2, 10, 5.0, 15.0);
-	logFile(ready_queue, running_queue, 5.00);
-	*/
-	/*
-	//Testing pushReadyQueue and logFile
-	DataList *ready_queue = createDataList();
-	DataList *running_queue = createDataList();
-	pushReadyQueue(ready_queue, 1);
-	logFile(ready_queue, running_queue, 1.00);
-	pushReadyQueue(ready_queue, 2);
-	logFile(ready_queue, running_queue, 2.00);
-	printAllEntries(ready_queue);
-	*/
 }
