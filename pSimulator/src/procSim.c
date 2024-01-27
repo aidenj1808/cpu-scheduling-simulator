@@ -169,7 +169,6 @@ int main(){
 	DataList *running_queue = createDataList();
 	unsigned int nextPID = 1;
 
-	//while ((ready_queue->size != 0 && running_queue->size != 0) || GLOBALTIME == 0.00) {
 	while (!(ready_queue->size == 0 && running_queue->size == 0 && GLOBALTIME != 0.00)) {
 		GLOBALTIME = GLOBALTIME + DELTAT;
 
