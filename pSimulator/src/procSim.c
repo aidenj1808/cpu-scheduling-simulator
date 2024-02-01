@@ -213,10 +213,7 @@ int main(){
 	int fileCount = getFileCount("../log/");
 	printf("%d\n", fileCount);
 	float *values = getGraphData(fileCount);
-	for (int i = 0; i < (fileCount*2); i = i+2) {
-		printf("%.f, %f\n", values[i], values[i+1]);
-        
-	}
+
     fileCount = fileCount * 2; //doubled the count because pid and cputime now included in array
 
     plotData(fileCount, values);
