@@ -4,6 +4,7 @@
 #include <dirent.h>
 
 #include "dStruct.h"
+#include "plotData.h"
 
 float GLOBALTIME = 0.00;
 float DELTAT = 1.00;
@@ -87,7 +88,8 @@ void pushRunningQueue(DataList *running_queue, Node entry) {
 }
 
 float *getGraphData(int fileCount) {
-	float *data = malloc(sizeof(float) * fileCount); 
+	//float *data = malloc(sizeof(float) * fileCount); //
+    float *data = malloc(sizeof(float) * (fileCount * 2));//
 	int index = 0;
 	DIR *dirptr = opendir("../log/");
 	struct dirent *dp;
@@ -106,14 +108,16 @@ float *getGraphData(int fileCount) {
 		fptr = fopen(path, "r");
 		char *buffer = malloc(100);
 		while (fgets(buffer, 100, fptr) != NULL) {
-			strtok(buffer, ",");
-			strtok(NULL, ",");
+			strtok(buffer, ",");//log time
+			//strtok(NULL, ",");//pid//
+            unsigned int pid = atoi(strtok(NULL, ","));//pid//
 			unsigned int status = atoi(strtok(NULL, ","));
 			strtok(NULL, ",");
 			float cpuTime = atoi(strtok(NULL, ","));
 			strtok(NULL, ",");
 
 			if (status == 3) {
+                data[index++] = pid;//
 				data[index++] = cpuTime;
 				break;
 			}
@@ -209,9 +213,14 @@ int main(){
 	int fileCount = getFileCount("../log/");
 	printf("%d\n", fileCount);
 	float *values = getGraphData(fileCount);
-	for (int i = 0; i < fileCount; i++) {
-		printf("%f\n", values[i]);
+	for (int i = 0; i < (fileCount*2); i = i+2) {
+		printf("%.f, %f\n", values[i], values[i+1]);
+        
 	}
+    fileCount = fileCount * 2; //doubled the count because pid and cputime now included in array
+
+    plotData(fileCount, values);
+
 	free(values);
     return 0;
 }

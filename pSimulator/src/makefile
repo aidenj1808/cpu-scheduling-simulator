@@ -1,44 +1,36 @@
-#-------------------------
-# / Aiden / Taylor
-# CMPT 360
-#--------------------------
-
-# TODO
-#
-
 
 CFLAGS= -Wall -std=c11 
 CC= gcc 
 
-proc: files test	
-	./test
+proc: files procSim	
+	./procSim
 
-test: procSim.o dStruct.o
-	$(CC) $(CFLAGS) procSim.o dStruct.o -o test
+procSim: procSim.o dStruct.o plotData.o
+	$(CC) $(CFLAGS) procSim.o dStruct.o plotData.o -o procSim -lcairo
 
 dStruct.o: dStruct.c dStruct.h
 	$(CC) $(CFLAGS) -g -c dStruct.c 
 
-test.o: test.c dStruct.h 
-	$(CC) $(CFLAGS) -g -c test.c 
-
-procSim.o: procSim.c dStruct.h 
+procSim.o: procSim.c dStruct.h plotData.h
 	$(CC) $(CFLAGS) -g -c procSim.c 
+
+plotData.o: plotData.c plotData.h
+	$(CC) $(CFLAGS) -g -c plotData.c
 
 files: files.sh
 	chmod +x files.sh
 	./files.sh
 
-valgrindTest: test
-	valgrind -s --leak-check=yes ./test
+valgrindTest: procSim
+	valgrind -s --leak-check=yes ./procSim
 
 clean:
 	rm -f *.o *~ *.txt
-	rm test 
 	rm ../log/log*
+	rm procSim 
 	touch ../log/.gitkeep
 testing: test #if we want a file to diff good.txt 
-	./test > testOut.txt 
+	./procSim > testOut.txt 
 
 tar:
 	tar --exclude .git -czvf ../lab02.tar.gz -C ../ lab02
