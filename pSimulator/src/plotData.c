@@ -1,23 +1,14 @@
-// gcc plotData.c -o lab2graph -lcairo
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cairo/cairo.h>
 #include <time.h>
 
 #define WIDTH 900
-#define HEIGHT 700
+#define HEIGHT 400
 
 //LOG FILE FORMAT
-//16.00,5,3,10,1.00,1.00 
 //log time, pid, status, niceness, cputime, proctime
-
-/******************
-void cairo_rectangle (cairo_t *cr,
-                 double x,
-                 double y,
-                 double width,
-                 double height)
-          **********************/
 
 float randCol(float pid){
   srand((unsigned int)pid);
@@ -48,7 +39,7 @@ int plotData(int length, float *data){
     float g = randCol(data[i]) + 0.1;
     float b = randCol(data[i]) + 0.3;
 
-    cairo_rectangle(cr, x, y, width, 200);
+    cairo_rectangle(cr, x, y, width, 50);
     //given colour based off of pid since pid unique
     cairo_set_source_rgb(cr, r, g, b);
     cairo_fill(cr);
@@ -56,8 +47,8 @@ int plotData(int length, float *data){
     //write pid label
     char pidLabel[15];
     sprintf(pidLabel, "%.f", data[i]);
-    cairo_set_font_size(cr, 24);
-    cairo_move_to(cr, x + (width * 0.5), y + 80); //cant find a good setting
+    cairo_set_font_size(cr, 22);
+    cairo_move_to(cr, x + (width * 0.3), y + 25); 
     cairo_set_source_rgba(cr, 0, 0, 0, 1);
     cairo_show_text(cr, pidLabel);
 
@@ -67,12 +58,20 @@ int plotData(int length, float *data){
 
   //line and label
   cairo_set_source_rgb(cr, 0, 0, 0);
-  cairo_move_to(cr, 100, HEIGHT - 300);
-  cairo_line_to(cr, label + 50, HEIGHT - 300);
+  cairo_move_to(cr, 100, HEIGHT - 150);
+  cairo_line_to(cr, label + 50, HEIGHT - 150);
   cairo_stroke(cr);
-  
-  cairo_set_font_size(cr, 24);
-  cairo_move_to(cr, label + 50, HEIGHT - 300);
+
+  //arrow head
+  cairo_move_to(cr, label + 50, HEIGHT - 150);
+  cairo_line_to(cr, label + 30, HEIGHT - 155);
+  cairo_stroke(cr);
+  cairo_move_to(cr, label + 50, HEIGHT - 150);
+  cairo_line_to(cr, label + 30, HEIGHT - 145);
+  cairo_stroke(cr);
+
+  cairo_set_font_size(cr, 18);
+  cairo_move_to(cr, label + 50, HEIGHT - 130);
   cairo_set_source_rgba(cr, 0, 0, 0, 1);
   cairo_show_text(cr, "t");
 
