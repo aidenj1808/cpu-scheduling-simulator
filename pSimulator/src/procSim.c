@@ -7,7 +7,7 @@
 #include "plotData.h"
 
 float GLOBALTIME = 0.00;
-float DELTAT = 1.00;
+float DELTAT = 0.10;
 
 
 /* TODO
@@ -173,7 +173,7 @@ int main(){
 	DataList *running_queue = createDataList();
 	unsigned int nextPID = 1;
 
-	while (!(ready_queue->size == 0 && running_queue->size == 0 && GLOBALTIME != 0.00)) {
+	do {
 		GLOBALTIME = GLOBALTIME + DELTAT;
 
 		int check = pushReadyQueue(ready_queue, nextPID);
@@ -186,14 +186,16 @@ int main(){
 		if (running_queue->size == 0 && ready_queue->size != 0) {
 			Node entry = popEntry(ready_queue);
 			pushRunningQueue(running_queue, entry);
-			setCPUTime(running_queue, entry.pid,
-					   getCPUTime(running_queue, entry.pid) + DELTAT);
+			float cpuTime = getCPUTime(running_queue, entry.pid);
+			float newTime = (int) ( (cpuTime + DELTAT) * 100 + .5) / 100.0;
+			setCPUTime(running_queue, entry.pid, newTime);
 		} else {
 			unsigned int runningProcPID = running_queue->first->pid;
-			setCPUTime(running_queue, runningProcPID,
-				   	   getCPUTime(running_queue, runningProcPID) + DELTAT);
+			float cpuTime = getCPUTime(running_queue, runningProcPID);
+			float newTime = (int) ( (cpuTime + DELTAT) * 100 + .5) / 100.0;
+			setCPUTime(running_queue, runningProcPID, newTime);
 		}
-
+		printAllEntries(running_queue);
 		unsigned int runningProcPID = running_queue->first->pid;
 		if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
 			setStatus(running_queue, runningProcPID, 3);
@@ -206,7 +208,7 @@ int main(){
 		if (!(check == -1)) {
 			nextPID++;	
 		}
-	}
+	} while (ready_queue->size != 0 || running_queue->size != 0);
 
 	destroyDataList(&ready_queue);
 	destroyDataList(&running_queue);
