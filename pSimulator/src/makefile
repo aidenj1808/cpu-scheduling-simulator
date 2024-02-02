@@ -1,33 +1,39 @@
-
-CFLAGS= -Wall -std=c11 
+CFLAGS= -Wall -std=c11
 CC= gcc 
 
-proc: files procSim	
+doAll: procSim plotData files.sh
+	./files.sh
 	./procSim
+	./plotData
 
-procSim: procSim.o dStruct.o plotData.o
-	$(CC) $(CFLAGS) procSim.o dStruct.o plotData.o -o procSim -lcairo
+procSim: procSim.o dStruct.o
+	$(CC) $(CFLAGS) -g procSim.o dStruct.o -o procSim
+
+plotData: plotData.c
+	$(CC) $(CFLAGS) -g -lcairo plotData.c -o plotData
 
 dStruct.o: dStruct.c dStruct.h
-	$(CC) $(CFLAGS) -g -c dStruct.c 
+	$(CC) $(CFLAGS) -c dStruct.c 
 
 procSim.o: procSim.c dStruct.h plotData.h
-	$(CC) $(CFLAGS) -g -c procSim.c 
+	$(CC) $(CFLAGS) -c procSim.c 
 
 plotData.o: plotData.c plotData.h
-	$(CC) $(CFLAGS) -g -c plotData.c
+	$(CC) $(CFLAGS) -c plotData.c
 
-files: files.sh
-	chmod +x files.sh
-	./files.sh
+valgrindTestProcSim: procSim
+	valgrind -s --leak-check=full --show-leak-kinds=all ./procSim
 
-valgrindTest: procSim
-	valgrind -s --leak-check=yes ./procSim
+# Memory leaks are outputed out of the hands of the user using Cairo in clearing
+# up. We talked about this not being a problem.
+valgrindTestPlotData: plotData
+	valgrind -s --leak-check=full --show-leak-kinds=all ./plotData
 
 clean:
 	rm -f *.o *~ *.txt
 	rm ../log/log*
-	rm procSim 
+	rm procSim
+	rm plotData
 	touch ../log/.gitkeep
 testing: test #if we want a file to diff good.txt 
 	./procSim > testOut.txt 
