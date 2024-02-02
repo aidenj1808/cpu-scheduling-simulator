@@ -4,19 +4,11 @@
 #include <dirent.h>
 
 #include "dStruct.h"
-#include "plotData.h"
 
 float GLOBALTIME = 0.00;
 float DELTAT = 0.10;
 
-
-/* TODO
- * - works for DELTAT 1.00, need fix for 0.10 if possible.
-*********/
-
-
-
-void logFile(DataList *ready_queue, DataList *running_queue, float logTime){
+void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
 	int len = snprintf(NULL, 0, "../log/log%.2f.txt", logTime);
 	char *fileName = malloc(len + 1);
 	snprintf(fileName, len + 1, "../log/log%.2f.txt", logTime);
@@ -29,6 +21,7 @@ void logFile(DataList *ready_queue, DataList *running_queue, float logTime){
 	}
 
 	Node *readyNode = ready_queue->first;
+	fprintf(fptr, "time,PID,status,niceness,cputime,proctime\n");
 	while (readyNode != NULL) {
 		fprintf(fptr, "%.2f,%u,%u,%d,%.2f,%.2f\n", logTime, readyNode->pid,
 												   readyNode->status,
@@ -73,11 +66,12 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	FILE *fptr = fopen(path, "r");
 	char *buffer = malloc(50);
 	fgets(buffer, 50, fptr);
-	float procTime = atoi(strtok(buffer, ", "));
-	int niceness = atoi(strtok(NULL, ", "));
+	float procTime = atoi(strtok(buffer, ","));
+	int niceness = atoi(strtok(NULL, ","));
 	pushEntry(&ready_queue, pid, 1, niceness, 0.0, procTime);
 	fclose(fptr);
 	remove(path);
+	free(path);
 	free(buffer);
 	return 0;
 } 
@@ -87,88 +81,7 @@ void pushRunningQueue(DataList *running_queue, Node entry) {
 							  entry.procTime);
 }
 
-float *getGraphData(int fileCount) {
-	//float *data = malloc(sizeof(float) * fileCount); //
-    float *data = malloc(sizeof(float) * (fileCount * 2));//
-	int index = 0;
-	DIR *dirptr = opendir("../log/");
-	struct dirent *dp;
-	FILE *fptr;
-
-	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
-	while ((dp = readdir(dirptr)) != NULL) {
-		int len = strlen("../log/");
-		char *path = malloc(len + 1);
- 		strcpy(path, "../log/");
-
-		int len2 = strlen(dp->d_name);
-		path = realloc(path, len + len2 + 1);
-		strcat(path, dp->d_name);
-
-		fptr = fopen(path, "r");
-		char *buffer = malloc(100);
-		while (fgets(buffer, 100, fptr) != NULL) {
-			strtok(buffer, ",");//log time
-			//strtok(NULL, ",");//pid//
-            unsigned int pid = atoi(strtok(NULL, ","));//pid//
-			unsigned int status = atoi(strtok(NULL, ","));
-			strtok(NULL, ",");
-			float cpuTime = atoi(strtok(NULL, ","));
-			strtok(NULL, ",");
-
-			if (status == 3) {
-                data[index++] = pid;//
-				data[index++] = cpuTime;
-				break;
-			}
-		}
-		fclose(fptr);
-		free(path);
-		free(buffer);
-	}
-	closedir(dirptr);
-	return data;
-}
-
-int getFileCount(char *path) {
-	int count = 0;
-	DIR *dirptr = opendir(path);
-	struct dirent *dp;
-
-	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
-	while ((dp = readdir(dirptr)) != NULL) {
-		int len = strlen(path);
-		char *fullpath = malloc(len + 1);
- 		strcpy(fullpath, path);
-
-		int len2 = strlen(dp->d_name);
-		fullpath = realloc(fullpath, len + len2 + 1);
-		strcat(fullpath, dp->d_name);
-
-		FILE *fptr = fopen(fullpath, "r");
-		char *buffer = malloc(100);
-		while (fgets(buffer, 100, fptr) != NULL) {
-			strtok(buffer, ",");
-			strtok(NULL, ",");
-			unsigned int status = atoi(strtok(NULL, ","));
-			strtok(NULL, ",");
-			atoi(strtok(NULL, ","));
-			strtok(NULL, ",");
-
-			if (status == 3) {
-				count++;
-				break;
-			}
-		}
-		fclose(fptr);
-		free(fullpath);
-		free(buffer);
-	}
-	closedir(dirptr);
-	return count;
-}
-
-int main(){
+int main() {
 	DataList *ready_queue = createDataList();
 	DataList *running_queue = createDataList();
 	unsigned int nextPID = 1;
@@ -195,7 +108,7 @@ int main(){
 			float newTime = (int) ( (cpuTime + DELTAT) * 100 + .5) / 100.0;
 			setCPUTime(running_queue, runningProcPID, newTime);
 		}
-		printAllEntries(running_queue);
+
 		unsigned int runningProcPID = running_queue->first->pid;
 		if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
 			setStatus(running_queue, runningProcPID, 3);
@@ -212,14 +125,5 @@ int main(){
 
 	destroyDataList(&ready_queue);
 	destroyDataList(&running_queue);
-	int fileCount = getFileCount("../log/");
-	printf("%d\n", fileCount);
-	float *values = getGraphData(fileCount);
-
-    fileCount = fileCount * 2; //doubled the count because pid and cputime now included in array
-
-    plotData(fileCount, values);
-
-	free(values);
     return 0;
 }

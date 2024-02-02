@@ -1,6 +1,7 @@
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <dirent.h>
+#include <string.h>
 #include <cairo/cairo.h>
 #include <time.h>
 
@@ -10,9 +11,90 @@
 //LOG FILE FORMAT
 //log time, pid, status, niceness, cputime, proctime
 
-float randCol(float pid){
-  srand((unsigned int)pid);
-  return (float)rand() / RAND_MAX;
+float *getGraphData(int fileCount) {
+	FILE *fptr;
+	struct dirent *dp;
+	DIR *dirptr = opendir("../log/");
+	int index = 0;
+    float *data = malloc(sizeof(float) * (fileCount * 2));
+
+	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
+	while ((dp = readdir(dirptr)) != NULL) {
+	 	int len = strlen("../log/");
+		char *path = malloc(len + 1);
+ 		strcpy(path, "../log/");
+
+		int len2 = strlen(dp->d_name);
+		path = realloc(path, len + len2 + 1);
+		strcat(path, dp->d_name);
+
+		fptr = fopen(path, "r");
+		char *buffer = malloc(100);
+		fgets(buffer, 100, fptr); // Skips header
+		while (fgets(buffer, 100, fptr) != NULL) {
+			strtok(buffer, ",");
+            unsigned int pid = atoi(strtok(NULL, ","));
+			unsigned int status = atoi(strtok(NULL, ","));
+			strtok(NULL, ",");
+			float cpuTime = atoi(strtok(NULL, ","));
+			strtok(NULL, ",");
+
+			if (status == 3) {
+                data[index++] = pid;
+				data[index++] = cpuTime;
+				break;
+			}
+		}
+		fclose(fptr);
+		free(path);
+		free(buffer);
+	}
+	closedir(dirptr);
+	return data;
+}
+
+int getFileCount(char *path) {
+	int count = 0;
+	DIR *dirptr = opendir(path);
+	struct dirent *dp;
+
+	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
+
+	while ((dp = readdir(dirptr)) != NULL) {
+		int len = strlen(path);
+		char *fullpath = malloc(len + 1);
+ 		strcpy(fullpath, path);
+
+		int len2 = strlen(dp->d_name);
+		fullpath = realloc(fullpath, len + len2 + 1);
+		strcat(fullpath, dp->d_name);
+
+		FILE *fptr = fopen(fullpath, "r");
+		char *buffer = malloc(100);
+		while (fgets(buffer, 100, fptr) != NULL) {
+			strtok(buffer, ",");
+			strtok(NULL, ",");
+			unsigned int status = atoi(strtok(NULL, ","));
+			strtok(NULL, ",");
+			atoi(strtok(NULL, ","));
+			strtok(NULL, ",");
+
+			if (status == 3) {
+				count++;
+				break;
+			}
+		}
+		fclose(fptr);
+		free(fullpath);
+		free(buffer);
+	}
+	closedir(dirptr);
+	return count;
+}
+
+float randCol(){
+	float max = 1.0;
+	return (float) rand() / ((float) (RAND_MAX)) * max;
 }
 
 int plotData(int length, float *data){
@@ -31,13 +113,14 @@ int plotData(int length, float *data){
   double y = 200;
   double label = 0;
   
+  srand((unsigned int) time(NULL));
   //loop through to create the squares
   for (int i = 0; i < length; i = i+2) {
     double width = data[i+1] * 20;
 
-    float r = randCol(data[i]) + 0.2;
-    float g = randCol(data[i]) + 0.1;
-    float b = randCol(data[i]) + 0.3;
+    float r = randCol();
+    float g = randCol();
+    float b = randCol();
 
     cairo_rectangle(cr, x, y, width, 50);
     //given colour based off of pid since pid unique
@@ -78,7 +161,7 @@ int plotData(int length, float *data){
   time_t t = time(NULL);
   struct tm *tm_info = localtime(&t);
   char date[20]; 
-  strftime(date, sizeof(date), "%m-%d-%Y", tm_info);
+  strftime(date, sizeof(date), "%m-%d-%Y-%H:%M:%S", tm_info);
   char filename[50];
   snprintf(filename, sizeof(filename), "../log/log-%s.png", date);
 
@@ -92,3 +175,10 @@ int plotData(int length, float *data){
   return 0;
 }
 
+int main() {
+	int fileCount = getFileCount("../log/");
+	float *values = getGraphData(fileCount);
+    plotData(fileCount * 2, values);
+	free(values);
+	return 0;
+}

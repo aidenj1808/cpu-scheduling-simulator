@@ -9,7 +9,7 @@ file_num=5
 for ((i = 1; i <= file_num; i++)); do
     filename="$directory/proc$i.txt"
     procTime=$((i))
-    echo "$procTime.00, 10">"$filename"
+    echo "$procTime.00,10">"$filename"
     #can comment out below line 
     echo "$filename created"
 done 
