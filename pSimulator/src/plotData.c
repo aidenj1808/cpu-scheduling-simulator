@@ -7,9 +7,24 @@
 
 #define WIDTH 900
 #define HEIGHT 400
+#define MAXWIDTH 700
 
 //LOG FILE FORMAT
 //log time, pid, status, niceness, cputime, proctime
+
+float setScale(int length, float *data){
+	double totalTime;
+	float scale = 1.0; 
+
+	for(int i = 1; i < length; i = i + 2){
+		totalTime += data[i] * 20;
+	}
+
+	if(totalTime > MAXWIDTH){
+		scale = MAXWIDTH / totalTime;
+	}
+	return scale;
+}
 
 float *getGraphData(int fileCount) {
 	FILE *fptr;
@@ -114,9 +129,10 @@ int plotData(int length, float *data){
   double label = 0;
   
   srand((unsigned int) time(NULL));
+  float scale = setScale(length, data); 
   //loop through to create the squares
   for (int i = 0; i < length; i = i+2) {
-    double width = data[i+1] * 20;
+    double width = data[i+1] * 20 * scale;
 
     float r = randCol();
     float g = randCol();
