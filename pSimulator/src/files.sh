@@ -4,7 +4,7 @@
 directory="../newProc"
 
 #change how many files you want to create
-file_num=5
+file_num=10
 
 for ((i = 1; i <= file_num; i++)); do
     filename="$directory/proc$i.txt"
