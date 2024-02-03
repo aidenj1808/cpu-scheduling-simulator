@@ -47,7 +47,7 @@ void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
 int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	DIR *dirptr = opendir("../newProc/");
 	struct dirent *dp;
-	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
+	for (int i = 0; i < 3; i++) {dp = readdir(dirptr);} //skips . & .. & .gitkeep
 	dp = readdir(dirptr);
 	if (!dp) {
 		closedir(dirptr);
