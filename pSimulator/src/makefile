@@ -1,10 +1,6 @@
 CFLAGS= -Wall -std=c11
 CC= gcc 
 
-doAll: procSim plotData files.sh
-	./files.sh
-	./procSim
-	./plotData
 
 procSim: procSim.o dStruct.o
 	$(CC) $(CFLAGS) -g procSim.o dStruct.o -o procSim
