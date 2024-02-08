@@ -5,8 +5,12 @@
 
 #include "dStruct.h"
 
-float GLOBALTIME = 0.00;
-float DELTAT = 0.10;
+float GLOBAL_TIME = 0.00;
+float TIME_DT = 0.10;
+float TIME_JIFFY = 0;
+int ALGOR_FIFO = 0;
+int ALGOR_SJF = 0;
+int ALGOR_RR = 0;
 
 void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
 	int len = snprintf(NULL, 0, "../log/log%.2f.txt", logTime);
@@ -87,12 +91,12 @@ int main() {
 	unsigned int nextPID = 1;
 
 	do {
-		GLOBALTIME = GLOBALTIME + DELTAT;
+		GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
 		int check = pushReadyQueue(ready_queue, nextPID);
-		if (GLOBALTIME == 0.00 + DELTAT) {
+		if (GLOBAL_TIME == 0.00 + TIME_DT) {
 			nextPID++;
-			logFile(ready_queue, running_queue, GLOBALTIME);
+			logFile(ready_queue, running_queue, GLOBAL_TIME);
 			continue;
 		}
 
@@ -100,22 +104,22 @@ int main() {
 			Node entry = popEntry(ready_queue);
 			pushRunningQueue(running_queue, entry);
 			float cpuTime = getCPUTime(running_queue, entry.pid);
-			float newTime = (int) ( (cpuTime + DELTAT) * 100 + .5) / 100.0;
+			float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
 			setCPUTime(running_queue, entry.pid, newTime);
 		} else {
 			unsigned int runningProcPID = running_queue->first->pid;
 			float cpuTime = getCPUTime(running_queue, runningProcPID);
-			float newTime = (int) ( (cpuTime + DELTAT) * 100 + .5) / 100.0;
+			float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
 			setCPUTime(running_queue, runningProcPID, newTime);
 		}
 
 		unsigned int runningProcPID = running_queue->first->pid;
 		if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
 			setStatus(running_queue, runningProcPID, 3);
-			logFile(ready_queue, running_queue, GLOBALTIME);
+			logFile(ready_queue, running_queue, GLOBAL_TIME);
 			popEntry(running_queue);
 		} else {
-			logFile(ready_queue, running_queue, GLOBALTIME);
+			logFile(ready_queue, running_queue, GLOBAL_TIME);
 		}
 
 		if (!(check == -1)) {
