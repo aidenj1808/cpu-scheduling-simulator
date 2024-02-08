@@ -93,7 +93,6 @@ void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int n
 }
 
 Node popEntry(DataList *dataList, int index) {	
-
   	if(!dataList || !dataList->first){
     	printf("Datalist is empty.\n");
     	Node errorNode = {};
@@ -119,17 +118,6 @@ Node popEntry(DataList *dataList, int index) {
 	free(node->next);
 	node->next = tempNode;
 	dataList->size--;
-
-  	/*
-	Node *node = dataList->first;
-	while (node->next->next != NULL) {
-		node = node->next;
-	}
-	Node lastNode = *(node->next);
-	free(node->next);
-	node->next = NULL;
-	dataList->size--;
-	*/
 	return poppedNode;
 }
 
