@@ -92,7 +92,8 @@ void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int n
 	(*dataList)->size++;
 }
 
-Node popEntry(DataList *dataList) {	
+Node popEntry(DataList *dataList, int index) {	
+
   	if(!dataList || !dataList->first){
     	printf("Datalist is empty.\n");
     	Node errorNode = {};
@@ -106,7 +107,20 @@ Node popEntry(DataList *dataList) {
 		dataList->size--;
 		return lastNode;	
 	}
-  
+
+	Node *node = dataList->first;
+	int counter = 0;
+	while (counter != index - 1) {
+		node = node->next;
+		counter++;
+	}
+	Node poppedNode = *(node->next);
+	Node *tempNode = node->next->next;
+	free(node->next);
+	node->next = tempNode;
+	dataList->size--;
+
+  	/*
 	Node *node = dataList->first;
 	while (node->next->next != NULL) {
 		node = node->next;
@@ -115,7 +129,8 @@ Node popEntry(DataList *dataList) {
 	free(node->next);
 	node->next = NULL;
 	dataList->size--;
-	return lastNode;
+	*/
+	return poppedNode;
 }
 
 float getCPUTime(DataList *dataList, unsigned int pid) {

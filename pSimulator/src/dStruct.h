@@ -24,7 +24,7 @@ Node *getEntry(DataList *dataList, unsigned int pid, int index);
 
 void pushEntry(DataList **dataList, unsigned int pid, unsigned int status, int niceness, float cpuTime, float procTime);
 
-Node popEntry(DataList *dataList);
+Node popEntry(DataList *dataList, int index);
 
 float getCPUTime(DataList *dataList, unsigned int pid);
 

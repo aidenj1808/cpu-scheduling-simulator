@@ -80,6 +80,22 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	return 0;
 } 
 
+int getShortestJobIndex(DataList *ready_queue) {
+	int shortestJobIndex = 0;
+	int index = 0;
+	Node *node = ready_queue->first;
+	float shortestProcTime = node->procTime;
+	while (node != NULL) {
+		if (node->procTime < shortestProcTime) {
+			shortestProcTime = node->procTime;
+			shortestJobIndex = index;
+		}
+		node = node->next;
+		index++;
+	}
+	return shortestJobIndex;
+}
+
 void pushRunningQueue(DataList *running_queue, Node entry) {
 	pushEntry(&running_queue, entry.pid, 2, entry.niceness, entry.cpuTime,
 							  entry.procTime);
@@ -101,7 +117,7 @@ int main() {
 		}
 
 		if (running_queue->size == 0 && ready_queue->size != 0) {
-			Node entry = popEntry(ready_queue);
+			Node entry = popEntry(ready_queue, ready_queue->size - 1);
 			pushRunningQueue(running_queue, entry);
 			float cpuTime = getCPUTime(running_queue, entry.pid);
 			float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
@@ -117,7 +133,7 @@ int main() {
 		if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
 			setStatus(running_queue, runningProcPID, 3);
 			logFile(ready_queue, running_queue, GLOBAL_TIME);
-			popEntry(running_queue);
+			popEntry(running_queue, 0);
 		} else {
 			logFile(ready_queue, running_queue, GLOBAL_TIME);
 		}
