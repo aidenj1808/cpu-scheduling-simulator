@@ -4,13 +4,20 @@
 #include <dirent.h>
 
 #include "dStruct.h"
+/*TODO noticed that 10 procs made and only 9 are going in 1-8 and 10, but 
+9 is left in the newProc dir??*/
+
+#define ALGOR_FIFO 0
+#define ALGOR_SJF 1
+#define ALGOR_RR 0
+
+#define TIME_DT 0.10
+#define TIME_JIFFY 0
 
 float GLOBAL_TIME = 0.00;
+/*
 float TIME_DT = 0.10;
-float TIME_JIFFY = 0;
-int ALGOR_FIFO = 0;
-int ALGOR_SJF = 0;
-int ALGOR_RR = 0;
+float TIME_JIFFY = 0;*/
 
 void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
 	int len = snprintf(NULL, 0, "../log/log%.2f.txt", logTime);
@@ -50,6 +57,10 @@ void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
 
 int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	DIR *dirptr = opendir("../newProc/");
+	if (dirptr == NULL) {
+		printf("Error opening directory.\n");
+		return -1;
+	}
 	struct dirent *dp;
 	for (int i = 0; i < 3; i++) {dp = readdir(dirptr);} //skips . & .. & .gitkeep
 	dp = readdir(dirptr);
@@ -60,18 +71,65 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 
 	int newProcDirLen = strlen("../newProc/");
 	char *path = malloc(newProcDirLen + 1);
+	if (path == NULL) {
+		printf("could not allocate memory for path.\n");
+		return -1;
+	}
+
  	strcpy(path, "../newProc/");
 
 	int procFileLen = strlen(dp->d_name);
 	path = realloc(path, newProcDirLen + procFileLen + 1);
+	if (path == NULL) {
+		printf("Error reallocing path.\n");
+		return -1;
+	}
 	strcat(path, dp->d_name);
 	closedir(dirptr);
 
 	FILE *fptr = fopen(path, "r");
+	if (fptr == NULL) {
+		printf("Error opening file.\n");
+		return -1;
+	}
 	char *buffer = malloc(50);
+	if (buffer == NULL) {
+		printf("could not allocate memory for path.\n");
+		return -1;
+	}
 	fgets(buffer, 50, fptr);
+	//trying strtol
+	char *ptr;
+	float procTime = strtol(buffer, &ptr, 10);
+	if(ptr == buffer){
+		printf("could not parse.\n");
+		fclose(fptr);
+        remove(path);
+        free(path);
+		return -1;
+	}
+	//move pointer to the next token
+	ptr = strchr(ptr, ',');
+	if(ptr == NULL){
+		printf("could not parse 1.\n");
+		fclose(fptr);
+        remove(path);
+        free(path);
+		return -1;
+	}
+	ptr++; 
+	int niceness = strtol(ptr, &ptr, 10);
+	if(ptr == NULL || ptr == buffer){
+		printf("could not parse 2.\n");
+		fclose(fptr);
+        remove(path);
+        free(path);
+		return -1;
+	}
+
+	/*local giving error at atoi
 	float procTime = atoi(strtok(buffer, ","));
-	int niceness = atoi(strtok(NULL, ","));
+	int niceness = atoi(strtok(NULL, ","));*/
 	pushEntry(&ready_queue, pid, 1, niceness, 0.0, procTime);
 	fclose(fptr);
 	remove(path);
@@ -117,7 +175,24 @@ int main() {
 		}
 
 		if (running_queue->size == 0 && ready_queue->size != 0) {
-			Node entry = popEntry(ready_queue, ready_queue->size - 1);
+			Node entry;
+			if(ALGOR_SJF){
+				//SJF must search for the min proc then pop from that index
+				printf("sjf\n");
+				int index = getShortestJobIndex(ready_queue);
+				entry = popEntry(ready_queue, index);
+			}
+			else{
+				if(ALGOR_FIFO){
+					printf("fifo\n");
+				}
+				if (ALGOR_RR){
+					printf("rr\n");
+				}
+				
+				//both FIFO and RR will pop from the "end"
+				entry = popEntry(ready_queue, ready_queue->size - 1);
+			}
 			pushRunningQueue(running_queue, entry);
 			float cpuTime = getCPUTime(running_queue, entry.pid);
 			float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;

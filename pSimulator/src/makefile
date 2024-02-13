@@ -1,4 +1,4 @@
-CFLAGS= -Wall -std=c11
+CFLAGS= -Wall 
 CC= gcc 
 
 
@@ -27,9 +27,10 @@ valgrindTestPlotData: plotData
 
 clean:
 	rm -f *.o *~ *.txt
-	rm ../log/log*
-	rm procSim
-	rm plotData
+	rm -f ../newProc/*.txt
+	rm -f ../log/log*
+	rm -f procSim
+	rm -f plotData
 	touch ../log/.gitkeep
 testing: test #if we want a file to diff good.txt 
 	./procSim > testOut.txt 
