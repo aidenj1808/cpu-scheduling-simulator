@@ -8,11 +8,11 @@
 9 is left in the newProc dir??*/
 
 #define ALGOR_FIFO 0
-#define ALGOR_SJF 1
-#define ALGOR_RR 0
+#define ALGOR_SJF 0
+#define ALGOR_RR 1
 
 #define TIME_DT 0.10
-#define TIME_JIFFY 0
+#define TIME_JIFFY 0.10
 
 float GLOBAL_TIME = 0.00;
 /*
@@ -165,7 +165,7 @@ int main() {
 	unsigned int nextPID = 1;
 
 	do {
-		GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
+		GLOBAL_TIME = GLOBAL_TIME + TIME_DT; //update global time 
 
 		int check = pushReadyQueue(ready_queue, nextPID);
 		if (GLOBAL_TIME == 0.00 + TIME_DT) {
@@ -178,30 +178,44 @@ int main() {
 			Node entry;
 			if(ALGOR_SJF){
 				//SJF must search for the min proc then pop from that index
-				printf("sjf\n");
+				printf("sjf 1\n");
 				int index = getShortestJobIndex(ready_queue);
 				entry = popEntry(ready_queue, index);
 			}
 			else{
 				if(ALGOR_FIFO){
-					printf("fifo\n");
+					printf("fifo 1\n");
 				}
 				if (ALGOR_RR){
-					printf("rr\n");
+					printf("rr 1\n");
 				}
 				
 				//both FIFO and RR will pop from the "end"
 				entry = popEntry(ready_queue, ready_queue->size - 1);
 			}
+			//push new proc to running if running is empty
 			pushRunningQueue(running_queue, entry);
 			float cpuTime = getCPUTime(running_queue, entry.pid);
 			float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
 			setCPUTime(running_queue, entry.pid, newTime);
+
 		} else {
+			//if a proc already on running queue
 			unsigned int runningProcPID = running_queue->first->pid;
 			float cpuTime = getCPUTime(running_queue, runningProcPID);
 			float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
 			setCPUTime(running_queue, runningProcPID, newTime);
+
+			//for RR algor & if time jiffy then pop running push to ready, pop next ready push to running 
+			if (ALGOR_RR && cpuTime >= TIME_JIFFY){//TODO not fully sure on the time jiffy comparison
+					printf("rr 2\n");
+					Node runPop = popEntry(running_queue, 0);
+					//status back to ready
+					pushEntry(&ready_queue, runPop.pid, 1, runPop.niceness, runPop.cpuTime, runPop.procTime);
+					Node readyPop = popEntry(ready_queue, ready_queue->size - 1);
+					pushRunningQueue(running_queue, readyPop);
+
+			}
 		}
 
 		unsigned int runningProcPID = running_queue->first->pid;
