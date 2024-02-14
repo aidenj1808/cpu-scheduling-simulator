@@ -43,12 +43,18 @@ void destroyInfoList(InfoList **infoList){
     *infoList = NULL;
 }
 
-float setScale(int length, float *data){
+float setScale(InfoList *infoList){
 	double totalTime;
 	float scale = 1.0; 
 
-	for(int i = 1; i < length; i = i + 2){
-		totalTime += data[i] * 20;
+	if(!infoList){
+        printf("infolist is empty.\n");
+        return 0;
+    }
+	Info *node = infoList->first;
+	while (node != NULL) {
+		totalTime += node->cpuTime * 20;
+		node = node->next;
 	}
 
 	if(totalTime > MAXWIDTH){
@@ -119,7 +125,6 @@ void getGraphData(int fileCount, InfoList *infoList){
 	FILE *fptr;
 	struct dirent *dp;
 	DIR *dirptr = opendir("../log/");
-	int index = 0;
 
 	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
 	while ((dp = readdir(dirptr)) != NULL) {
@@ -138,7 +143,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 			float globalTime = atoi(strtok(buffer, ","));
             unsigned int pid = atoi(strtok(NULL, ","));
 			unsigned int status = atoi(strtok(NULL, ","));
-			float niceness = atoi(strtok(NULL, ","));//dont need for now...
+			strtok(NULL, ",");//niceness dont need for now...
 			float cpuTime = atoi(strtok(NULL, ","));//as of now cpu and proc time the same
 			float procTime = atoi(strtok(NULL, ","));
 
@@ -156,25 +161,29 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->Tarr = globalTime;
 					newProc->cpuTime = cpuTime;
 					newProc->procTime = procTime;
-					//idk if better to set the rest of it to null atm or just leave them
+					newProc->r = -1;
+					newProc->g = -1;
+					newProc->b = -1;
+					newProc->Trun = -1;
 
-					if ((*infoList)->size == 0) {
+					if (infoList->size == 0) {
 						newProc->next = NULL;
-						(*infoList)->first = newProc;
+						infoList->first = newProc;
 					} else {
-						newProc->next = (*infoList)->first;
-						(*infoList)->first = newProc;
+						newProc->next = infoList->first;
+						infoList->first = newProc;
 					}
-					(*infoList)->size++;
+					infoList->size++;
 				}
 				break;
 			}
+
 			if (status == 2) {
 				//will need to get the entry and set Trun = globalTime
-				setRUNTime(infoList, pid, globalTime);
+				setRUNTime(infoList, pid, globalTime);//in func it checks if it has been set already if it has it doesnt
 				break;
 			}
-			if (status == 3) {
+			if (status == 3) {//should only appear as 3 once so dont need to check? can just set
 				//will need to get the entry and set Text = globalTime
 				setEXTTime(infoList, pid, globalTime);
 				break;
@@ -186,7 +195,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 	}
 	closedir(dirptr);
 	//TODO delete this after just doing a test
-	if((*infoList)->size == fileCount){
+	if(infoList->size == fileCount){
 		printf("size of list equal to file count\n");
 	}
 	return;
@@ -212,7 +221,7 @@ void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime){
 	}
 }
 
-void setRunTime(InfoList *infoList, unsigned int pid, float globalTime){
+void setRUNTime(InfoList *infoList, unsigned int pid, float globalTime){
     if(!infoList){
         printf("infoList is empty.\n");
         return;
@@ -220,7 +229,9 @@ void setRunTime(InfoList *infoList, unsigned int pid, float globalTime){
 	Info *node = infoList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
-			node->Trun = globalTime;
+			if(node->Trun == -1){
+				node->Trun = globalTime;
+			}
 			break;
 		}
 		node = node->next;
@@ -276,83 +287,98 @@ float randCol(){
 	return (float) rand() / ((float) (RAND_MAX)) * max;
 }
 
-int plotData(int length, float *data){
-  //initialize cairo
-  cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, WIDTH, HEIGHT);
+//TODO this is still old plot data will need to change to use struct 
+int plotData(InfoList *infoList){
+	if(!infoList || infoList->size == 0){
+        printf("infolist is empty.\n");
+        return 0;
+    }
+	//initialize cairo
+  	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, WIDTH, HEIGHT);
 
-  cairo_t *cr = cairo_create(surface);
+  	cairo_t *cr = cairo_create(surface);
 
-  //set the background to white
-  cairo_set_source_rgb(cr, 1, 1, 1);
-  cairo_rectangle(cr, 0, 0, WIDTH, HEIGHT);
-  cairo_fill(cr);
+  	//set the background to white
+  	cairo_set_source_rgb(cr, 1, 1, 1);
+  	cairo_rectangle(cr, 0, 0, WIDTH, HEIGHT);
+  	cairo_fill(cr);
 
-  //initial positions
-  double x = 100;
-  double y = 200;
-  double label = 0;
+  	//initial positions
+  	double x = 100;
+  	double y = 200;
+  	double label = 0;
   
-  srand((unsigned int) time(NULL));
-  float scale = setScale(length, data); 
-  //loop through to create the squares
-  for (int i = 0; i < length; i = i+2) {
-    double width = data[i+1] * 20 * scale;
+  	srand((unsigned int) time(NULL));
+  	float scale = setScale(infoList); //TODO test
 
-    float r = randCol();
-    float g = randCol();
-    float b = randCol();
+	Info *node = infoList->first;
+  	//loop through to create the squares
+	while (node != NULL) {
 
-    cairo_rectangle(cr, x, y, width, 50);
-    //given colour based off of pid since pid unique
-    cairo_set_source_rgb(cr, r, g, b);
-    cairo_fill(cr);
+		double width = node->cpuTime * 20 * scale;
 
-    //write pid label
-    char pidLabel[15];
-    sprintf(pidLabel, "%.f", data[i]);
-    cairo_set_font_size(cr, 22);
-    cairo_move_to(cr, x + (width * 0.3), y + 25); 
-    cairo_set_source_rgba(cr, 0, 0, 0, 1);
-    cairo_show_text(cr, pidLabel);
+		//for RR set and save so that same colour used throughout
+		if(node->r == -1){
+			node->r = randCol();
+			node->g = randCol();
+			node->b = randCol();
+		}
+		float r = node->r;
+		float g = node->g;
+		float b = node->b;
 
-    x += width; //for starting position of next 
-    label = x;    
+    	cairo_rectangle(cr, x, y, width, 50);
+    	//given colour based off of pid since pid unique
+    	cairo_set_source_rgb(cr, r, g, b);
+    	cairo_fill(cr);
+
+    	//write pid label
+    	char pidLabel[15];
+    	sprintf(pidLabel, "%.d", node->pid);
+    	cairo_set_font_size(cr, 22);
+    	cairo_move_to(cr, x + (width * 0.3), y + 25); 
+    	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+    	cairo_show_text(cr, pidLabel);
+
+    	x += width; //for starting position of next 
+    	label = x;  
+		node = node->next;  
 	}
 
-  //line and label
-  cairo_set_source_rgb(cr, 0, 0, 0);
-  cairo_move_to(cr, 100, HEIGHT - 150);
-  cairo_line_to(cr, label + 50, HEIGHT - 150);
-  cairo_stroke(cr);
+  	//line and label
+  	cairo_set_source_rgb(cr, 0, 0, 0);
+  	cairo_move_to(cr, 100, HEIGHT - 150);
+  	cairo_line_to(cr, label + 50, HEIGHT - 150);
+  	cairo_stroke(cr);
 
-  //arrow head
-  cairo_move_to(cr, label + 50, HEIGHT - 150);
-  cairo_line_to(cr, label + 30, HEIGHT - 155);
-  cairo_stroke(cr);
-  cairo_move_to(cr, label + 50, HEIGHT - 150);
-  cairo_line_to(cr, label + 30, HEIGHT - 145);
-  cairo_stroke(cr);
+  	//arrow head
+  	cairo_move_to(cr, label + 50, HEIGHT - 150);
+  	cairo_line_to(cr, label + 30, HEIGHT - 155);
+  	cairo_stroke(cr);
+  	cairo_move_to(cr, label + 50, HEIGHT - 150);
+  	cairo_line_to(cr, label + 30, HEIGHT - 145);
+  	cairo_stroke(cr);
 
-  cairo_set_font_size(cr, 18);
-  cairo_move_to(cr, label + 50, HEIGHT - 130);
-  cairo_set_source_rgba(cr, 0, 0, 0, 1);
-  cairo_show_text(cr, "t");
+  	cairo_set_font_size(cr, 18);
+  	cairo_move_to(cr, label + 50, HEIGHT - 130);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+  	cairo_show_text(cr, "t");
 
-  time_t t = time(NULL);
-  struct tm *tm_info = localtime(&t);
-  char date[20]; 
-  strftime(date, sizeof(date), "%m-%d-%Y-%H:%M:%S", tm_info);
-  char filename[50];
-  snprintf(filename, sizeof(filename), "../log/log-%s.png", date);
+  	time_t t = time(NULL);
+  	struct tm *tm_info = localtime(&t);
+  	char date[20]; 
+  	strftime(date, sizeof(date), "%m-%d-%Y-%H:%M:%S", tm_info);
+  	char filename[50];
+  	snprintf(filename, sizeof(filename), "../log/log-%s.png", date);
 
 
-  // save the image  
-  cairo_surface_write_to_png(surface, filename);
+  	// save the image  
+  	cairo_surface_write_to_png(surface, filename);
 
-  cairo_destroy(cr);
-  cairo_surface_destroy(surface);
+  	cairo_destroy(cr);
+  	cairo_surface_destroy(surface);
 
-  return 0;
+  	return 0;
 }
 
 int main() {
@@ -365,6 +391,8 @@ int main() {
 
 	//will need to change getGrapData, no return just pass the infoList and parse file 
 	getGraphData(fileCount, infoList);
+	//TODO change plot data to work with the struct now
+	plotData(infoList);//TODO test
 
 	/*previous calls using just an array
 	//int fileCount = getFileCount("../log/");
