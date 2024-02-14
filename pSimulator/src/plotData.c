@@ -5,12 +5,43 @@
 #include <cairo/cairo.h>
 #include <time.h>
 
+#include "plotData.h"
+
 #define WIDTH 900
 #define HEIGHT 400
 #define MAXWIDTH 700
 
 //LOG FILE FORMAT
 //log time, pid, status, niceness, cputime, proctime
+
+InfoList *createInfoList(){
+	InfoList *infoList = malloc(sizeof(InfoList));
+	if (infoList == NULL) {
+		printf("could not allocate memory for info list.\n");
+		exit(EXIT_FAILURE);
+	}
+	infoList->first = NULL;
+	infoList->size = 0;
+	return infoList;
+}
+
+void destroyInfoList(InfoList **infoList){
+    //loop through save position to the next free current, do for each
+    if (!*infoList){
+        printf("Infolist is empty\n");
+        return;
+    }
+    InfoList *list = *infoList;
+	Info *info = list->first;
+    while (info != NULL){
+        Info *temp = info;
+        info = info->next;
+        free(temp);
+    }
+	free(list);
+    //now point to NULL
+    *infoList = NULL;
+}
 
 float setScale(int length, float *data){
 	double totalTime;
@@ -26,7 +57,23 @@ float setScale(int length, float *data){
 	return scale;
 }
 
-float *getGraphData(int fileCount) {
+int searchEntryPID(InfoList *infoList, unsigned int pid){
+    if(!infoList){
+        printf("infolist is empty.\n");
+        return 0;
+    }
+	Info *node = infoList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			return 1;
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+//old version
+/*float *getGraphData(int fileCount) {
 	FILE *fptr;
 	struct dirent *dp;
 	DIR *dirptr = opendir("../log/");
@@ -66,6 +113,123 @@ float *getGraphData(int fileCount) {
 	}
 	closedir(dirptr);
 	return data;
+}*/
+//new getGraphData
+void getGraphData(int fileCount, InfoList *infoList){
+	FILE *fptr;
+	struct dirent *dp;
+	DIR *dirptr = opendir("../log/");
+	int index = 0;
+
+	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
+	while ((dp = readdir(dirptr)) != NULL) {
+	 	int len = strlen("../log/");
+		char *path = malloc(len + 1);
+ 		strcpy(path, "../log/");
+
+		int len2 = strlen(dp->d_name);
+		path = realloc(path, len + len2 + 1);
+		strcat(path, dp->d_name);
+
+		fptr = fopen(path, "r");
+		char *buffer = malloc(100);
+		fgets(buffer, 100, fptr); // Skips header
+		while (fgets(buffer, 100, fptr) != NULL) {
+			float globalTime = atoi(strtok(buffer, ","));
+            unsigned int pid = atoi(strtok(NULL, ","));
+			unsigned int status = atoi(strtok(NULL, ","));
+			float niceness = atoi(strtok(NULL, ","));//dont need for now...
+			float cpuTime = atoi(strtok(NULL, ","));//as of now cpu and proc time the same
+			float procTime = atoi(strtok(NULL, ","));
+
+			//need to check stat == 1 AND pid !in infoList
+			if (status == 1) {
+				//check if already in infolist 0 (not in) 1 (in)
+				int check = searchEntryPID(infoList, pid);
+				if(!check){
+					Info *newProc = malloc(sizeof(Info));
+					if (newProc == NULL) {
+						printf("could not allocate memory for new proc.\n");
+						return;
+					}
+					newProc->pid = pid;
+					newProc->Tarr = globalTime;
+					newProc->cpuTime = cpuTime;
+					newProc->procTime = procTime;
+					//idk if better to set the rest of it to null atm or just leave them
+
+					if ((*infoList)->size == 0) {
+						newProc->next = NULL;
+						(*infoList)->first = newProc;
+					} else {
+						newProc->next = (*infoList)->first;
+						(*infoList)->first = newProc;
+					}
+					(*infoList)->size++;
+				}
+				break;
+			}
+			if (status == 2) {
+				//will need to get the entry and set Trun = globalTime
+				setRUNTime(infoList, pid, globalTime);
+				break;
+			}
+			if (status == 3) {
+				//will need to get the entry and set Text = globalTime
+				setEXTTime(infoList, pid, globalTime);
+				break;
+			}
+		}
+		fclose(fptr);
+		free(path);
+		free(buffer);
+	}
+	closedir(dirptr);
+	//TODO delete this after just doing a test
+	if((*infoList)->size == fileCount){
+		printf("size of list equal to file count\n");
+	}
+	return;
+}
+
+void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime){
+    if(!infoList){
+        printf("infoList is empty.\n");
+        return;
+    }
+	Info *node = infoList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			node->Text = globalTime;
+			break;
+		}
+		node = node->next;
+	}
+  
+	if (node == NULL) {
+		printf("setEXTTime error: PID: %u does not exist\n", pid);
+		return;
+	}
+}
+
+void setRunTime(InfoList *infoList, unsigned int pid, float globalTime){
+    if(!infoList){
+        printf("infoList is empty.\n");
+        return;
+    }
+	Info *node = infoList->first;
+	while (node != NULL) {
+		if (node->pid == pid) {
+			node->Trun = globalTime;
+			break;
+		}
+		node = node->next;
+	}
+  
+	if (node == NULL) {
+		printf("setRUNTime error: PID: %u does not exist\n", pid);
+		return;
+	}
 }
 
 int getFileCount(char *path) {
@@ -192,9 +356,24 @@ int plotData(int length, float *data){
 }
 
 int main() {
+	//create infolist
+	InfoList *infoList = createInfoList();
+
+	//didnt change getFileCount
+	//TODO do we want to keep it so it counts how many processes finish? do we assume all finish?
 	int fileCount = getFileCount("../log/");
+
+	//will need to change getGrapData, no return just pass the infoList and parse file 
+	getGraphData(fileCount, infoList);
+
+	/*previous calls using just an array
+	//int fileCount = getFileCount("../log/");
 	float *values = getGraphData(fileCount);
     plotData(fileCount * 2, values);
-	free(values);
+	free(values);*/
+
+	//destroy info list
+	destroyInfoList(&infoList);
+
 	return 0;
 }
