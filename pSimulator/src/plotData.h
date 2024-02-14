@@ -19,7 +19,7 @@ typedef struct Info {
 } Info;
 
 typedef struct InfoList {
-	struct Node *first;
+	struct Info *first;
 	int size;//number of procs
     //maybe in here save a total for Tturn and Tresp?? then will be easy to calc avg at end?
 } InfoList;
@@ -30,19 +30,20 @@ void destroyInfoList(InfoList **infoList);
 
 int searchEntryPID(InfoList *infoList, unsigned int pid);
 
-int plotData(int length, float *data);
+//int plotData(int length, float *data);//old
+int plotData(InfoList *infoList);//new
 
 void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime);
 
 void setRUNTime(InfoList *infoList, unsigned int pid, float globalTime);
 
-float randCol(float pid);
+float randCol();
 
 //float *getGraphData(int fileCount); //old call
 void getGraphData(int fileCount, InfoList *infoList);//new call
 
 int getFileCount(char *path);
 
-float setScale(int length, float *data);
+float setScale(InfoList *infoList);
 
 #endif /* PLOTDATA_H */

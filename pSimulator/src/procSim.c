@@ -7,9 +7,9 @@
 /*TODO noticed that 10 procs made and only 9 are going in 1-8 and 10, but 
 9 is left in the newProc dir??*/
 
-#define ALGOR_FIFO 0
+#define ALGOR_FIFO 1
 #define ALGOR_SJF 0
-#define ALGOR_RR 1
+#define ALGOR_RR 0
 
 #define TIME_DT 0.10
 #define TIME_JIFFY 0.10
@@ -102,7 +102,7 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	char *ptr;
 	float procTime = strtol(buffer, &ptr, 10);
 	if(ptr == buffer){
-		printf("could not parse.\n");
+		printf("could not parse.\n");//TODO for some reason fails on first run but then if you run it again it works?
 		fclose(fptr);
         remove(path);
         free(path);
