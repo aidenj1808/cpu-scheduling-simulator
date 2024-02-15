@@ -5,10 +5,13 @@
 
 #include "dStruct.h"
 /*TODO noticed that 10 procs made and only 9 are going in 1-8 and 10, but 
-9 is left in the newProc dir??*/
+9 is left in the newProc dir??
+--> when FIFO it doesnt read in the first proc so 9/10 are there, seg faults on first run
+--> when SJF it will go like 4 rounds and seg fault BUT it reads in 10/10 procs
+*/
 
-#define ALGOR_FIFO 0
-#define ALGOR_SJF 1
+#define ALGOR_FIFO 1
+#define ALGOR_SJF 0
 #define ALGOR_RR 0
 
 #define TIME_DT 0.10

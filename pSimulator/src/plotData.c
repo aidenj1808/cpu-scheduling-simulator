@@ -238,6 +238,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 		free(buffer);
 	}
 	closedir(dirptr);
+	calcAVG(infoList);
 	//TODO delete this after just doing a test
 	if(infoList->size == fileCount){
 		printf("size of list equal to file count\n");
@@ -333,7 +334,7 @@ float randCol(){
 	return (float) rand() / ((float) (RAND_MAX)) * max;
 }
 
-//TODO this is still old plot data will need to change to use struct 
+//TODO testing, RR...
 int plotData(InfoList *infoList){
 	if(!infoList || infoList->size == 0){
         printf("infolist is empty.\n");
@@ -410,6 +411,9 @@ int plotData(InfoList *infoList){
   	cairo_set_source_rgba(cr, 0, 0, 0, 1);
   	cairo_show_text(cr, "t");
 
+	//draw the calculations 
+	
+
   	time_t t = time(NULL);
   	struct tm *tm_info = localtime(&t);
   	char date[20]; 
@@ -425,6 +429,24 @@ int plotData(InfoList *infoList){
   	cairo_surface_destroy(surface);
 
   	return 0;
+}
+
+void calcAVG(InfoList *infoList){
+	Info *current = infoList->first;
+	float tmp;
+    while (current != NULL){
+		//tresp = trun - tarr
+		tmp = current->Trun - current->Tarr;
+		infoList->Tresp += tmp;
+		//tturn = text - tarr
+		tmp = current->Text - current->Tarr;
+		infoList->Tturn += tmp;
+	}
+
+	infoList->Tresp = infoList->Tresp / infoList->size;
+	infoList->Tturn = infoList->Tturn / infoList->size;
+
+	return;
 }
 
 int main() {
