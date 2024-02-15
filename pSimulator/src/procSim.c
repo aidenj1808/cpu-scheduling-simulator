@@ -7,8 +7,8 @@
 /*TODO noticed that 10 procs made and only 9 are going in 1-8 and 10, but 
 9 is left in the newProc dir??*/
 
-#define ALGOR_FIFO 1
-#define ALGOR_SJF 0
+#define ALGOR_FIFO 0
+#define ALGOR_SJF 1
 #define ALGOR_RR 0
 
 #define TIME_DT 0.10

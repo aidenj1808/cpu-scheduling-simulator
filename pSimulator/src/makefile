@@ -32,6 +32,7 @@ clean:
 	rm -f procSim
 	rm -f plotData
 	touch ../log/.gitkeep
+	touch ../newProc/.gitkeep
 testing: test #if we want a file to diff good.txt 
 	./procSim > testOut.txt 
 
