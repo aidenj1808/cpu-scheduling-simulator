@@ -10,8 +10,8 @@
 --> when SJF it will go like 4 rounds and seg fault BUT it reads in 10/10 procs
 */
 
-#define ALGOR_FIFO 1
-#define ALGOR_SJF 0
+#define ALGOR_FIFO 0
+#define ALGOR_SJF 1
 #define ALGOR_RR 0
 
 #define TIME_DT 0.10
@@ -78,7 +78,6 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 		printf("could not allocate memory for path.\n");
 		return -1;
 	}
-
  	strcpy(path, "../newProc/");
 
 	int procFileLen = strlen(dp->d_name);
@@ -100,39 +99,10 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 		printf("could not allocate memory for path.\n");
 		return -1;
 	}
-	fgets(buffer, 50, fptr);
-	//trying strtol
-	char *ptr;
-	float procTime = strtol(buffer, &ptr, 10);
-	if(ptr == buffer){
-		printf("could not parse.\n");//TODO for some reason fails on first run but then if you run it again it works?
-		fclose(fptr);
-        remove(path);
-        free(path);
-		return -1;
-	}
-	//move pointer to the next token
-	ptr = strchr(ptr, ',');
-	if(ptr == NULL){
-		printf("could not parse 1.\n");
-		fclose(fptr);
-        remove(path);
-        free(path);
-		return -1;
-	}
-	ptr++; 
-	int niceness = strtol(ptr, &ptr, 10);
-	if(ptr == NULL || ptr == buffer){
-		printf("could not parse 2.\n");
-		fclose(fptr);
-        remove(path);
-        free(path);
-		return -1;
-	}
 
-	/*local giving error at atoi
+	fgets(buffer, 50, fptr);
 	float procTime = atoi(strtok(buffer, ","));
-	int niceness = atoi(strtok(NULL, ","));*/
+	int niceness = atoi(strtok(NULL, ","));
 	pushEntry(&ready_queue, pid, 1, niceness, 0.0, procTime);
 	fclose(fptr);
 	remove(path);
