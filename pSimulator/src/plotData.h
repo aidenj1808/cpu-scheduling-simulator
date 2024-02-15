@@ -60,4 +60,10 @@ float setScale(InfoList *infoList);
 //calculates the avg Tresp and Tturn for the given procs 
 void calcAVG(InfoList *infoList); 
 
+//sort based on smallest trun to largest 
+void sortList(InfoList *infoList);
+
+//sort helper to swap node positions
+void swapNodes(InfoList *infoList);
+
 #endif /* PLOTDATA_H */

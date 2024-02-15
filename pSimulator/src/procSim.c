@@ -10,8 +10,8 @@
 --> when SJF it will go like 4 rounds and seg fault BUT it reads in 10/10 procs
 */
 
-#define ALGOR_FIFO 0
-#define ALGOR_SJF 1
+#define ALGOR_FIFO 1
+#define ALGOR_SJF 0
 #define ALGOR_RR 0
 
 #define TIME_DT 0.10
