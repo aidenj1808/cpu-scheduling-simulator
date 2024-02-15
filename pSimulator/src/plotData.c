@@ -78,6 +78,18 @@ int searchEntryPID(InfoList *infoList, unsigned int pid){
 	return 0;
 }
 
+void printInfoList(InfoList *infoList){
+    Info *current = infoList->first;
+    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text   Tturn   Tresp\n");
+    while (current != NULL) {
+        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f%-8.2f%-8.2f\n",
+               current->pid, current->r, current->g, current->b,
+               current->cpuTime, current->procTime, current->Tarr,
+               current->Trun, current->Text, current->Tturn, current->Tresp);
+        current = current->next;
+    }
+}
+
 //old version
 /*float *getGraphData(int fileCount) {
 	FILE *fptr;
@@ -140,12 +152,38 @@ void getGraphData(int fileCount, InfoList *infoList){
 		char *buffer = malloc(100);
 		fgets(buffer, 100, fptr); // Skips header
 		while (fgets(buffer, 100, fptr) != NULL) {
-			float globalTime = atoi(strtok(buffer, ","));
+			printf("Getgraphdata function: \n");
+			float globalTime = atof(strtok(buffer, ","));
+			printf("global time: %.2f ", globalTime);
             unsigned int pid = atoi(strtok(NULL, ","));
+			printf("PID: %u ", pid);
 			unsigned int status = atoi(strtok(NULL, ","));
+			printf("Status: %u", status);
 			strtok(NULL, ",");//niceness dont need for now...
-			float cpuTime = atoi(strtok(NULL, ","));//as of now cpu and proc time the same
-			float procTime = atoi(strtok(NULL, ","));
+			float cpuTime = atof(strtok(NULL, ","));//as of now cpu and proc time the same
+			//printf("CPU Time: %.2f\n", cpuTime);
+			float procTime = atof(strtok(NULL, ","));
+			//printf("Proc Time: %.2f\n", procTime);
+
+			//because pid 1 gets pushed immed there is no status == 1 so..
+			if(infoList->size == 0){
+				Info *newProc = malloc(sizeof(Info));
+					if (newProc == NULL) {
+						printf("could not allocate memory for new proc.\n");
+						return;
+					}
+					newProc->pid = pid;
+					newProc->Tarr = 0.0;
+					newProc->procTime = procTime;
+					newProc->r = -1;
+					newProc->g = -1;
+					newProc->b = -1;
+					newProc->Trun = -1;
+
+					infoList->first = newProc;
+					infoList->size++;
+
+			}
 
 			//need to check stat == 1 AND pid !in infoList
 			if (status == 1) {
@@ -159,34 +197,40 @@ void getGraphData(int fileCount, InfoList *infoList){
 					}
 					newProc->pid = pid;
 					newProc->Tarr = globalTime;
-					newProc->cpuTime = cpuTime;
 					newProc->procTime = procTime;
 					newProc->r = -1;
 					newProc->g = -1;
 					newProc->b = -1;
 					newProc->Trun = -1;
 
+					//linked list not a queue (insert at the back)
 					if (infoList->size == 0) {
-						newProc->next = NULL;
 						infoList->first = newProc;
 					} else {
-						newProc->next = infoList->first;
-						infoList->first = newProc;
+						//find the last
+						Info *current = infoList->first;
+            			while (current->next != NULL) {
+                			current = current->next;
+            			}
+            			current->next = newProc;
 					}
 					infoList->size++;
+					/*printf("pid: %d, Tarr: %.2f, " 
+						"procTime: %.2f, "
+						"rgb: %.2f,%.2f,%.2f, "
+						"Trun: %.2f, size of list: %d\n", 
+						newProc->pid, newProc->Tarr, newProc->procTime, newProc->r, newProc->g, newProc->b, newProc->Trun, infoList->size);*/
 				}
-				break;
 			}
-
+			
 			if (status == 2) {
+				printf("status is 2 and runtime is %f\n", globalTime);
 				//will need to get the entry and set Trun = globalTime
 				setRUNTime(infoList, pid, globalTime);//in func it checks if it has been set already if it has it doesnt
-				break;
 			}
 			if (status == 3) {//should only appear as 3 once so dont need to check? can just set
 				//will need to get the entry and set Text = globalTime
-				setEXTTime(infoList, pid, globalTime);
-				break;
+				setEXTTime(infoList, pid, globalTime, cpuTime);
 			}
 		}
 		fclose(fptr);
@@ -201,7 +245,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 	return;
 }
 
-void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime){
+void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime, float cpuTime){
     if(!infoList){
         printf("infoList is empty.\n");
         return;
@@ -209,8 +253,10 @@ void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime){
 	Info *node = infoList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
+			node->cpuTime = cpuTime;
 			node->Text = globalTime;
-			break;
+			printf("Text: %f, cpu: %f\n", node->Text, node->cpuTime);
+			return;
 		}
 		node = node->next;
 	}
@@ -232,7 +278,7 @@ void setRUNTime(InfoList *infoList, unsigned int pid, float globalTime){
 			if(node->Trun == -1){
 				node->Trun = globalTime;
 			}
-			break;
+			return;
 		}
 		node = node->next;
 	}
@@ -393,6 +439,8 @@ int main() {
 	getGraphData(fileCount, infoList);
 	//TODO change plot data to work with the struct now
 	plotData(infoList);//TODO test
+	//testt print function
+	printInfoList(infoList);
 
 	/*previous calls using just an array
 	//int fileCount = getFileCount("../log/");

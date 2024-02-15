@@ -30,10 +30,12 @@ void destroyInfoList(InfoList **infoList);
 
 int searchEntryPID(InfoList *infoList, unsigned int pid);
 
+void printInfoList(InfoList *infoList);
+
 //int plotData(int length, float *data);//old
 int plotData(InfoList *infoList);//new
 
-void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime);
+void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime, float cpuTime);
 
 void setRUNTime(InfoList *infoList, unsigned int pid, float globalTime);
 
