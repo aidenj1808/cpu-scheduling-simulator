@@ -164,75 +164,87 @@ int main() {
 	DataList *running_queue = createDataList();
 	unsigned int nextPID = 1;
 
-	do {
-		GLOBAL_TIME = GLOBAL_TIME + TIME_DT; //update global time 
+	if (ALGOR_FIFO) {
+		do {
+			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
-		int check = pushReadyQueue(ready_queue, nextPID);
-		if (GLOBAL_TIME == 0.00 + TIME_DT) {
-			nextPID++;
-			logFile(ready_queue, running_queue, GLOBAL_TIME);
-			continue;
-		}
-
-		if (running_queue->size == 0 && ready_queue->size != 0) {
-			Node entry;
-			if(ALGOR_SJF){
-				//SJF must search for the min proc then pop from that index
-				printf("sjf 1\n");
-				int index = getShortestJobIndex(ready_queue);
-				entry = popEntry(ready_queue, index);
+			int check = pushReadyQueue(ready_queue, nextPID);
+			if (GLOBAL_TIME == 0.00 + TIME_DT) {
+				nextPID++;
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				continue;
 			}
-			else{
-				if(ALGOR_FIFO){
-					printf("fifo 1\n");
-				}
-				if (ALGOR_RR){
-					printf("rr 1\n");
-				}
-				
-				//both FIFO and RR will pop from the "end"
-				entry = popEntry(ready_queue, ready_queue->size - 1);
-			}
-			//push new proc to running if running is empty
-			pushRunningQueue(running_queue, entry);
-			float cpuTime = getCPUTime(running_queue, entry.pid);
-			float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
-			setCPUTime(running_queue, entry.pid, newTime);
 
-		} else {
-			//if a proc already on running queue
+			if (running_queue->size == 0 && ready_queue->size != 0) {
+				Node entry = popEntry(ready_queue, ready_queue->size - 1);
+				pushRunningQueue(running_queue, entry);
+				float cpuTime = getCPUTime(running_queue, entry.pid);
+				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+				setCPUTime(running_queue, entry.pid, newTime);
+			} else {
+				unsigned int runningProcPID = running_queue->first->pid;
+				float cpuTime = getCPUTime(running_queue, runningProcPID);
+				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+				setCPUTime(running_queue, runningProcPID, newTime);
+			}
+
 			unsigned int runningProcPID = running_queue->first->pid;
-			float cpuTime = getCPUTime(running_queue, runningProcPID);
-			float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
-			setCPUTime(running_queue, runningProcPID, newTime);
-
-			//for RR algor & if time jiffy then pop running push to ready, pop next ready push to running 
-			if (ALGOR_RR && cpuTime >= TIME_JIFFY){//TODO not fully sure on the time jiffy comparison
-					printf("rr 2\n");
-					Node runPop = popEntry(running_queue, 0);
-					//status back to ready
-					pushEntry(&ready_queue, runPop.pid, 1, runPop.niceness, runPop.cpuTime, runPop.procTime);
-					Node readyPop = popEntry(ready_queue, ready_queue->size - 1);
-					pushRunningQueue(running_queue, readyPop);
-
+			if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
+				setStatus(running_queue, runningProcPID, 3);
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				popEntry(running_queue, 0);
+			} else {
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
 			}
-		}
 
-		unsigned int runningProcPID = running_queue->first->pid;
-		if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
-			setStatus(running_queue, runningProcPID, 3);
-			logFile(ready_queue, running_queue, GLOBAL_TIME);
-			popEntry(running_queue, 0);
-		} else {
-			logFile(ready_queue, running_queue, GLOBAL_TIME);
-		}
+			if (!(check == -1)) {
+				nextPID++;	
+			}
+		} while (ready_queue->size != 0 || running_queue->size != 0);
+	} else if (ALGOR_SJF) {	
+		do {
+			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
-		if (!(check == -1)) {
-			nextPID++;	
-		}
-	} while (ready_queue->size != 0 || running_queue->size != 0);
+			int check = pushReadyQueue(ready_queue, nextPID);
+			if (GLOBAL_TIME == 0.00 + TIME_DT) {
+				nextPID++;
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				continue;
+			}
+
+			if (running_queue->size == 0 && ready_queue->size != 0) {
+				int index = getShortestJobIndex(ready_queue);
+				Node entry = popEntry(ready_queue, index);
+				pushRunningQueue(running_queue, entry);
+				float cpuTime = getCPUTime(running_queue, entry.pid);
+				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+				setCPUTime(running_queue, entry.pid, newTime);
+			} else {
+				unsigned int runningProcPID = running_queue->first->pid;
+				float cpuTime = getCPUTime(running_queue, runningProcPID);
+				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+				setCPUTime(running_queue, runningProcPID, newTime);
+			}
+
+			unsigned int runningProcPID = running_queue->first->pid;
+			if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
+				setStatus(running_queue, runningProcPID, 3);
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				popEntry(running_queue, 0);
+			} else {
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+			}
+
+			if (!(check == -1)) {
+				nextPID++;	
+			}
+		} while (ready_queue->size != 0 || running_queue->size != 0);
+	} //else if (ALGOR_RR) {
+		
+	//}
 
 	destroyDataList(&ready_queue);
 	destroyDataList(&running_queue);
+
     return 0;
 }
