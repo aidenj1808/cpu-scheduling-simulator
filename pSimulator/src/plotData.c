@@ -80,12 +80,12 @@ int searchEntryPID(InfoList *infoList, unsigned int pid){
 
 void printInfoList(InfoList *infoList){
     Info *current = infoList->first;
-    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text   Tturn   Tresp\n");
+    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text n");
     while (current != NULL) {
-        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f%-8.2f%-8.2f\n",
+        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f\n",
                current->pid, current->r, current->g, current->b,
                current->cpuTime, current->procTime, current->Tarr,
-               current->Trun, current->Text, current->Tturn, current->Tresp);
+               current->Trun, current->Text);
         current = current->next;
     }
 }
@@ -441,6 +441,7 @@ void calcAVG(InfoList *infoList){
 		//tturn = text - tarr
 		tmp = current->Text - current->Tarr;
 		infoList->Tturn += tmp;
+		current = current->next;
 	}
 
 	infoList->Tresp = infoList->Tresp / infoList->size;
