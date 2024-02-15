@@ -1,6 +1,9 @@
 CFLAGS= -Wall 
 CC= gcc 
 
+test: procSim
+	./files2.sh
+	./procSim
 
 procSim: procSim.o dStruct.o
 	$(CC) $(CFLAGS) -g procSim.o dStruct.o -o procSim

@@ -10,9 +10,9 @@
 --> when SJF it will go like 4 rounds and seg fault BUT it reads in 10/10 procs
 */
 
-#define ALGOR_FIFO 0
-#define ALGOR_SJF 1
-#define ALGOR_RR 0
+//#define ALGOR "ALGOR_FIFO"
+#define ALGOR "ALGOR_SJF"
+//#define ALGOR "ALGOR_RR"
 
 #define TIME_DT 0.10
 #define TIME_JIFFY 0.10
@@ -117,7 +117,7 @@ int getShortestJobIndex(DataList *ready_queue) {
 	Node *node = ready_queue->first;
 	float shortestProcTime = node->procTime;
 	while (node != NULL) {
-		if (node->procTime < shortestProcTime) {
+		if (node->procTime <= shortestProcTime) {
 			shortestProcTime = node->procTime;
 			shortestJobIndex = index;
 		}
@@ -137,7 +137,7 @@ int main() {
 	DataList *running_queue = createDataList();
 	unsigned int nextPID = 1;
 
-	if (ALGOR_FIFO) {
+	if (!strcmp(ALGOR, "ALGOR_FIFO")) {
 		do {
 			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
@@ -174,7 +174,7 @@ int main() {
 				nextPID++;	
 			}
 		} while (ready_queue->size != 0 || running_queue->size != 0);
-	} else if (ALGOR_SJF) {	
+	} else if (!strcmp(ALGOR, "ALGOR_SJF")) {	
 		do {
 			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
@@ -212,7 +212,7 @@ int main() {
 				nextPID++;	
 			}
 		} while (ready_queue->size != 0 || running_queue->size != 0);
-	} //else if (ALGOR_RR) {
+	} //else if (!strcmp(ALGOR, "ALGOR_RR")) {
 		
 	//}
 

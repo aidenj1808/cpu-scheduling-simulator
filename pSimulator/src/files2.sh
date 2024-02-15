@@ -11,5 +11,6 @@ for ((i = 1; i <= file_num; i++)); do
     procTime=$((1 + $RANDOM % 10))
     echo "$procTime.00,10">"$filename"
     #can comment out below line 
-    echo "$filename created"
+	echo "$filename created"
+    echo "$procTime.00,10"
 done 
