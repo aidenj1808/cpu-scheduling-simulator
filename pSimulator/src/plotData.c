@@ -80,7 +80,7 @@ int searchEntryPID(InfoList *infoList, unsigned int pid){
 
 void printInfoList(InfoList *infoList){
     Info *current = infoList->first;
-    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text n");
+    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text \n");
     while (current != NULL) {
         printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f\n",
                current->pid, current->r, current->g, current->b,
@@ -334,6 +334,19 @@ float randCol(){
 	return (float) rand() / ((float) (RAND_MAX)) * max;
 }
 
+void swapNodes(InfoList *infoList){
+	//TODO
+
+	return;
+}
+
+//used bubble sort from https://www.geeksforgeeks.org/sorting-a-singly-linked-list/
+void sortList(InfoList *infoList){
+	//TODO
+
+	return;
+}
+
 //TODO testing, RR...
 int plotData(InfoList *infoList){
 	if(!infoList || infoList->size == 0){
@@ -412,6 +425,27 @@ int plotData(InfoList *infoList){
   	cairo_show_text(cr, "t");
 
 	//draw the calculations 
+	//initial positions
+  	//double x = 100;
+  	//double y = 200;
+  	//double label = 0;
+	//Tresp
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 115);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+  	cairo_show_text(cr, "Average Response Time: ");
+
+	//Tturn
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 95);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+  	cairo_show_text(cr, "Average Turn-Around Time: ");
+
+	//number of procs
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 75);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+  	cairo_show_text(cr, "Number of Processes: ");
 	
 
   	time_t t = time(NULL);
@@ -423,7 +457,8 @@ int plotData(InfoList *infoList){
 
 
   	// save the image  
-  	cairo_surface_write_to_png(surface, filename);
+  	//cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
+	cairo_surface_write_to_png(surface, "../log/atest.png");
 
   	cairo_destroy(cr);
   	cairo_surface_destroy(surface);

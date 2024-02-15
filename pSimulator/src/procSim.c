@@ -10,6 +10,7 @@
 --> when SJF it will go like 4 rounds and seg fault BUT it reads in 10/10 procs
 */
 
+
 //#define ALGOR "ALGOR_FIFO"
 #define ALGOR "ALGOR_SJF"
 //#define ALGOR "ALGOR_RR"
