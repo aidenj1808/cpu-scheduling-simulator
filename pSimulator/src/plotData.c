@@ -90,48 +90,6 @@ void printInfoList(InfoList *infoList){
     }
 }
 
-//old version
-/*float *getGraphData(int fileCount) {
-	FILE *fptr;
-	struct dirent *dp;
-	DIR *dirptr = opendir("../log/");
-	int index = 0;
-    float *data = malloc(sizeof(float) * (fileCount * 2));
-
-	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
-	while ((dp = readdir(dirptr)) != NULL) {
-	 	int len = strlen("../log/");
-		char *path = malloc(len + 1);
- 		strcpy(path, "../log/");
-
-		int len2 = strlen(dp->d_name);
-		path = realloc(path, len + len2 + 1);
-		strcat(path, dp->d_name);
-
-		fptr = fopen(path, "r");
-		char *buffer = malloc(100);
-		fgets(buffer, 100, fptr); // Skips header
-		while (fgets(buffer, 100, fptr) != NULL) {
-			strtok(buffer, ",");
-            unsigned int pid = atoi(strtok(NULL, ","));
-			unsigned int status = atoi(strtok(NULL, ","));
-			strtok(NULL, ",");
-			float cpuTime = atoi(strtok(NULL, ","));
-			strtok(NULL, ",");
-
-			if (status == 3) {
-                data[index++] = pid;
-				data[index++] = cpuTime;
-				break;
-			}
-		}
-		fclose(fptr);
-		free(path);
-		free(buffer);
-	}
-	closedir(dirptr);
-	return data;
-}*/
 //new getGraphData
 void getGraphData(int fileCount, InfoList *infoList){
 	FILE *fptr;
@@ -152,20 +110,20 @@ void getGraphData(int fileCount, InfoList *infoList){
 		char *buffer = malloc(100);
 		fgets(buffer, 100, fptr); // Skips header
 		while (fgets(buffer, 100, fptr) != NULL) {
-			printf("Getgraphdata function: \n");
+			//printf("Getgraphdata function: \n");//TODO erase test 
 			float globalTime = atof(strtok(buffer, ","));
-			printf("global time: %.2f ", globalTime);
+			//printf("global time: %.2f ", globalTime);//TODO erase test
             unsigned int pid = atoi(strtok(NULL, ","));
-			printf("PID: %u ", pid);
+			//printf("PID: %u ", pid);//TODO erase test
 			unsigned int status = atoi(strtok(NULL, ","));
-			printf("Status: %u", status);
+			//printf("Status: %u", status);//TODO erase test
 			strtok(NULL, ",");//niceness dont need for now...
 			float cpuTime = atof(strtok(NULL, ","));//as of now cpu and proc time the same
-			//printf("CPU Time: %.2f\n", cpuTime);
+			//printf("CPU Time: %.2f\n", cpuTime);//TODO erase test
 			float procTime = atof(strtok(NULL, ","));
-			//printf("Proc Time: %.2f\n", procTime);
+			//printf("Proc Time: %.2f\n", procTime);//TODO erase test
 
-			//because pid 1 gets pushed immed there is no status == 1 so..
+			//because pid 1 gets pushed immed there is no status == 1 so..//TODO is this still the case?? otherwise dont need this
 			if(infoList->size == 0){
 				Info *newProc = malloc(sizeof(Info));
 					if (newProc == NULL) {
@@ -215,16 +173,11 @@ void getGraphData(int fileCount, InfoList *infoList){
             			current->next = newProc;
 					}
 					infoList->size++;
-					/*printf("pid: %d, Tarr: %.2f, " 
-						"procTime: %.2f, "
-						"rgb: %.2f,%.2f,%.2f, "
-						"Trun: %.2f, size of list: %d\n", 
-						newProc->pid, newProc->Tarr, newProc->procTime, newProc->r, newProc->g, newProc->b, newProc->Trun, infoList->size);*/
 				}
 			}
 			
 			if (status == 2) {
-				printf("status is 2 and runtime is %f\n", globalTime);
+				//printf("status is 2 and runtime is %f\n", globalTime);//TODO erase test
 				//will need to get the entry and set Trun = globalTime
 				setRUNTime(infoList, pid, globalTime);//in func it checks if it has been set already if it has it doesnt
 			}
@@ -239,6 +192,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 	}
 	closedir(dirptr);
 	calcAVG(infoList);
+
 	//TODO delete this after just doing a test
 	if(infoList->size == fileCount){
 		printf("size of list equal to file count\n");
@@ -256,7 +210,7 @@ void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime, float cp
 		if (node->pid == pid) {
 			node->cpuTime = cpuTime;
 			node->Text = globalTime;
-			printf("Text: %f, cpu: %f\n", node->Text, node->cpuTime);
+			//printf("Text: %f, cpu: %f\n", node->Text, node->cpuTime);//TODO erase test
 			return;
 		}
 		node = node->next;
@@ -433,19 +387,25 @@ int plotData(InfoList *infoList){
 	cairo_set_font_size(cr, 20);
   	cairo_move_to(cr, 100, HEIGHT - 115);
   	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-  	cairo_show_text(cr, "Average Response Time: ");
+	char respLabel[50];
+	sprintf(respLabel, "Average Response Time: %.3f", infoList->Tresp);//TODO 3 decimal places idk if want more or less
+  	cairo_show_text(cr, respLabel);
 
 	//Tturn
 	cairo_set_font_size(cr, 20);
-  	cairo_move_to(cr, 100, HEIGHT - 95);
+  	cairo_move_to(cr, 100, HEIGHT - 80);
   	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-  	cairo_show_text(cr, "Average Turn-Around Time: ");
+	char turnLabel[50];
+	sprintf(turnLabel, "Average Turn-Around Time: %.3f", infoList->Tturn);//TODO 3 decimal places idk if want more or less
+  	cairo_show_text(cr, turnLabel);
 
 	//number of procs
 	cairo_set_font_size(cr, 20);
-  	cairo_move_to(cr, 100, HEIGHT - 75);
+  	cairo_move_to(cr, 100, HEIGHT - 50);
   	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-  	cairo_show_text(cr, "Number of Processes: ");
+	char procsLabel[50];
+	sprintf(procsLabel, "Number of Processes: %.d", infoList->size);//TODO if change for RR may need to change this
+  	cairo_show_text(cr, procsLabel);
 	
 
   	time_t t = time(NULL);
@@ -458,7 +418,7 @@ int plotData(InfoList *infoList){
 
   	// save the image  
   	//cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
-	cairo_surface_write_to_png(surface, "../log/atest.png");
+	cairo_surface_write_to_png(surface, "../log/atest.png");//TODO erase test file name
 
   	cairo_destroy(cr);
   	cairo_surface_destroy(surface);
@@ -498,7 +458,7 @@ int main() {
 	//TODO change plot data to work with the struct now
 	plotData(infoList);//TODO test
 	//testt print function
-	printInfoList(infoList);
+	printInfoList(infoList); //TODO erase test
 
 	/*previous calls using just an array
 	//int fileCount = getFileCount("../log/");
