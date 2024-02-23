@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <math.h>
 
 #include "dStruct.h"
 /*TODO noticed that 10 procs made and only 9 are going in 1-8 and 10, but 
@@ -143,7 +144,7 @@ int main() {
 			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
 			int check = pushReadyQueue(ready_queue, nextPID);
-			if (GLOBAL_TIME == 0.00 + TIME_DT) {
+			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {
 				nextPID++;
 				logFile(ready_queue, running_queue, GLOBAL_TIME);
 				continue;
@@ -180,7 +181,7 @@ int main() {
 			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
 			int check = pushReadyQueue(ready_queue, nextPID);
-			if (GLOBAL_TIME == 0.00 + TIME_DT) {
+			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {
 				nextPID++;
 				logFile(ready_queue, running_queue, GLOBAL_TIME);
 				continue;

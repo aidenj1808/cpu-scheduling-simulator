@@ -15,7 +15,7 @@ dStruct.o: dStruct.c dStruct.h
 	$(CC) $(CFLAGS) -c dStruct.c 
 
 procSim.o: procSim.c dStruct.h plotData.h
-	$(CC) $(CFLAGS) -c procSim.c 
+	$(CC) $(CFLAGS) -lm -c procSim.c 
 
 plotData.o: plotData.c plotData.h
 	$(CC) $(CFLAGS) -c plotData.c
