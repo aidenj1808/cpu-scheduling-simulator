@@ -2,7 +2,7 @@ CFLAGS= -Wall
 CC= gcc 
 
 test: procSim
-	./files.sh
+	./files2.sh
 	./procSim
 
 procSim: procSim.o dStruct.o

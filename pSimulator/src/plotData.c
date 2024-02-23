@@ -136,7 +136,8 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->r = -1;
 					newProc->g = -1;
 					newProc->b = -1;
-					newProc->Trun = -1;
+					//newProc->Trun = -1;//TODO switched to very large number for testing...
+					newProc->Trun = 100;
 
 					infoList->first = newProc;
 					infoList->size++;
@@ -159,7 +160,8 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->r = -1;
 					newProc->g = -1;
 					newProc->b = -1;
-					newProc->Trun = -1;
+					//newProc->Trun = -1;//TODO switched to very large number for testing...
+					newProc->Trun = 100;
 
 					//linked list not a queue (insert at the back)
 					if (infoList->size == 0) {
@@ -191,6 +193,10 @@ void getGraphData(int fileCount, InfoList *infoList){
 		free(buffer);
 	}
 	closedir(dirptr);
+	printInfoList(infoList);//TODO delete this after just doing a test
+	//qsort(infoList->first, infoList->size, sizeof(Info), cmpfunc);//for arrays
+	bubbleSort(infoList);
+	printInfoList(infoList);//TODO delete this after just doing a test
 	calcAVG(infoList);
 
 	//TODO delete this after just doing a test
@@ -230,7 +236,8 @@ void setRUNTime(InfoList *infoList, unsigned int pid, float globalTime){
 	Info *node = infoList->first;
 	while (node != NULL) {
 		if (node->pid == pid) {
-			if(node->Trun == -1){
+			//if(node->Trun == -1){//TODO changed for testing
+			if(node->Trun == 100.00){
 				node->Trun = globalTime;
 			}
 			return;
@@ -288,17 +295,78 @@ float randCol(){
 	return (float) rand() / ((float) (RAND_MAX)) * max;
 }
 
-void swapNodes(InfoList *infoList){
-	//TODO
+void bubbleSort(InfoList *infoList){
+	int swapped;
+	Info *currPtr;
+	Info *last = NULL;
+	Info *head = infoList->first;
 
-	return;
+	if(head == NULL){
+		return;
+	}
+
+	do{
+		swapped = 0;
+		currPtr = head;
+
+		while(currPtr->next != last){
+			//check if current is greater than the next swap if is
+			if(currPtr->Trun > currPtr->next->Trun){
+				printf("%.2f greater than %.2f\n", currPtr->Trun, currPtr->next->Trun);//TODO test print
+				swapNodes(&head, currPtr, currPtr->next);
+				swapped = 1;
+			}
+			currPtr = currPtr->next;
+		}
+		//move last pointer to second last
+		last = currPtr;
+	}while (swapped && last != head);
+	//TODO test print 	
+	if(swapped == 0 && last ==head){
+		printf("list already sorted\n");
+	}
 }
 
-//used bubble sort from https://www.geeksforgeeks.org/sorting-a-singly-linked-list/
-void sortList(InfoList *infoList){
-	//TODO
+void swapNodes(Info **headRef, Info *a, Info *b){
+	if(a == b){
+		return;
+	}
 
-	return;
+	Info *prevA = NULL;
+	Info *currA = *headRef;
+	while(currA && currA != a){
+		prevA =currA;
+		currA = currA->next;
+	}
+
+	Info *prevB = NULL;
+	Info *currB = *headRef;
+	while(currB && currB != b){
+		prevB = currB;
+		currB = currB->next;
+	}
+
+	//if a isnt in list or a is first
+	if(currA == NULL || prevA == NULL){
+		*headRef = b;
+	}
+	else{
+		prevA->next = b;
+	}
+
+	//if b isnt in list or b is first
+	if(currB == NULL || prevB == NULL){
+		*headRef = a;
+	}
+	else{
+		prevB->next = a;
+	}
+
+	//swap next ptrs
+	Info *temp = a->next;
+	a->next = b->next;
+	b->next = temp;
+
 }
 
 //TODO testing, RR...

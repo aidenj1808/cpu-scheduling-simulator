@@ -28,6 +28,12 @@ InfoList *createInfoList();
 //loops through freeing memory then frees the main struct
 void destroyInfoList(InfoList **infoList);
 
+//https://www.geeksforgeeks.org/c-program-bubble-sort-linked-list/
+void bubbleSort(InfoList *infoList);
+
+//bubblesort helper
+void swapNodes(Info **headRef, Info *a, Info *b);
+
 //searches if a pid already recorded if yes returns 1 else returns 0
 int searchEntryPID(InfoList *infoList, unsigned int pid);
 
@@ -59,11 +65,5 @@ float setScale(InfoList *infoList);
 
 //calculates the avg Tresp and Tturn for the given procs 
 void calcAVG(InfoList *infoList); 
-
-//sort based on smallest trun to largest 
-void sortList(InfoList *infoList);
-
-//sort helper to swap node positions
-void swapNodes(InfoList *infoList);
 
 #endif /* PLOTDATA_H */
