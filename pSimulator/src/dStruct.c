@@ -107,6 +107,15 @@ Node popEntry(DataList *dataList, int index) {
 		return lastNode;	
 	}
 
+	if (index == 0) {
+		Node poppedNode = *(dataList->first);
+		Node *tempNode = dataList->first->next;
+		free(dataList->first);
+		dataList->first = tempNode;
+		dataList->size--;
+		return poppedNode;
+	}
+
 	Node *node = dataList->first;
 	int counter = 0;
 	while (counter != index - 1) {
