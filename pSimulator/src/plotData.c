@@ -22,6 +22,7 @@ InfoList *createInfoList(){
 	}
 	infoList->first = NULL;
 	infoList->size = 0;
+	infoList->flag = 0;
 	return infoList;
 }
 
@@ -80,12 +81,12 @@ int searchEntryPID(InfoList *infoList, unsigned int pid){
 
 void printInfoList(InfoList *infoList){
     Info *current = infoList->first;
-    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text \n");
+    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text drawn\n");
     while (current != NULL) {
-        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f\n",
+        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f%-8d\n",
                current->pid, current->r, current->g, current->b,
                current->cpuTime, current->procTime, current->Tarr,
-               current->Trun, current->Text);
+               current->Trun, current->Text, current->drawn);
         current = current->next;
     }
 }
@@ -138,6 +139,8 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->b = -1;
 					//newProc->Trun = -1;//TODO switched to very large number for testing...
 					newProc->Trun = 100;
+					newProc->totalProc = -1;
+					newProc->drawn = 0;
 
 					infoList->first = newProc;
 					infoList->size++;
@@ -162,6 +165,8 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->b = -1;
 					//newProc->Trun = -1;//TODO switched to very large number for testing...
 					newProc->Trun = 100;
+					newProc->totalProc = -1;
+					newProc->drawn = 0;
 
 					//linked list not a queue (insert at the back)
 					if (infoList->size == 0) {
@@ -176,6 +181,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 					}
 					infoList->size++;
 				}
+				
 			}
 			
 			if (status == 2) {
@@ -186,6 +192,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 			if (status == 3) {//should only appear as 3 once so dont need to check? can just set
 				//will need to get the entry and set Text = globalTime
 				setEXTTime(infoList, pid, globalTime, cpuTime);
+				//TODO should only update once out? anyways only will switch between 1 and 2
 			}
 		}
 		fclose(fptr);
@@ -195,7 +202,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 	closedir(dirptr);
 	printInfoList(infoList);//TODO delete this after just doing a test
 	//qsort(infoList->first, infoList->size, sizeof(Info), cmpfunc);//for arrays
-	bubbleSort(infoList);
+	//bubbleSort(infoList);
 	printInfoList(infoList);//TODO delete this after just doing a test
 	calcAVG(infoList);
 
@@ -216,7 +223,11 @@ void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime, float cp
 		if (node->pid == pid) {
 			node->cpuTime = cpuTime;
 			node->Text = globalTime;
-			//printf("Text: %f, cpu: %f\n", node->Text, node->cpuTime);//TODO erase test
+			if(node->Text - node->Trun > node->procTime){
+				printf("RR used"); //
+				infoList->flag = 1;
+			}
+			printf("Text-Trun: %f, proc: %f\n", node->Text - node->Trun, node->procTime);//TODO erase test
 			return;
 		}
 		node = node->next;
@@ -296,23 +307,27 @@ float randCol(){
 }
 
 void bubbleSort(InfoList *infoList){
+	if(infoList == NULL || infoList->first == NULL){
+		//nothing to sort
+		return;
+	}
+
 	int swapped;
 	Info *currPtr;
 	Info *last = NULL;
 	Info *head = infoList->first;
 
-	if(head == NULL){
-		return;
-	}
 
 	do{
 		swapped = 0;
 		currPtr = head;
 
-		while(currPtr->next != last){
+		while(currPtr != last && currPtr != NULL){
+			
 			//check if current is greater than the next swap if is
 			if(currPtr->Trun > currPtr->next->Trun){
-				printf("%.2f greater than %.2f\n", currPtr->Trun, currPtr->next->Trun);//TODO test print
+				//is this line causing fault?
+				//printf("%.2f greater than %.2f\n", currPtr->Trun, currPtr->next->Trun);//TODO test print
 				swapNodes(&head, currPtr, currPtr->next);
 				swapped = 1;
 			}
@@ -320,22 +335,23 @@ void bubbleSort(InfoList *infoList){
 		}
 		//move last pointer to second last
 		last = currPtr;
-	}while (swapped && last != head);
-	//TODO test print 	
-	if(swapped == 0 && last ==head){
-		printf("list already sorted\n");
-	}
+	}while (swapped);
 }
 
 void swapNodes(Info **headRef, Info *a, Info *b){
-	if(a == b){
+
+	if(a == b || *headRef == NULL){
 		return;
 	}
+
+	/*Info temp = *a;
+	*a = *b;
+	*b = temp;*/
 
 	Info *prevA = NULL;
 	Info *currA = *headRef;
 	while(currA && currA != a){
-		prevA =currA;
+		prevA = currA;
 		currA = currA->next;
 	}
 
@@ -347,19 +363,22 @@ void swapNodes(Info **headRef, Info *a, Info *b){
 	}
 
 	//if a isnt in list or a is first
-	if(currA == NULL || prevA == NULL){
-		*headRef = b;
+	if(currA == NULL || prevB == NULL || currA->next == currB || currB->next == currA){
+		//node not in list
+		return;
 	}
-	else{
+	if(prevA != NULL){
 		prevA->next = b;
 	}
+	else{
+		*headRef = b;
+	}
 
-	//if b isnt in list or b is first
-	if(currB == NULL || prevB == NULL){
-		*headRef = a;
+	if(prevB != NULL){
+		prevB->next = a;
 	}
 	else{
-		prevB->next = a;
+		*headRef = a;
 	}
 
 	//swap next ptrs
@@ -393,9 +412,31 @@ int plotData(InfoList *infoList){
   	srand((unsigned int) time(NULL));
   	float scale = setScale(infoList); //TODO test
 
+	int counter = 0;
 	Info *node = infoList->first;
-  	//loop through to create the squares
-	while (node != NULL) {
+	//Info *node = NULL;
+	//node->drawn = 1;
+	printf("while counter is less than %d\n", infoList->size + 1);
+	while(counter < infoList->size ){
+		 /*if (node == NULL) {
+        node = infoList->first; // Start from the head node
+    }*/
+		Info *minNode = infoList->first;
+		Info *tmpNode = infoList->first;
+		float currMin = node->Text + 1;
+		while(minNode != NULL){
+			if(minNode->Trun < currMin && !(minNode->drawn)){
+				currMin = minNode->Trun; 
+				tmpNode = minNode;	
+			}
+			minNode = minNode->next;
+		}
+		node = tmpNode;
+		//Info *node = infoList->first;
+		//currMin = node->Trun;
+
+		//loop through to create the squares
+		//while (node != NULL) {
 
 		double width = node->cpuTime * 20 * scale;
 
@@ -409,22 +450,40 @@ int plotData(InfoList *infoList){
 		float g = node->g;
 		float b = node->b;
 
-    	cairo_rectangle(cr, x, y, width, 50);
-    	//given colour based off of pid since pid unique
-    	cairo_set_source_rgb(cr, r, g, b);
-    	cairo_fill(cr);
+		cairo_rectangle(cr, x, y, width, 50);
+		//given colour based off of pid since pid unique
+		cairo_set_source_rgb(cr, r, g, b);
+		cairo_fill(cr);
 
-    	//write pid label
-    	char pidLabel[15];
-    	sprintf(pidLabel, "%.d", node->pid);
-    	cairo_set_font_size(cr, 22);
-    	cairo_move_to(cr, x + (width * 0.3), y + 25); 
-    	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-    	cairo_show_text(cr, pidLabel);
+		//write pid label
+		char pidLabel[15];
+		sprintf(pidLabel, "%.d", node->pid);
+		cairo_set_font_size(cr, 22);
+		cairo_move_to(cr, x + (width * 0.3), y + 25); 
+		cairo_set_source_rgba(cr, 0, 0, 0, 1);
+		cairo_show_text(cr, pidLabel);
 
-    	x += width; //for starting position of next 
-    	label = x;  
-		node = node->next;  
+		x += width; //for starting position of next 
+		label = x;  
+		node->drawn = 1;
+		//node = node->next;  
+	//}
+		//search for the next min
+		//TODO
+		/*Info *minNode = infoList->first;
+		Info *tmpNode = infoList->first;
+		float currMin = node->Text + 1;
+		while(minNode != NULL){
+			if(minNode->Trun < currMin && minNode->drawn != 1){
+				currMin = minNode->Trun; 
+				tmpNode = minNode;	
+			}
+			minNode = minNode->next;
+		}
+		node = tmpNode;*/
+		//node->drawn = 1;
+		counter++;
+		printf("Counter is %d\n", counter);
 	}
 
   	//line and label
@@ -523,16 +582,18 @@ int main() {
 
 	//will need to change getGrapData, no return just pass the infoList and parse file 
 	getGraphData(fileCount, infoList);
+	//TODO remove test prints
+	if(infoList->flag == 1){
+		printf("RR used\n");
+	}
+	if(infoList->flag == 0){
+		printf("SJF or FIFO used\n");
+	}
 	//TODO change plot data to work with the struct now
 	plotData(infoList);//TODO test
 	//testt print function
 	printInfoList(infoList); //TODO erase test
 
-	/*previous calls using just an array
-	//int fileCount = getFileCount("../log/");
-	float *values = getGraphData(fileCount);
-    plotData(fileCount * 2, values);
-	free(values);*/
 
 	//destroy info list
 	destroyInfoList(&infoList);
