@@ -12,12 +12,16 @@ typedef struct Info {
     float Tarr;//first appearance s=1
     float Trun;//when s=2
     float Text;//when s=3
+    float totalProc; //tracker for RR
+    int drawn;
 	struct Info *next;
 } Info;
 
 typedef struct InfoList {
 	struct Info *first;
 	int size;//number of procs
+    int flag;//signal if RR is occuring//maybe do a last status to see if a status 1 was previously status 2 then that will flag RR
+    float timeQuantum; //to find out how long a proc runs do like next_arr - current_arr something like that
     float Tturn; //= Text - Tarr (this is the avg saved)
     float Tresp; //= Trun - Tarr (this is the avg saved)
 } InfoList;
