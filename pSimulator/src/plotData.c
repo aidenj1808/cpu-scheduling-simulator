@@ -139,7 +139,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->b = -1;
 					//newProc->Trun = -1;//TODO switched to very large number for testing...
 					newProc->Trun = 100;
-					newProc->totalProc = -1;
+					newProc->totalProc = procTime;
 					newProc->drawn = 0;
 
 					infoList->first = newProc;
@@ -165,7 +165,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->b = -1;
 					//newProc->Trun = -1;//TODO switched to very large number for testing...
 					newProc->Trun = 100;
-					newProc->totalProc = -1;
+					newProc->totalProc = procTime;
 					newProc->drawn = 0;
 
 					//linked list not a queue (insert at the back)
@@ -306,6 +306,7 @@ float randCol(){
 	return (float) rand() / ((float) (RAND_MAX)) * max;
 }
 
+//TODO can delete couldnt figure out....
 void bubbleSort(InfoList *infoList){
 	if(infoList == NULL || infoList->first == NULL){
 		//nothing to sort
@@ -338,6 +339,7 @@ void bubbleSort(InfoList *infoList){
 	}while (swapped);
 }
 
+//TODO can delete couldnt figure out....
 void swapNodes(Info **headRef, Info *a, Info *b){
 
 	if(a == b || *headRef == NULL){
@@ -553,6 +555,179 @@ int plotData(InfoList *infoList){
   	return 0;
 }
 
+//TODO this will be the RR plotting if the flag is set
+int RRplotData(InfoList *infoList){
+	if(!infoList || infoList->size == 0){
+        printf("infolist is empty.\n");
+        return 0;
+    }
+
+	//initialize cairo
+  	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, WIDTH, HEIGHT);
+
+  	cairo_t *cr = cairo_create(surface);
+
+  	//set the background to white
+  	cairo_set_source_rgb(cr, 1, 1, 1);
+  	cairo_rectangle(cr, 0, 0, WIDTH, HEIGHT);
+  	cairo_fill(cr);
+
+  	//initial positions
+  	double x = 100;
+  	double y = 200;
+  	double label = 0;
+  
+  	srand((unsigned int) time(NULL));
+  	float scale = setScale(infoList); //TODO test
+
+	int counter = 0;
+	Info *node = infoList->first;
+	
+	//set the timeq
+	infoList->timeQuantum = node->next->Trun - node->Trun;//TODO test this logic...
+
+	printf("while counter is less than %d\n", infoList->size + 1);
+	while(counter < infoList->size ){
+
+		//double width = node->cpuTime * 20 * scale;
+		//TODO if time left is greater than or equal to time q else use the remainder of proctime
+		//double width = infoList->timeQuantum * 20 * scale;
+		double width;
+		if(node->totalProc < infoList->timeQuantum){
+			width = node->totalProc * 20 * scale;
+		}
+		else{
+			width = infoList->timeQuantum * 20 * scale;
+		}
+
+		//for RR set and save so that same colour used throughout
+		if(node->r == -1){
+			node->r = randCol();
+			node->g = randCol();
+			node->b = randCol();
+		}
+		float r = node->r;
+		float g = node->g;
+		float b = node->b;
+
+		cairo_rectangle(cr, x, y, width, 50);
+		//given colour based off of pid since pid unique
+		cairo_set_source_rgb(cr, r, g, b);
+		cairo_fill(cr);
+
+		//write pid label
+		char pidLabel[15];
+		sprintf(pidLabel, "%.d", node->pid);
+		cairo_set_font_size(cr, 22);
+		cairo_move_to(cr, x + (width * 0.3), y + 25); 
+		cairo_set_source_rgba(cr, 0, 0, 0, 1);
+		cairo_show_text(cr, pidLabel);
+
+		x += width; //for starting position of next 
+		label = x;  
+		
+		//TODO
+		//need to subtract from the total proc then go to the next node, revisit this node until it is 0
+		//if total left is < timeq just draw the remainder
+		if(node->totalProc < infoList->timeQuantum){
+			node->totalProc = 0;
+			node->drawn = 1;//might not need this flag here
+			counter++;
+		}
+		else{
+			node->totalProc = node->totalProc - infoList->timeQuantum;
+		}
+
+		//now need to find the next node 
+		if(node->next == NULL){
+			//go back to the start
+			node = infoList->first;
+		}
+		else{
+			node = node->next;
+		}
+
+		//check it has time left to be drawn
+		if(node->totalProc == 0){
+			while(node->totalProc > 0 && node->next != NULL){
+				node = node->next;
+			}
+			//if all finished exit
+			if(node->totalProc == 0 && node->next == NULL){
+				break;
+			}
+		}
+		
+		printf("Counter is %d\n", counter);
+	}
+
+  	//line and label
+  	cairo_set_source_rgb(cr, 0, 0, 0);
+  	cairo_move_to(cr, 100, HEIGHT - 150);
+  	cairo_line_to(cr, label + 50, HEIGHT - 150);
+  	cairo_stroke(cr);
+
+  	//arrow head
+  	cairo_move_to(cr, label + 50, HEIGHT - 150);
+  	cairo_line_to(cr, label + 30, HEIGHT - 155);
+  	cairo_stroke(cr);
+  	cairo_move_to(cr, label + 50, HEIGHT - 150);
+  	cairo_line_to(cr, label + 30, HEIGHT - 145);
+  	cairo_stroke(cr);
+
+  	cairo_set_font_size(cr, 18);
+  	cairo_move_to(cr, label + 50, HEIGHT - 130);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+  	cairo_show_text(cr, "t");
+
+	//draw the calculations 
+	//initial positions
+  	//double x = 100;
+  	//double y = 200;
+  	//double label = 0;
+	//Tresp
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 115);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	char respLabel[50];
+	sprintf(respLabel, "Average Response Time: %.3f", infoList->Tresp);//TODO 3 decimal places idk if want more or less
+  	cairo_show_text(cr, respLabel);
+
+	//Tturn
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 80);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	char turnLabel[50];
+	sprintf(turnLabel, "Average Turn-Around Time: %.3f", infoList->Tturn);//TODO 3 decimal places idk if want more or less
+  	cairo_show_text(cr, turnLabel);
+
+	//number of procs
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 50);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	char procsLabel[50];
+	sprintf(procsLabel, "Number of Processes: %.d", infoList->size);//TODO if change for RR may need to change this
+  	cairo_show_text(cr, procsLabel);
+	
+
+  	time_t t = time(NULL);
+  	struct tm *tm_info = localtime(&t);
+  	char date[20]; 
+  	strftime(date, sizeof(date), "%m-%d-%Y-%H:%M:%S", tm_info);
+  	char filename[50];
+  	snprintf(filename, sizeof(filename), "../log/log-%s.png", date);
+
+
+  	// save the image  
+  	//cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
+	cairo_surface_write_to_png(surface, "../log/atest.png");//TODO erase test file name
+
+  	cairo_destroy(cr);
+  	cairo_surface_destroy(surface);
+
+  	return 0;
+}
+
 void calcAVG(InfoList *infoList){
 	Info *current = infoList->first;
 	float tmp;
@@ -572,6 +747,25 @@ void calcAVG(InfoList *infoList){
 	return;
 }
 
+//TODO need to test this
+void RRcheck(InfoList *infoList){
+	if(!infoList){
+    	printf("infoList is empty.\n");
+        return;
+    }
+	Info *node = infoList->first;
+	while (node != NULL) {
+		//see if tquantums are used...
+		//-0.10 cause the log is off??
+		if (node->Text > node->Trun + node->procTime - 0.10){
+			printf("exit time is greater than runtime+proctime\n");
+			infoList->flag = 1;	
+		}
+		node = node->next;
+	}
+	return;
+}
+
 int main() {
 	//create infolist
 	InfoList *infoList = createInfoList();
@@ -582,15 +776,25 @@ int main() {
 
 	//will need to change getGrapData, no return just pass the infoList and parse file 
 	getGraphData(fileCount, infoList);
+
+	//check if RR is used
+	RRcheck(infoList);//TODO test logic works
+
+	//*****FORCE TO USE RR*******/
+	infoList->flag = 1; //TODO remove this just here for RR testing while algo isnt ready in procSim
+	
 	//TODO remove test prints
 	if(infoList->flag == 1){
 		printf("RR used\n");
+		RRplotData(infoList);
+		//might need to adjust the avgCalc to work with RR too????
 	}
 	if(infoList->flag == 0){
 		printf("SJF or FIFO used\n");
+		plotData(infoList);//TODO test
 	}
 	//TODO change plot data to work with the struct now
-	plotData(infoList);//TODO test
+	//plotData(infoList);//TODO test
 	//testt print function
 	printInfoList(infoList); //TODO erase test
 

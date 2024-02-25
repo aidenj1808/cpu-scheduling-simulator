@@ -48,6 +48,10 @@ void printInfoList(InfoList *infoList);
 //driver of plotting the graph and saving to png
 int plotData(InfoList *infoList);//new
 
+int RRplotData(InfoList *infoList);
+
+void RRcheck(InfoList *infoList);
+
 //finds the associated pid entry and sets the Text and cputime from the log files 
 void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime, float cpuTime);
 
