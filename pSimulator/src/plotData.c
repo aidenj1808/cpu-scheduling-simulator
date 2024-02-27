@@ -111,18 +111,12 @@ void getGraphData(int fileCount, InfoList *infoList){
 		char *buffer = malloc(100);
 		fgets(buffer, 100, fptr); // Skips header
 		while (fgets(buffer, 100, fptr) != NULL) {
-			//printf("Getgraphdata function: \n");//TODO erase test 
 			float globalTime = atof(strtok(buffer, ","));
-			//printf("global time: %.2f ", globalTime);//TODO erase test
             unsigned int pid = atoi(strtok(NULL, ","));
-			//printf("PID: %u ", pid);//TODO erase test
 			unsigned int status = atoi(strtok(NULL, ","));
-			//printf("Status: %u", status);//TODO erase test
 			strtok(NULL, ",");//niceness dont need for now...
 			float cpuTime = atof(strtok(NULL, ","));//as of now cpu and proc time the same
-			//printf("CPU Time: %.2f\n", cpuTime);//TODO erase test
 			float procTime = atof(strtok(NULL, ","));
-			//printf("Proc Time: %.2f\n", procTime);//TODO erase test
 
 			//because pid 1 gets pushed immed there is no status == 1 so..//TODO is this still the case?? otherwise dont need this
 			if(infoList->size == 0){
@@ -137,7 +131,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->r = -1;
 					newProc->g = -1;
 					newProc->b = -1;
-					//newProc->Trun = -1;//TODO switched to very large number for testing...
+					//newProc->Trun = -1;//TODO switched to very large number for testing... maybe try with -1 again 
 					newProc->Trun = 100;
 					newProc->totalProc = procTime;
 					newProc->drawn = 0;
@@ -163,7 +157,7 @@ void getGraphData(int fileCount, InfoList *infoList){
 					newProc->r = -1;
 					newProc->g = -1;
 					newProc->b = -1;
-					//newProc->Trun = -1;//TODO switched to very large number for testing...
+					//newProc->Trun = -1;//TODO switched to very large number for testing...maybe try with -1 again 
 					newProc->Trun = 100;
 					newProc->totalProc = procTime;
 					newProc->drawn = 0;
@@ -185,14 +179,12 @@ void getGraphData(int fileCount, InfoList *infoList){
 			}
 			
 			if (status == 2) {
-				//printf("status is 2 and runtime is %f\n", globalTime);//TODO erase test
 				//will need to get the entry and set Trun = globalTime
 				setRUNTime(infoList, pid, globalTime);//in func it checks if it has been set already if it has it doesnt
 			}
 			if (status == 3) {//should only appear as 3 once so dont need to check? can just set
 				//will need to get the entry and set Text = globalTime
 				setEXTTime(infoList, pid, globalTime, cpuTime);
-				//TODO should only update once out? anyways only will switch between 1 and 2
 			}
 		}
 		fclose(fptr);
@@ -200,16 +192,9 @@ void getGraphData(int fileCount, InfoList *infoList){
 		free(buffer);
 	}
 	closedir(dirptr);
-	printInfoList(infoList);//TODO delete this after just doing a test
-	//qsort(infoList->first, infoList->size, sizeof(Info), cmpfunc);//for arrays
-	//bubbleSort(infoList);
-	printInfoList(infoList);//TODO delete this after just doing a test
+	//printInfoList(infoList);//TODO delete this after just doing a test
 	calcAVG(infoList);
 
-	//TODO delete this after just doing a test
-	if(infoList->size == fileCount){
-		printf("size of list equal to file count\n");
-	}
 	return;
 }
 
@@ -223,11 +208,11 @@ void setEXTTime(InfoList *infoList, unsigned int pid, float globalTime, float cp
 		if (node->pid == pid) {
 			node->cpuTime = cpuTime;
 			node->Text = globalTime;
-			if(node->Text - node->Trun > node->procTime){
-				printf("RR used"); //
+			//TODO i think us the check func over this
+			/*if(node->Text - node->Trun > node->procTime){
+				//printf("RR used ext-run = %f  > %f",node->Text - node->Trun, node->procTime); //TODO
 				infoList->flag = 1;
-			}
-			printf("Text-Trun: %f, proc: %f\n", node->Text - node->Trun, node->procTime);//TODO erase test
+			}*/
 			return;
 		}
 		node = node->next;
@@ -306,91 +291,8 @@ float randCol(){
 	return (float) rand() / ((float) (RAND_MAX)) * max;
 }
 
-//TODO can delete couldnt figure out....
-void bubbleSort(InfoList *infoList){
-	if(infoList == NULL || infoList->first == NULL){
-		//nothing to sort
-		return;
-	}
-
-	int swapped;
-	Info *currPtr;
-	Info *last = NULL;
-	Info *head = infoList->first;
-
-
-	do{
-		swapped = 0;
-		currPtr = head;
-
-		while(currPtr != last && currPtr != NULL){
-			
-			//check if current is greater than the next swap if is
-			if(currPtr->Trun > currPtr->next->Trun){
-				//is this line causing fault?
-				//printf("%.2f greater than %.2f\n", currPtr->Trun, currPtr->next->Trun);//TODO test print
-				swapNodes(&head, currPtr, currPtr->next);
-				swapped = 1;
-			}
-			currPtr = currPtr->next;
-		}
-		//move last pointer to second last
-		last = currPtr;
-	}while (swapped);
-}
-
-//TODO can delete couldnt figure out....
-void swapNodes(Info **headRef, Info *a, Info *b){
-
-	if(a == b || *headRef == NULL){
-		return;
-	}
-
-	/*Info temp = *a;
-	*a = *b;
-	*b = temp;*/
-
-	Info *prevA = NULL;
-	Info *currA = *headRef;
-	while(currA && currA != a){
-		prevA = currA;
-		currA = currA->next;
-	}
-
-	Info *prevB = NULL;
-	Info *currB = *headRef;
-	while(currB && currB != b){
-		prevB = currB;
-		currB = currB->next;
-	}
-
-	//if a isnt in list or a is first
-	if(currA == NULL || prevB == NULL || currA->next == currB || currB->next == currA){
-		//node not in list
-		return;
-	}
-	if(prevA != NULL){
-		prevA->next = b;
-	}
-	else{
-		*headRef = b;
-	}
-
-	if(prevB != NULL){
-		prevB->next = a;
-	}
-	else{
-		*headRef = a;
-	}
-
-	//swap next ptrs
-	Info *temp = a->next;
-	a->next = b->next;
-	b->next = temp;
-
-}
-
-//TODO testing, RR...
+//TODO testing.... see if pid 2 still not going in... might have to do a case that if there is a status 2 and not in then just put in
+//plot data for SJF and FIFO, searches for the min proctime to run, should be fine if it searches for that while FIFO...
 int plotData(InfoList *infoList){
 	if(!infoList || infoList->size == 0){
         printf("infolist is empty.\n");
@@ -412,21 +314,19 @@ int plotData(InfoList *infoList){
   	double label = 0;
   
   	srand((unsigned int) time(NULL));
-  	float scale = setScale(infoList); //TODO test
+  	float scale = setScale(infoList); 
 
 	int counter = 0;
 	Info *node = infoList->first;
-	//Info *node = NULL;
-	//node->drawn = 1;
-	printf("while counter is less than %d\n", infoList->size + 1);
+ 
 	while(counter < infoList->size ){
-		 /*if (node == NULL) {
-        node = infoList->first; // Start from the head node
-    }*/
+
 		Info *minNode = infoList->first;
 		Info *tmpNode = infoList->first;
-		float currMin = node->Text + 1;
+		float currMin = node->Text + 1;//the last exit time +1 should be greater than the next proctime....
+		//look for the next min proc time to plot 
 		while(minNode != NULL){
+			//
 			if(minNode->Trun < currMin && !(minNode->drawn)){
 				currMin = minNode->Trun; 
 				tmpNode = minNode;	
@@ -434,11 +334,6 @@ int plotData(InfoList *infoList){
 			minNode = minNode->next;
 		}
 		node = tmpNode;
-		//Info *node = infoList->first;
-		//currMin = node->Trun;
-
-		//loop through to create the squares
-		//while (node != NULL) {
 
 		double width = node->cpuTime * 20 * scale;
 
@@ -460,7 +355,7 @@ int plotData(InfoList *infoList){
 		//write pid label
 		char pidLabel[15];
 		sprintf(pidLabel, "%.d", node->pid);
-		cairo_set_font_size(cr, 22);
+		cairo_set_font_size(cr, 22);//maybe try a smaller font... or scale the font...
 		cairo_move_to(cr, x + (width * 0.3), y + 25); 
 		cairo_set_source_rgba(cr, 0, 0, 0, 1);
 		cairo_show_text(cr, pidLabel);
@@ -468,22 +363,6 @@ int plotData(InfoList *infoList){
 		x += width; //for starting position of next 
 		label = x;  
 		node->drawn = 1;
-		//node = node->next;  
-	//}
-		//search for the next min
-		//TODO
-		/*Info *minNode = infoList->first;
-		Info *tmpNode = infoList->first;
-		float currMin = node->Text + 1;
-		while(minNode != NULL){
-			if(minNode->Trun < currMin && minNode->drawn != 1){
-				currMin = minNode->Trun; 
-				tmpNode = minNode;	
-			}
-			minNode = minNode->next;
-		}
-		node = tmpNode;*/
-		//node->drawn = 1;
 		counter++;
 		printf("Counter is %d\n", counter);
 	}
@@ -508,10 +387,6 @@ int plotData(InfoList *infoList){
   	cairo_show_text(cr, "t");
 
 	//draw the calculations 
-	//initial positions
-  	//double x = 100;
-  	//double y = 200;
-  	//double label = 0;
 	//Tresp
 	cairo_set_font_size(cr, 20);
   	cairo_move_to(cr, 100, HEIGHT - 115);
@@ -525,7 +400,7 @@ int plotData(InfoList *infoList){
   	cairo_move_to(cr, 100, HEIGHT - 80);
   	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	char turnLabel[50];
-	sprintf(turnLabel, "Average Turn-Around Time: %.3f", infoList->Tturn);//TODO 3 decimal places idk if want more or less
+	sprintf(turnLabel, "Average Turn-Around Time: %.3f", infoList->Tturn);
   	cairo_show_text(cr, turnLabel);
 
 	//number of procs
@@ -533,7 +408,7 @@ int plotData(InfoList *infoList){
   	cairo_move_to(cr, 100, HEIGHT - 50);
   	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	char procsLabel[50];
-	sprintf(procsLabel, "Number of Processes: %.d", infoList->size);//TODO if change for RR may need to change this
+	sprintf(procsLabel, "Number of Processes: %.d", infoList->size);
   	cairo_show_text(cr, procsLabel);
 	
 
@@ -546,8 +421,8 @@ int plotData(InfoList *infoList){
 
 
   	// save the image  
-  	//cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
-	cairo_surface_write_to_png(surface, "../log/atest.png");//TODO erase test file name
+  	cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
+	//cairo_surface_write_to_png(surface, "../log/atest.png");//TODO erase test file name
 
   	cairo_destroy(cr);
   	cairo_surface_destroy(surface);
@@ -555,7 +430,7 @@ int plotData(InfoList *infoList){
   	return 0;
 }
 
-//TODO this will be the RR plotting if the flag is set
+//this will be the RR plotting if the flag is set
 int RRplotData(InfoList *infoList){
 	if(!infoList || infoList->size == 0){
         printf("infolist is empty.\n");
@@ -578,23 +453,20 @@ int RRplotData(InfoList *infoList){
   	double label = 0;
   
   	srand((unsigned int) time(NULL));
-  	float scale = setScale(infoList); //TODO test
+  	float scale = setScale(infoList);
 
 	int counter = 0;
 	Info *node = infoList->first;
 	
 	//set the timeq
-	infoList->timeQuantum = node->next->Trun - node->Trun;//TODO test this logic...
+	infoList->timeQuantum = node->next->Trun - node->Trun;
 
-	printf("while counter is less than %d\n", infoList->size + 1);
 	while(counter < infoList->size ){
 
-		//double width = node->cpuTime * 20 * scale;
-		//TODO if time left is greater than or equal to time q else use the remainder of proctime
-		//double width = infoList->timeQuantum * 20 * scale;
 		double width;
-		if(node->totalProc < infoList->timeQuantum){
-			width = node->totalProc * 20 * scale;
+		//if the time left is less than the time q just use the remaining proc time for the width
+		if(node->totalProc <= infoList->timeQuantum){
+			width = node->totalProc * 20 * scale; //change the scale here or in the function?
 		}
 		else{
 			width = infoList->timeQuantum * 20 * scale;
@@ -618,7 +490,7 @@ int RRplotData(InfoList *infoList){
 		//write pid label
 		char pidLabel[15];
 		sprintf(pidLabel, "%.d", node->pid);
-		cairo_set_font_size(cr, 22);
+		cairo_set_font_size(cr, 10);//try a smaller size but make sure it isnt too small (22 tried)
 		cairo_move_to(cr, x + (width * 0.3), y + 25); 
 		cairo_set_source_rgba(cr, 0, 0, 0, 1);
 		cairo_show_text(cr, pidLabel);
@@ -626,41 +498,42 @@ int RRplotData(InfoList *infoList){
 		x += width; //for starting position of next 
 		label = x;  
 		
-		//TODO
-		//need to subtract from the total proc then go to the next node, revisit this node until it is 0
-		//if total left is < timeq just draw the remainder
-		if(node->totalProc < infoList->timeQuantum){
-			node->totalProc = 0;
-			node->drawn = 1;//might not need this flag here
-			counter++;
+		if(node->totalProc <= infoList->timeQuantum){
+			node->totalProc = 0;//if the time is less than the time q just set it to 0
+			node->drawn = 1;//might not need this flag here i dont think it gets used tbh
+			counter++;//counter to track how many completed procs have been done 
 		}
 		else{
-			node->totalProc = node->totalProc - infoList->timeQuantum;
+			node->totalProc = node->totalProc - infoList->timeQuantum;//else subtract the time q from total for the next use
 		}
+		//printf("counter: %d, time left for pid %d: %f\n", counter, node->pid, node->totalProc);//TODO test print
 
 		//now need to find the next node 
+		//if at the end of the list
 		if(node->next == NULL){
 			//go back to the start
 			node = infoList->first;
 		}
 		else{
+			//else just go to the next 
 			node = node->next;
 		}
 
 		//check it has time left to be drawn
 		if(node->totalProc == 0){
-			while(node->totalProc > 0 && node->next != NULL){
+			//if no time left and the next node is not the end go to the next node that has remaining time 
+			while(node->totalProc == 0 && node->next != NULL){
 				node = node->next;
 			}
-			//if all finished exit
+			//if search throught the whole thing then break 
+			//should exit anyways once the counter hits 
 			if(node->totalProc == 0 && node->next == NULL){
 				break;
 			}
 		}
-		
-		printf("Counter is %d\n", counter);
 	}
 
+	//everything below is the same as other....
   	//line and label
   	cairo_set_source_rgb(cr, 0, 0, 0);
   	cairo_move_to(cr, 100, HEIGHT - 150);
@@ -681,10 +554,6 @@ int RRplotData(InfoList *infoList){
   	cairo_show_text(cr, "t");
 
 	//draw the calculations 
-	//initial positions
-  	//double x = 100;
-  	//double y = 200;
-  	//double label = 0;
 	//Tresp
 	cairo_set_font_size(cr, 20);
   	cairo_move_to(cr, 100, HEIGHT - 115);
@@ -756,9 +625,9 @@ void RRcheck(InfoList *infoList){
 	Info *node = infoList->first;
 	while (node != NULL) {
 		//see if tquantums are used...
-		//-0.10 cause the log is off??
-		if (node->Text > node->Trun + node->procTime - 0.10){
-			printf("exit time is greater than runtime+proctime\n");
+		//-0.10 cause the log is off?? TODO if the log file changes would need to change this 
+		if (node->Text > node->Trun + node->procTime){//TODO 
+			//printf("exit time is greater than runtime+proctime\n"); //TODO erase this test print 
 			infoList->flag = 1;	
 		}
 		node = node->next;
@@ -781,21 +650,18 @@ int main() {
 	RRcheck(infoList);//TODO test logic works
 
 	//*****FORCE TO USE RR*******/
-	infoList->flag = 1; //TODO remove this just here for RR testing while algo isnt ready in procSim
+	//infoList->flag = 1; //TODO remove this just here for RR testing while algo isnt ready in procSim
 	
 	//TODO remove test prints
 	if(infoList->flag == 1){
-		printf("RR used\n");
+		//printf("RR used\n");
 		RRplotData(infoList);
 		//might need to adjust the avgCalc to work with RR too????
 	}
 	if(infoList->flag == 0){
-		printf("SJF or FIFO used\n");
+		//printf("SJF or FIFO used\n");
 		plotData(infoList);//TODO test
 	}
-	//TODO change plot data to work with the struct now
-	//plotData(infoList);//TODO test
-	//testt print function
 	printInfoList(infoList); //TODO erase test
 
 
