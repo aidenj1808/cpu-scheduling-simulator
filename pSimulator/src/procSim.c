@@ -14,6 +14,7 @@
 #define TIME_JIFFY 0.50
 float GLOBAL_TIME = 0.00;
 
+//TODO saw lab marks saying only need one logfile too far into having enough time to correct
 void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
 	int len = snprintf(NULL, 0, "../log/log%.2f.txt", logTime);
 	char *fileName = malloc(len + 1);

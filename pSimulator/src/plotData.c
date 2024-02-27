@@ -7,9 +7,9 @@
 
 #include "plotData.h"
 
-#define WIDTH 900
+#define WIDTH 1000
 #define HEIGHT 400
-#define MAXWIDTH 700
+#define MAXWIDTH 845
 
 //LOG FILE FORMAT
 //log time, pid, status, niceness, cputime, proctime
@@ -45,7 +45,7 @@ void destroyInfoList(InfoList **infoList){
 }
 
 float setScale(InfoList *infoList){
-	double totalTime;
+	double totalTime = 0;
 	float scale = 1.0; 
 
 	if(!infoList){
@@ -288,7 +288,7 @@ int getFileCount(char *path) {
 
 float randCol(){
 	float max = 1.0;
-	return (float) rand() / ((float) (RAND_MAX)) * max;
+	return (float) rand() / ((float) (RAND_MAX)) * max; //TODO sometimes colour given is dark making label hard to read would be nice to check for this
 }
 
 //TODO testing.... see if pid 2 still not going in... might have to do a case that if there is a status 2 and not in then just put in
@@ -466,10 +466,10 @@ int RRplotData(InfoList *infoList){
 		double width;
 		//if the time left is less than the time q just use the remaining proc time for the width
 		if(node->totalProc <= infoList->timeQuantum){
-			width = node->totalProc * 20 * scale; //change the scale here or in the function?
+			width = node->totalProc * 25 * scale; //change the scale here or in the function?
 		}
 		else{
-			width = infoList->timeQuantum * 20 * scale;
+			width = infoList->timeQuantum * 25 * scale; //scaling when jiffy .5
 		}
 
 		//for RR set and save so that same colour used throughout
@@ -490,7 +490,7 @@ int RRplotData(InfoList *infoList){
 		//write pid label
 		char pidLabel[15];
 		sprintf(pidLabel, "%.d", node->pid);
-		cairo_set_font_size(cr, 10);//try a smaller size but make sure it isnt too small (22 tried)
+		cairo_set_font_size(cr, 7);//try a smaller size but make sure it isnt too small (22 tried)
 		cairo_move_to(cr, x + (width * 0.3), y + 25); 
 		cairo_set_source_rgba(cr, 0, 0, 0, 1);
 		cairo_show_text(cr, pidLabel);
@@ -661,7 +661,7 @@ int main() {
 		//printf("SJF or FIFO used\n");
 		plotData(infoList);//TODO test
 	}
-	printInfoList(infoList); //TODO erase test
+	//printInfoList(infoList); //TODO erase test
 
 
 	//destroy info list
