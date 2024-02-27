@@ -7,11 +7,11 @@
 
 
 //#define ALGOR "ALGOR_FIFO"
-#define ALGOR "ALGOR_SJF"
-//#define ALGOR "ALGOR_RR"
+//#define ALGOR "ALGOR_SJF"
+#define ALGOR "ALGOR_RR"
 
 #define TIME_DT 0.10
-#define TIME_JIFFY 0.10
+#define TIME_JIFFY 0.50
 float GLOBAL_TIME = 0.00;
 
 void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
@@ -205,9 +205,53 @@ int main() {
 				nextPID++;	
 			}
 		} while (ready_queue->size != 0 || running_queue->size != 0);
-	} //else if (!strcmp(ALGOR, "ALGOR_RR")) {
-		
-	//}
+	} else if (!strcmp(ALGOR, "ALGOR_RR")) {
+		float current_running;
+		do {
+			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
+
+			int check = pushReadyQueue(ready_queue, nextPID);
+			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {
+				nextPID++;
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				continue;
+			}
+
+			if (running_queue->size == 0 && ready_queue->size != 0) {
+				Node entry = popEntry(ready_queue, ready_queue->size - 1);
+				pushRunningQueue(running_queue, entry);
+				float cpuTime = getCPUTime(running_queue, entry.pid);
+				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+				setCPUTime(running_queue, entry.pid, newTime);
+				current_running = TIME_DT;
+			} else {
+				unsigned int runningProcPID = running_queue->first->pid;
+				float cpuTime = getCPUTime(running_queue, runningProcPID);
+				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+				setCPUTime(running_queue, runningProcPID, newTime);
+				current_running += TIME_DT;
+			}
+
+			unsigned int runningProcPID = running_queue->first->pid;
+			if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
+				setStatus(running_queue, runningProcPID, 3);
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				popEntry(running_queue, 0);
+			} else if (current_running >= TIME_JIFFY) {
+				setStatus(running_queue, runningProcPID, 1);
+				Node poppedNode = popEntry(running_queue, 0);
+				pushEntry(&ready_queue, poppedNode.pid, poppedNode.status,
+						  poppedNode.niceness, poppedNode.cpuTime, poppedNode.procTime);
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+			} else {
+				logFile(ready_queue, running_queue, GLOBAL_TIME);
+			}
+
+			if (!(check == -1)) {
+				nextPID++;	
+			}
+		} while (ready_queue->size != 0 || running_queue->size != 0);
+	}
 
 	destroyDataList(&ready_queue);
 	destroyDataList(&running_queue);
