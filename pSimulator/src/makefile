@@ -36,9 +36,9 @@ clean:
 	rm -f testAlgorithms
 	touch ../log/.gitkeep
 	touch ../newProc/.gitkeep
-	rm -f testGraphs/*
+	rm -f testGraphs/*.png
 testing: test #if we want a file to diff good.txt 
 	./procSim > testOut.txt 
 
 tar:
-	tar --exclude .git -czvf ../../../lab02.tar.gz -C ../../../ lab02
+	tar --exclude .git -czvf ../../../lab05.tar.gz -C ../../../ lab05
