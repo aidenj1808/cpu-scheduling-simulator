@@ -3,13 +3,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <math.h>
-
 #include "dStruct.h"
-/*TODO noticed that 10 procs made and only 9 are going in 1-8 and 10, but 
-9 is left in the newProc dir??
---> when FIFO it doesnt read in the first proc so 9/10 are there, seg faults on first run
---> when SJF it will go like 4 rounds and seg fault BUT it reads in 10/10 procs
-*/
 
 
 //#define ALGOR "ALGOR_FIFO"
@@ -18,11 +12,7 @@
 
 #define TIME_DT 0.10
 #define TIME_JIFFY 0.10
-
 float GLOBAL_TIME = 0.00;
-/*
-float TIME_DT = 0.10;
-float TIME_JIFFY = 0;*/
 
 void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
 	int len = snprintf(NULL, 0, "../log/log%.2f.txt", logTime);
@@ -180,26 +170,27 @@ int main() {
 		do {
 			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
-			int check = pushReadyQueue(ready_queue, nextPID);
-			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {
+			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {	
+				pushReadyQueue(ready_queue, nextPID);
 				nextPID++;
 				logFile(ready_queue, running_queue, GLOBAL_TIME);
 				continue;
-			}
-
-			if (running_queue->size == 0 && ready_queue->size != 0) {
-				int index = getShortestJobIndex(ready_queue);
-				Node entry = popEntry(ready_queue, index);
-				pushRunningQueue(running_queue, entry);
-				float cpuTime = getCPUTime(running_queue, entry.pid);
-				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
-				setCPUTime(running_queue, entry.pid, newTime);
 			} else {
-				unsigned int runningProcPID = running_queue->first->pid;
-				float cpuTime = getCPUTime(running_queue, runningProcPID);
-				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
-				setCPUTime(running_queue, runningProcPID, newTime);
+				if (running_queue->size == 0 && ready_queue->size != 0) {
+					int index = getShortestJobIndex(ready_queue);
+					Node entry = popEntry(ready_queue, index);
+					pushRunningQueue(running_queue, entry);
+					float cpuTime = getCPUTime(running_queue, entry.pid);
+					float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+					setCPUTime(running_queue, entry.pid, newTime);
+				} else {
+					unsigned int runningProcPID = running_queue->first->pid;
+					float cpuTime = getCPUTime(running_queue, runningProcPID);
+					float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+					setCPUTime(running_queue, runningProcPID, newTime);
+				}
 			}
+			int check = pushReadyQueue(ready_queue, nextPID);
 
 			unsigned int runningProcPID = running_queue->first->pid;
 			if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
