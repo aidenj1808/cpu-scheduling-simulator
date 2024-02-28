@@ -15,6 +15,7 @@ typedef struct DataList {
 	int size;
 } DataList;
 
+//TODO potentially use this?
 typedef struct Levels{
     struct DataList *five;
     struct DataList *four;
