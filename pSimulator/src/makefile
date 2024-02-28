@@ -1,8 +1,9 @@
 CFLAGS= -Wall 
 CC= gcc 
 
-testAlgorithms: testAlgorithms.c
-	$(CC) $(CFLAGS) testAlgorithms.c -o testAlgorithms
+test: procSim
+	./files2.sh
+	./procSim
 
 procSim: procSim.o dStruct.o
 	$(CC) $(CFLAGS) -g procSim.o dStruct.o -o procSim
@@ -33,12 +34,10 @@ clean:
 	rm -f ../log/log*
 	rm -f procSim
 	rm -f plotData
-	rm -f testAlgorithms
 	touch ../log/.gitkeep
 	touch ../newProc/.gitkeep
-	rm -f testGraphs/*.png
 testing: test #if we want a file to diff good.txt 
 	./procSim > testOut.txt 
 
 tar:
-	tar --exclude .git -czvf ../../../lab05.tar.gz -C ../../../ lab05
+	tar --exclude .git -czvf ../../../lab02.tar.gz -C ../../../ lab02

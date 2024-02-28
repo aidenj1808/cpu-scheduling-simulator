@@ -15,6 +15,14 @@ typedef struct DataList {
 	int size;
 } DataList;
 
+typedef struct Levels{
+    struct DataList *five;
+    struct DataList *four;
+    struct DataList *three;
+    struct DataList *two;
+    struct DataList *one;
+}Levels;
+
 
 DataList *createDataList();
 

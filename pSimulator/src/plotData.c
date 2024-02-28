@@ -589,6 +589,7 @@ int RRplotData(InfoList *infoList){
 
   	// save the image  
   	cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
+	//cairo_surface_write_to_png(surface, "../log/RRtest.png");//TODO erase test file name
 
   	cairo_destroy(cr);
   	cairo_surface_destroy(surface);
