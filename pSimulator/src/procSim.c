@@ -9,10 +9,14 @@
 //#define ALGOR "ALGOR_FIFO"
 //#define ALGOR "ALGOR_SJF"
 #define ALGOR "ALGOR_RR"
+//#define ALGOR "ALGOR_MLFQ" //5 level priority but uses RR 
 
 #define TIME_DT 0.10
 #define TIME_JIFFY 0.50
+#define MAX_Q 5 //TODO for testing use 5 but should be 20 (20*5=100)
+#define MAX_RESET 5.00 //TODO not sure when we want to reset but can use this fo ease of value change
 float GLOBAL_TIME = 0.00;
+float T_RESET = 0.00; //when hits max time rest the queues and add them to proper priority level
 
 //TODO saw lab marks saying only need one logfile too far into having enough time to correct
 void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
@@ -123,6 +127,87 @@ int getShortestJobIndex(DataList *ready_queue) {
 void pushRunningQueue(DataList *running_queue, Node entry) {
 	pushEntry(&running_queue, entry.pid, 2, entry.niceness, entry.cpuTime,
 							  entry.procTime);
+}
+
+//TODO do we want this here or in dStruct.c?
+Levels *createLevels(){
+	Levels *levelsList = malloc(sizeof(Levels));
+	if(levelsList == NULL){
+		printf("Could not allocate memory for levels list.\n");
+		exit(EXIT_FAILURE);
+	}
+	DataList *five_queue = createDataList();
+	levelsList->five = five_queue;
+	DataList *four_queue = createDataList();
+	levelsList->four = four_queue;
+	DataList *three_queue = createDataList();
+	levelsList->three = three_queue;
+	DataList *two_queue = createDataList();
+	levelsList->two = two_queue;
+	DataList *one_queue = createDataList();
+	levelsList->one = one_queue;
+
+	return levelsList;
+}
+//TODO need to test
+void destroyLevels(Levels **levelsList){
+	if(!*levelsList){
+		printf("Levels list already empty.\n");
+		return;
+	}
+
+	Levels *levels = *levelsList;
+	destroyDataList(&(levels->five));
+	destroyDataList(&(levels->four));
+	destroyDataList(&(levels->three));
+	destroyDataList(&(levels->two));
+	destroyDataList(&(levels->one));
+
+	free(levels);
+	*levelsList = NULL;
+	return;
+}
+
+DataList *checkLevel(DataList *level, int priority){
+	Node *node = level->first;
+	DataList *newQueue = createDataList();
+	int index = 0;
+	while(node != NULL){
+		//TODO need to find out if he will be using niceness 1-5 or if he will be using others and
+		//we need to define a range fitting into the priority levels
+		if(node->niceness == priority){
+			//get index and pop then push to the new queue
+			Node popped = popEntry(level, index);
+			pushEntry(&newQueue, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		index ++;
+		node = node->next;
+	}
+	return newQueue;
+}
+
+//TODO function to reset queues when treset hits
+void resetQueues(Levels *levels){
+	DataList *fiveNew = checkLevel(levels->five, 5);
+	DataList *fourNew = checkLevel(levels->four, 4);
+	DataList *threeNew = checkLevel(levels->three, 3);
+	DataList *twoNew = checkLevel(levels->two, 2);
+	DataList *oneNew = checkLevel(levels->one, 1);
+
+	//free and assign
+	destroyDataList(&(levels->five));
+	destroyDataList(&(levels->four));
+	destroyDataList(&(levels->three));
+	destroyDataList(&(levels->two));
+	destroyDataList(&(levels->one));
+
+	levels->five = fiveNew;
+	levels->four = fourNew;
+	levels->three = threeNew;
+	levels->two = twoNew;
+	levels->one = oneNew;
+
+	return;
 }
 
 int main() {
@@ -252,6 +337,14 @@ int main() {
 				nextPID++;	
 			}
 		} while (ready_queue->size != 0 || running_queue->size != 0);
+	} else if (!strcmp(ALGOR, "ALGOR_MLFQ")) {
+		//TODO will do similar to RR but incorporate the levels and treset
+		//TODO create levels list 
+		Levels *levelsList = createLevels();
+
+
+		//TODO destroy the datalists in levels list
+		destroyLevels(&levelsList);
 	}
 
 	destroyDataList(&ready_queue);
