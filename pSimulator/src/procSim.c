@@ -14,7 +14,7 @@
 
 #define TIME_DT 0.10
 #define TIME_JIFFY 0.50
-#define MAX_Q 5 //TODO for testing use 5 but should be 20 (20*5=100)
+#define MAX_Q 2 //TODO for testing use 5 but should be 20 (20*5=100)
 #define MAX_RESET 5.00 //TODO not sure when we want to reset but can use this fo ease of value change
 float GLOBAL_TIME = 0.00;
 float T_RESET = 0.00; //when hits max time rest the queues and add them to proper priority level
@@ -151,6 +151,39 @@ Levels *createLevels(){
 		printf("Could not allocate memory for levels list.\n");
 		exit(EXIT_FAILURE);
 	}
+	Queues *queuesFive = malloc(sizeof(Queues));
+	if(queuesFive == NULL){
+		printf("Could not allocate memory for queues list.\n");
+		exit(EXIT_FAILURE);
+	}
+	Queues *queuesFour = malloc(sizeof(Queues));
+	if(queuesFour == NULL){
+		printf("Could not allocate memory for queues list.\n");
+		exit(EXIT_FAILURE);
+	}
+	Queues *queuesThree = malloc(sizeof(Queues));
+	if(queuesThree == NULL){
+		printf("Could not allocate memory for queues list.\n");
+		exit(EXIT_FAILURE);
+	}
+	Queues *queuesTwo = malloc(sizeof(Queues));
+	if(queuesTwo == NULL){
+		printf("Could not allocate memory for queues list.\n");
+		exit(EXIT_FAILURE);
+	}
+	Queues *queuesOne = malloc(sizeof(Queues));
+	if(queuesOne == NULL){
+		printf("Could not allocate memory for queues list.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	levelsList->five = queuesFive;
+	levelsList->four = queuesFour;
+	levelsList->three = queuesThree;
+	levelsList->two = queuesTwo;
+	levelsList->one = queuesOne;
+
+
 	DataList *five_ready_queue = createDataList();
 	levelsList->five->ready_queue = five_ready_queue;
 	DataList *four_ready_queue = createDataList();
@@ -199,6 +232,7 @@ DataList *checkLevel(DataList *level, int priority){
 	Node *node = level->first;
 	DataList *newQueue = createDataList();
 	int index = 0;
+	//gonna need to do the check if queue is at max...
 	while(node != NULL){
 		//TODO need to find out if he will be using niceness 1-5 or if he will be using others and
 		//we need to define a range fitting into the priority levels
@@ -215,24 +249,24 @@ DataList *checkLevel(DataList *level, int priority){
 
 //TODO function to reset queues when treset hits
 void resetQueues(Levels *levels){
-	DataList *fiveNew = checkLevel(levels->five, 5);
-	DataList *fourNew = checkLevel(levels->four, 4);
-	DataList *threeNew = checkLevel(levels->three, 3);
-	DataList *twoNew = checkLevel(levels->two, 2);
-	DataList *oneNew = checkLevel(levels->one, 1);
+	DataList *fiveNew = checkLevel(levels->five->ready_queue, 5);
+	DataList *fourNew = checkLevel(levels->four->ready_queue, 4);
+	DataList *threeNew = checkLevel(levels->three->ready_queue, 3);
+	DataList *twoNew = checkLevel(levels->two->ready_queue, 2);
+	DataList *oneNew = checkLevel(levels->one->ready_queue, 1);
 
 	//free and assign
-	destroyDataList(&(levels->five));
-	destroyDataList(&(levels->four));
-	destroyDataList(&(levels->three));
-	destroyDataList(&(levels->two));
-	destroyDataList(&(levels->one));
+	destroyDataList(&(levels->five->ready_queue));
+	destroyDataList(&(levels->four->ready_queue));
+	destroyDataList(&(levels->three->ready_queue));
+	destroyDataList(&(levels->two->ready_queue));
+	destroyDataList(&(levels->one->ready_queue));
 
-	levels->five = fiveNew;
-	levels->four = fourNew;
-	levels->three = threeNew;
-	levels->two = twoNew;
-	levels->one = oneNew;
+	levels->five->ready_queue = fiveNew;
+	levels->four->ready_queue = fourNew;
+	levels->three->ready_queue = threeNew;
+	levels->two->ready_queue = twoNew;
+	levels->one->ready_queue = oneNew;
 
 	return;
 }
@@ -283,18 +317,79 @@ int pushLevelQueue(Levels *levels, unsigned int pid) {
 	char *ptr;
 	float procTime = strtol(strtok(buffer, ","), &ptr, 10);
 	int niceness = strtol(strtok(NULL, ","), &ptr, 10);
+	printf("Niceness for pid %d: %d\n", pid, niceness);
+	int tmpNice = niceness;
+	int pushed = 0;//flag for do while
+	do//only push to the queue if it is not at max otherwise push to the next level, if 1 check from the top..?
+	{
+		if (tmpNice == 5) {
+			if(levels->five->ready_queue->size < MAX_Q){
+				pushEntry(&(levels->five->ready_queue), pid, 1, niceness, 0.00, procTime);
+				pushed = 1;
+				break;
+			}
+			else{
+				tmpNice--;
+			}
+		}
+		if (tmpNice == 4) {
+			if(levels->four->ready_queue->size < MAX_Q){
+				pushEntry(&(levels->four->ready_queue), pid, 1, niceness, 0.00, procTime);
+				pushed = 1;
+				break;
+			}
+			else{
+				tmpNice--;
+			}
+		}
+		if (tmpNice == 3) {
+			if(levels->three->ready_queue->size < MAX_Q){
+				pushEntry(&(levels->three->ready_queue), pid, 1, niceness, 0.00, procTime);
+				pushed = 1;
+				break;
+			}
+			else{
+				tmpNice--;
+			}
+		}
+		if (tmpNice == 2) {
+			if(levels->two->ready_queue->size < MAX_Q){
+				pushEntry(&(levels->two->ready_queue), pid, 1, niceness, 0.00, procTime);
+				pushed = 1;
+				break;
+			}
+			else{
+				tmpNice--;
+			}
+		}
+		if (tmpNice == 1) {
+			if(levels->one->ready_queue->size < MAX_Q){
+				pushEntry(&(levels->one->ready_queue), pid, 1, niceness, 0.00, procTime);
+				pushed = 1;
+				break;
+			}
+			else{
+				tmpNice = 5;
+			}
+		}
+	} while (!pushed);
 
-	if (niceness == 5) {
+	/*if (niceness == 5 && levels->five->ready_queue->size < MAX_Q) {
+		printf("Niceness 5\n");
 		pushEntry(&(levels->five->ready_queue), pid, 1, niceness, 0.00, procTime);
-	} else if (niceness == 4) {
+	} else if (niceness == 4 && levels->five->ready_queue->size < MAX_Q) {
+		printf("Niceness 4\n");
 		pushEntry(&(levels->four->ready_queue), pid, 1, niceness, 0.00, procTime);
-	} else if (niceness == 3) {
+	} else if (niceness == 3 && levels->five->ready_queue->size < MAX_Q) {
+		printf("Niceness 3\n");
 		pushEntry(&(levels->three->ready_queue), pid, 1, niceness, 0.00, procTime);
-	} else if (niceness == 2) {
+	} else if (niceness == 2 && levels->five->ready_queue->size < MAX_Q) {
+		printf("Niceness 2\n");
 		pushEntry(&(levels->two->ready_queue), pid, 1, niceness, 0.00, procTime);
-	} else if (niceness == 1) {
+	} else if (niceness == 1 && levels->five->ready_queue->size < MAX_Q) {
+		printf("Niceness 1\n");
 		pushEntry(&(levels->one->ready_queue), pid, 1, niceness, 0.00, procTime);
-	}
+	}*/
 	fclose(fptr);
 	remove(path);
 	free(path);
@@ -320,30 +415,30 @@ void printLevels(Levels *levels) {
 
 	printf("Level 4:\n");
 	printf("Ready:");
-	printAllEntries(levels->five->ready_queue);
+	printAllEntries(levels->four->ready_queue);
 	printf("Running:");
-	printAllEntries(levels->five->running_queue);
+	printAllEntries(levels->four->running_queue);
 	printf("\n");
 
 	printf("Level 3:\n");
 	printf("Ready:");
-	printAllEntries(levels->five->ready_queue);
+	printAllEntries(levels->three->ready_queue);
 	printf("Running:");
-	printAllEntries(levels->five->running_queue);
+	printAllEntries(levels->three->running_queue);
 	printf("\n");
 
 	printf("Level 2:\n");
 	printf("Ready:");
-	printAllEntries(levels->five->ready_queue);
+	printAllEntries(levels->two->ready_queue);
 	printf("Running:");
-	printAllEntries(levels->five->running_queue);
+	printAllEntries(levels->two->running_queue);
 	printf("\n");
 
 	printf("Level 1:\n");
 	printf("Ready:");
-	printAllEntries(levels->five->ready_queue);
+	printAllEntries(levels->one->ready_queue);
 	printf("Running:");
-	printAllEntries(levels->five->running_queue);
+	printAllEntries(levels->one->running_queue);
 	printf("\n");
 
 }
