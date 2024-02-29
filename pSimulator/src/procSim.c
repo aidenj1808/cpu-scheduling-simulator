@@ -7,9 +7,9 @@
 #include "dStruct.h"
 
 
-//#define ALGOR "ALGOR_FIFO"
+#define ALGOR "ALGOR_FIFO"
 //#define ALGOR "ALGOR_SJF"
-#define ALGOR "ALGOR_RR"
+//#define ALGOR "ALGOR_RR"
 //#define ALGOR "ALGOR_MLFQ" //5 level priority but uses RR 
 
 #define TIME_DT 0.10

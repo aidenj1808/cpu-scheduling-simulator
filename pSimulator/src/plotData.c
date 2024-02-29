@@ -52,15 +52,48 @@ float setScale(InfoList *infoList){
         printf("infolist is empty.\n");
         return 0;
     }
-	Info *node = infoList->first;
-	while (node != NULL) {
-		totalTime += node->cpuTime * 20;
+	Info *node;
+	int maxCount = 40; 
+	int count = 0;
+
+	do{
+		totalTime = 0;
+		node = infoList->first;
+		while(node != NULL){
+			totalTime += node->cpuTime * scale;
+			node = node->next;
+		}
+		printf("total time: %f\n", totalTime);//TODO
+		printf("Scale: %f\n", scale);//TODO
+		if(totalTime <= 800 && totalTime <= 820){
+			scale += 1;
+			count++;
+		}
+		else{
+			break;
+		}
+	}while(count < maxCount);
+	//printf("total time: %f\n", totalTime);//TODO
+	//printf("Scale: %f\n", scale);//TODO
+	/*while (node != NULL) {
+		totalTime += node->cpuTime;// * scale
+		node = node->next;
+	}
+	while(totalTime < 800){
+		node = infoList->first;
+		totalTime = 0;
+		while (node != NULL) {
+		totalTime += node->cpuTime * scale;
 		node = node->next;
 	}
 
-	if(totalTime > MAXWIDTH){
-		scale = MAXWIDTH / totalTime;
 	}
+	printf("total time: %f\n", totalTime);//TODO
+
+	if(totalTime > MAXWIDTH){
+		scale = totalTime / MAXWIDTH;
+	}
+	printf("Scale: %f\n", scale);//TODO*/
 	return scale;
 }
 
@@ -81,24 +114,24 @@ int searchEntryPID(InfoList *infoList, unsigned int pid){
 
 void printInfoList(InfoList *infoList){
     Info *current = infoList->first;
-    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text drawn\n");
+    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text   drawn   procTotal\n");
     while (current != NULL) {
-        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f%-8d\n",
+        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f%-8d%-8.2f\n",
                current->pid, current->r, current->g, current->b,
                current->cpuTime, current->procTime, current->Tarr,
-               current->Trun, current->Text, current->drawn);
+               current->Trun, current->Text, current->drawn, current->totalProc);
         current = current->next;
     }
 }
 
-//new getGraphData
+//TODO getGraphData --> it gets the data, but it will be looking for all log files in folder so if more files are ever in folder will pull from multiple 
 void getGraphData(int fileCount, InfoList *infoList){
 	FILE *fptr;
 	struct dirent *dp;
 	DIR *dirptr = opendir("../log/");
 
 	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
-	while ((dp = readdir(dirptr)) != NULL) {
+	while ((dp = readdir(dirptr)) != NULL) {//TODO maybe change this to only get the most recent file?
 	 	int len = strlen("../log/");
 		char *path = malloc(len + 1);
  		strcpy(path, "../log/");
@@ -335,7 +368,7 @@ int plotData(InfoList *infoList){
 		}
 		node = tmpNode;
 
-		double width = node->cpuTime * 20 * scale;
+		double width = node->cpuTime * scale;//*20;
 
 		//for RR set and save so that same colour used throughout
 		if(node->r == -1){
@@ -355,7 +388,7 @@ int plotData(InfoList *infoList){
 		//write pid label
 		char pidLabel[15];
 		sprintf(pidLabel, "%.d", node->pid);
-		cairo_set_font_size(cr, 22);//maybe try a smaller font... or scale the font...
+		cairo_set_font_size(cr, 10);//maybe try a smaller font... or scale the font...
 		cairo_move_to(cr, x + (width * 0.3), y + 25); 
 		cairo_set_source_rgba(cr, 0, 0, 0, 1);
 		cairo_show_text(cr, pidLabel);
@@ -364,7 +397,6 @@ int plotData(InfoList *infoList){
 		label = x;  
 		node->drawn = 1;
 		counter++;
-		printf("Counter is %d\n", counter);
 	}
 
   	//line and label
@@ -421,8 +453,8 @@ int plotData(InfoList *infoList){
 
 
   	// save the image  
-  	cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
-	//cairo_surface_write_to_png(surface, "../log/atest.png");//TODO erase test file name
+  	//cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
+	cairo_surface_write_to_png(surface, "../log/atest.png");//TODO erase test file name
 
   	cairo_destroy(cr);
   	cairo_surface_destroy(surface);
@@ -456,6 +488,7 @@ int RRplotData(InfoList *infoList){
   	float scale = setScale(infoList);
 
 	int counter = 0;
+	infoList->drawn = 0;
 	Info *node = infoList->first;
 	
 	//set the timeq
@@ -466,10 +499,10 @@ int RRplotData(InfoList *infoList){
 		double width;
 		//if the time left is less than the time q just use the remaining proc time for the width
 		if(node->totalProc <= infoList->timeQuantum){
-			width = node->totalProc * 25 * scale; //change the scale here or in the function?
+			width = node->totalProc * scale; //change the scale here or in the function?//*25;
 		}
 		else{
-			width = infoList->timeQuantum * 25 * scale; //scaling when jiffy .5
+			width = infoList->timeQuantum * scale; //scaling when jiffy .5//*25
 		}
 
 		//for RR set and save so that same colour used throughout
@@ -506,7 +539,7 @@ int RRplotData(InfoList *infoList){
 		else{
 			node->totalProc = node->totalProc - infoList->timeQuantum;//else subtract the time q from total for the next use
 		}
-		//printf("counter: %d, time left for pid %d: %f\n", counter, node->pid, node->totalProc);//TODO test print
+		printf("counter: %d, time left for pid %d: %f\n", counter, node->pid, node->totalProc);//TODO test print
 
 		//now need to find the next node 
 		//if at the end of the list
@@ -520,15 +553,22 @@ int RRplotData(InfoList *infoList){
 		}
 
 		//check it has time left to be drawn
-		if(node->totalProc == 0){
+		if(node->drawn == 1){
 			//if no time left and the next node is not the end go to the next node that has remaining time 
-			while(node->totalProc == 0 && node->next != NULL){
+			while(node->drawn == 1 && node->next != NULL){
 				node = node->next;
 			}
 			//if search throught the whole thing then break 
 			//should exit anyways once the counter hits 
-			if(node->totalProc == 0 && node->next == NULL){
+			if(node->drawn == 1 && node->next == NULL && counter == infoList->size){//false done draw if last pid finishs need an overall done drawing flag in infolist
 				break;
+			}
+			else if(node->drawn == 1 && node->next == NULL){
+				node = infoList->first;
+				while(node->drawn == 1 && node->next != NULL){
+				node = node->next;
+			}
+
 			}
 		}
 	}
@@ -588,8 +628,8 @@ int RRplotData(InfoList *infoList){
 
 
   	// save the image  
-  	cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
-	//cairo_surface_write_to_png(surface, "../log/RRtest.png");//TODO erase test file name
+  	//cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
+	cairo_surface_write_to_png(surface, "../log/RRtest.png");//TODO erase test file name
 
   	cairo_destroy(cr);
   	cairo_surface_destroy(surface);
@@ -662,7 +702,7 @@ int main() {
 		//printf("SJF or FIFO used\n");
 		plotData(infoList);//TODO test
 	}
-	//printInfoList(infoList); //TODO erase test
+	printInfoList(infoList); //TODO erase test
 
 
 	//destroy info list
