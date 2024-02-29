@@ -16,13 +16,18 @@ typedef struct DataList {
 } DataList;
 
 //TODO potentially use this?
-typedef struct Levels{
-    struct DataList *five;
-    struct DataList *four;
-    struct DataList *three;
-    struct DataList *two;
-    struct DataList *one;
-}Levels;
+typedef struct Levels {
+    struct Queues *five;
+    struct Queues *four;
+    struct Queues *three;
+    struct Queues *two;
+    struct Queues *one;
+} Levels;
+
+typedef struct Queues {
+	struct DataList *ready_queue;
+	struct DataList *running_queue;
+} Queues;
 
 
 DataList *createDataList();

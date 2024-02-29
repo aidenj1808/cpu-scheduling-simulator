@@ -9,8 +9,8 @@
 
 //#define ALGOR "ALGOR_FIFO"
 //#define ALGOR "ALGOR_SJF"
-#define ALGOR "ALGOR_RR"
-//#define ALGOR "ALGOR_MLFQ" //5 level priority but uses RR 
+//#define ALGOR "ALGOR_RR"
+#define ALGOR "ALGOR_MLFQ" //5 level priority but uses RR 
 
 #define TIME_DT 0.10
 #define TIME_JIFFY 0.50
@@ -151,20 +151,32 @@ Levels *createLevels(){
 		printf("Could not allocate memory for levels list.\n");
 		exit(EXIT_FAILURE);
 	}
-	DataList *five_queue = createDataList();
-	levelsList->five = five_queue;
-	DataList *four_queue = createDataList();
-	levelsList->four = four_queue;
-	DataList *three_queue = createDataList();
-	levelsList->three = three_queue;
-	DataList *two_queue = createDataList();
-	levelsList->two = two_queue;
-	DataList *one_queue = createDataList();
-	levelsList->one = one_queue;
+	DataList *five_ready_queue = createDataList();
+	levelsList->five->ready_queue = five_ready_queue;
+	DataList *four_ready_queue = createDataList();
+	levelsList->four->ready_queue = four_ready_queue;
+	DataList *three_ready_queue = createDataList();
+	levelsList->three->ready_queue = three_ready_queue;
+	DataList *two_ready_queue = createDataList();
+	levelsList->two->ready_queue = two_ready_queue;
+	DataList *one_ready_queue = createDataList();
+	levelsList->one->ready_queue = one_ready_queue;
+
+	DataList *five_running_queue = createDataList();
+	levelsList->five->running_queue = five_running_queue;
+	DataList *four_running_queue = createDataList();
+	levelsList->four->running_queue = four_running_queue;
+	DataList *three_running_queue = createDataList();
+	levelsList->three->running_queue = three_running_queue;
+	DataList *two_running_queue = createDataList();
+	levelsList->two->running_queue = two_running_queue;
+	DataList *one_running_queue = createDataList();
+	levelsList->one->running_queue = one_running_queue;
 
 	return levelsList;
 }
-//TODO need to test
+//TODO need to test, implement after working
+/*
 void destroyLevels(Levels **levelsList){
 	if(!*levelsList){
 		printf("Levels list already empty.\n");
@@ -182,7 +194,7 @@ void destroyLevels(Levels **levelsList){
 	*levelsList = NULL;
 	return;
 }
-
+*/
 DataList *checkLevel(DataList *level, int priority){
 	Node *node = level->first;
 	DataList *newQueue = createDataList();
@@ -195,7 +207,7 @@ DataList *checkLevel(DataList *level, int priority){
 			Node popped = popEntry(level, index);
 			pushEntry(&newQueue, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
 		}
-		index ++;
+		index++;
 		node = node->next;
 	}
 	return newQueue;
@@ -223,6 +235,121 @@ void resetQueues(Levels *levels){
 	levels->one = oneNew;
 
 	return;
+}
+
+int pushLevelQueue(Levels *levels, unsigned int pid) {
+	DIR *dirptr = opendir("../newProc/");
+	if (dirptr == NULL) {
+		printf("Error opening directory.\n");
+		return -1;
+	}
+	struct dirent *dp;
+	for (int i = 0; i < 3; i++) {dp = readdir(dirptr);} //skips . & .. & .gitkeep
+	dp = readdir(dirptr);
+	if (!dp) {
+		closedir(dirptr);
+		return -1;
+	}
+
+	int newProcDirLen = strlen("../newProc/");
+	char *path = malloc(newProcDirLen + 1);
+	if (path == NULL) {
+		printf("could not allocate memory for path.\n");
+		return -1;
+	}
+ 	strcpy(path, "../newProc/");
+
+	int procFileLen = strlen(dp->d_name);
+	path = realloc(path, newProcDirLen + procFileLen + 1);
+	if (path == NULL) {
+		printf("Error reallocing path.\n");
+		return -1;
+	}
+	strcat(path, dp->d_name);
+	closedir(dirptr);
+	
+	FILE *fptr = fopen(path, "r");
+	if (fptr == NULL) {
+		printf("Error opening file.\n");
+		return -1;
+	}
+	char *buffer = malloc(50);
+	if (buffer == NULL) {
+		printf("could not allocate memory for path.\n");
+		return -1;
+	}
+
+	fgets(buffer, 50, fptr);
+	char *ptr;
+	float procTime = strtol(strtok(buffer, ","), &ptr, 10);
+	int niceness = strtol(strtok(NULL, ","), &ptr, 10);
+
+	if (niceness == 5) {
+		pushEntry(&(levels->five->ready_queue), pid, 1, niceness, 0.00, procTime);
+	} else if (niceness == 4) {
+		pushEntry(&(levels->four->ready_queue), pid, 1, niceness, 0.00, procTime);
+	} else if (niceness == 3) {
+		pushEntry(&(levels->three->ready_queue), pid, 1, niceness, 0.00, procTime);
+	} else if (niceness == 2) {
+		pushEntry(&(levels->two->ready_queue), pid, 1, niceness, 0.00, procTime);
+	} else if (niceness == 1) {
+		pushEntry(&(levels->one->ready_queue), pid, 1, niceness, 0.00, procTime);
+	}
+	fclose(fptr);
+	remove(path);
+	free(path);
+	free(buffer);
+	return 0;
+}
+
+void initLevels(Levels *levels) {
+	unsigned int pid = 1;
+	int check;
+	while ((check = pushLevelQueue(levels, pid)) != -1) {
+		pid++;
+	}
+}
+
+void printLevels(Levels *levels) {
+	printf("Level 5:\n");
+	printf("Ready:");
+	printAllEntries(levels->five->ready_queue);
+	printf("Running:");
+	printAllEntries(levels->five->running_queue);
+	printf("\n");
+
+	printf("Level 4:\n");
+	printf("Ready:");
+	printAllEntries(levels->five->ready_queue);
+	printf("Running:");
+	printAllEntries(levels->five->running_queue);
+	printf("\n");
+
+	printf("Level 3:\n");
+	printf("Ready:");
+	printAllEntries(levels->five->ready_queue);
+	printf("Running:");
+	printAllEntries(levels->five->running_queue);
+	printf("\n");
+
+	printf("Level 2:\n");
+	printf("Ready:");
+	printAllEntries(levels->five->ready_queue);
+	printf("Running:");
+	printAllEntries(levels->five->running_queue);
+	printf("\n");
+
+	printf("Level 1:\n");
+	printf("Ready:");
+	printAllEntries(levels->five->ready_queue);
+	printf("Running:");
+	printAllEntries(levels->five->running_queue);
+	printf("\n");
+
+}
+
+int runRR(DataList *queue) {
+	;//timeStart = 0
 }
 
 int main() {
@@ -357,10 +484,17 @@ int main() {
 		//TODO will do similar to RR but incorporate the levels and treset
 		//TODO create levels list 
 		Levels *levelsList = createLevels();
+		initLevels(levelsList);
+		printLevels(levelsList);
+		/*
+		do {
+			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
 
+		} while (1);
+		*/
 
 		//TODO destroy the datalists in levels list
-		destroyLevels(&levelsList);
+		//destroyLevels(&levelsList);
 	}
 
 	destroyDataList(&ready_queue);
