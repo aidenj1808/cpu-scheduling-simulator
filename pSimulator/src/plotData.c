@@ -125,105 +125,104 @@ void printInfoList(InfoList *infoList){
 }
 
 //TODO getGraphData --> it gets the data, but it will be looking for all log files in folder so if more files are ever in folder will pull from multiple 
-void getGraphData(int fileCount, InfoList *infoList){
+void getGraphData(InfoList *infoList){
 	FILE *fptr;
 	struct dirent *dp;
 	DIR *dirptr = opendir("../log/");
 
-	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
-	while ((dp = readdir(dirptr)) != NULL) {//TODO maybe change this to only get the most recent file?
-	 	int len = strlen("../log/");
-		char *path = malloc(len + 1);
- 		strcpy(path, "../log/");
+	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & .. & .gitkeep
+	dp = readdir(dirptr);
+	int len = strlen("../log/");
+	char *path = malloc(len + 1);
+ 	strcpy(path, "../log/");
 
-		int len2 = strlen(dp->d_name);
-		path = realloc(path, len + len2 + 1);
-		strcat(path, dp->d_name);
+	int len2 = strlen(dp->d_name);
+	path = realloc(path, len + len2 + 1);
+	strcat(path, dp->d_name);
 
-		fptr = fopen(path, "r");
-		char *buffer = malloc(100);
-		fgets(buffer, 100, fptr); // Skips header
-		while (fgets(buffer, 100, fptr) != NULL) {
-			float globalTime = atof(strtok(buffer, ","));
-            unsigned int pid = atoi(strtok(NULL, ","));
-			unsigned int status = atoi(strtok(NULL, ","));
-			strtok(NULL, ",");//niceness dont need for now...
-			float cpuTime = atof(strtok(NULL, ","));//as of now cpu and proc time the same
-			float procTime = atof(strtok(NULL, ","));
+	fptr = fopen(path, "r");
+	char *buffer = malloc(100);
+	fgets(buffer, 100, fptr); // Skips header
+	while (fgets(buffer, 100, fptr) != NULL) {
+		float globalTime = atof(strtok(buffer, ","));
+        unsigned int pid = atoi(strtok(NULL, ","));
+		unsigned int status = atoi(strtok(NULL, ","));
+		strtok(NULL, ",");//niceness dont need for now...
+		float cpuTime = atof(strtok(NULL, ","));//as of now cpu and proc time the same
+		float procTime = atof(strtok(NULL, ","));
 
-			//because pid 1 gets pushed immed there is no status == 1 so..//TODO is this still the case?? otherwise dont need this
-			if(infoList->size == 0){
-				Info *newProc = malloc(sizeof(Info));
-					if (newProc == NULL) {
-						printf("could not allocate memory for new proc.\n");
-						return;
-					}
-					newProc->pid = pid;
-					newProc->Tarr = 0.0;
-					newProc->procTime = procTime;
-					newProc->r = -1;
-					newProc->g = -1;
-					newProc->b = -1;
-					//newProc->Trun = -1;//TODO switched to very large number for testing... maybe try with -1 again 
-					newProc->Trun = 100;
-					newProc->totalProc = procTime;
-					newProc->drawn = 0;
-
-					infoList->first = newProc;
-					infoList->size++;
-
-			}
-
-			//need to check stat == 1 AND pid !in infoList
-			if (status == 1) {
-				//check if already in infolist 0 (not in) 1 (in)
-				int check = searchEntryPID(infoList, pid);
-				if(!check){
-					Info *newProc = malloc(sizeof(Info));
-					if (newProc == NULL) {
-						printf("could not allocate memory for new proc.\n");
-						return;
-					}
-					newProc->pid = pid;
-					newProc->Tarr = globalTime;
-					newProc->procTime = procTime;
-					newProc->r = -1;
-					newProc->g = -1;
-					newProc->b = -1;
-					//newProc->Trun = -1;//TODO switched to very large number for testing...maybe try with -1 again 
-					newProc->Trun = 100;
-					newProc->totalProc = procTime;
-					newProc->drawn = 0;
-
-					//linked list not a queue (insert at the back)
-					if (infoList->size == 0) {
-						infoList->first = newProc;
-					} else {
-						//find the last
-						Info *current = infoList->first;
-            			while (current->next != NULL) {
-                			current = current->next;
-            			}
-            			current->next = newProc;
-					}
-					infoList->size++;
+		//because pid 1 gets pushed immed there is no status == 1 so..//TODO is this still the case?? otherwise dont need this
+		if(infoList->size == 0){
+			Info *newProc = malloc(sizeof(Info));
+				if (newProc == NULL) {
+					printf("could not allocate memory for new proc.\n");
+					return;
 				}
-				
-			}
-			
-			if (status == 2) {
-				//will need to get the entry and set Trun = globalTime
-				setRUNTime(infoList, pid, globalTime);//in func it checks if it has been set already if it has it doesnt
-			}
-			if (status == 3) {//should only appear as 3 once so dont need to check? can just set
-				//will need to get the entry and set Text = globalTime
-				setEXTTime(infoList, pid, globalTime, cpuTime);
-			}
+				newProc->pid = pid;
+				newProc->Tarr = 0.0;
+				newProc->procTime = procTime;
+				newProc->r = -1;
+				newProc->g = -1;
+				newProc->b = -1;
+				//newProc->Trun = -1;//TODO switched to very large number for testing... maybe try with -1 again 
+				newProc->Trun = 100;
+				newProc->totalProc = procTime;
+				newProc->drawn = 0;
+
+				infoList->first = newProc;
+				infoList->size++;
+
 		}
-		fclose(fptr);
-		free(path);
-		free(buffer);
+
+		//need to check stat == 1 AND pid !in infoList
+		if (status == 1) {
+			//check if already in infolist 0 (not in) 1 (in)
+			int check = searchEntryPID(infoList, pid);
+			if(!check){
+				Info *newProc = malloc(sizeof(Info));
+				if (newProc == NULL) {
+					printf("could not allocate memory for new proc.\n");
+					return;
+				}
+				newProc->pid = pid;
+				newProc->Tarr = globalTime;
+				newProc->procTime = procTime;
+				newProc->r = -1;
+				newProc->g = -1;
+				newProc->b = -1;
+				//newProc->Trun = -1;//TODO switched to very large number for testing...maybe try with -1 again 
+				newProc->Trun = 100;
+				newProc->totalProc = procTime;
+				newProc->drawn = 0;
+
+				//linked list not a queue (insert at the back)
+				if (infoList->size == 0) {
+					infoList->first = newProc;
+				} else {
+					//find the last
+					Info *current = infoList->first;
+            		while (current->next != NULL) {
+                		current = current->next;
+            		}
+            		current->next = newProc;
+				}
+				infoList->size++;
+			}
+				
+		}
+			
+		if (status == 2) {
+			//will need to get the entry and set Trun = globalTime
+			setRUNTime(infoList, pid, globalTime);//in func it checks if it has been set already if it has it doesnt
+		}
+		if (status == 3) {//should only appear as 3 once so dont need to check? can just set
+			//will need to get the entry and set Text = globalTime
+			setEXTTime(infoList, pid, globalTime, cpuTime);
+		}
 	}
+	fclose(fptr);
+	free(path);
+	free(buffer);
 	closedir(dirptr);
 	//printInfoList(infoList);//TODO delete this after just doing a test
 	calcAVG(infoList);
@@ -285,36 +284,35 @@ int getFileCount(char *path) {
 	DIR *dirptr = opendir(path);
 	struct dirent *dp;
 
-	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & ..
+	for (int i = 0; i < 3; i++) {dp = readdir(dirptr);} //skips . & .. & .gitkeep
 
-	while ((dp = readdir(dirptr)) != NULL) {
-		int len = strlen(path);
-		char *fullpath = malloc(len + 1);
- 		strcpy(fullpath, path);
+	dp = readdir(dirptr);
+	int len = strlen(path);
+	char *fullpath = malloc(len + 1);
+ 	strcpy(fullpath, path);
 
-		int len2 = strlen(dp->d_name);
-		fullpath = realloc(fullpath, len + len2 + 1);
-		strcat(fullpath, dp->d_name);
+	int len2 = strlen(dp->d_name);
+	fullpath = realloc(fullpath, len + len2 + 1);
+	strcat(fullpath, dp->d_name);
 
-		FILE *fptr = fopen(fullpath, "r");
-		char *buffer = malloc(100);
-		while (fgets(buffer, 100, fptr) != NULL) {
-			strtok(buffer, ",");
-			strtok(NULL, ",");
-			unsigned int status = atoi(strtok(NULL, ","));
-			strtok(NULL, ",");
-			atoi(strtok(NULL, ","));
-			strtok(NULL, ",");
+	FILE *fptr = fopen(fullpath, "r");
+	char *buffer = malloc(100);
+	while (fgets(buffer, 100, fptr) != NULL) {
+		strtok(buffer, ",");
+		strtok(NULL, ",");
+		unsigned int status = atoi(strtok(NULL, ","));
+		strtok(NULL, ",");
+		atoi(strtok(NULL, ","));
+		strtok(NULL, ",");
 
-			if (status == 3) {
-				count++;
-				break;
-			}
+		if (status == 3) {
+			count++;
+			break;
 		}
-		fclose(fptr);
-		free(fullpath);
-		free(buffer);
 	}
+	fclose(fptr);
+	free(fullpath);
+	free(buffer);
 	closedir(dirptr);
 	return count;
 }
@@ -681,10 +679,9 @@ int main() {
 
 	//didnt change getFileCount
 	//TODO do we want to keep it so it counts how many processes finish? do we assume all finish?
-	int fileCount = getFileCount("../log/");
 
 	//will need to change getGrapData, no return just pass the infoList and parse file 
-	getGraphData(fileCount, infoList);
+	getGraphData(infoList);
 
 	//check if RR is used
 	RRcheck(infoList);//TODO test logic works

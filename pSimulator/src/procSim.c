@@ -7,9 +7,9 @@
 #include "dStruct.h"
 
 
-#define ALGOR "ALGOR_FIFO"
+//#define ALGOR "ALGOR_FIFO"
 //#define ALGOR "ALGOR_SJF"
-//#define ALGOR "ALGOR_RR"
+#define ALGOR "ALGOR_RR"
 //#define ALGOR "ALGOR_MLFQ" //5 level priority but uses RR 
 
 #define TIME_DT 0.10
@@ -238,9 +238,6 @@ int main() {
 			int check = pushReadyQueue(ready_queue, nextPID);
 			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {
 				nextPID++;
-				Node *first = ready_queue->first;
-				printf("%f %u %u %d %f %f\n", GLOBAL_TIME, first->pid,
-						first->status, first->niceness, first->cpuTime, first->procTime);
 				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 				continue;
 			}

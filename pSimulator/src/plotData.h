@@ -64,7 +64,7 @@ float randCol();
 
 //float *getGraphData(int fileCount); //old call
 //enters the directory and each files adding processes and information to the InfoList
-void getGraphData(int fileCount, InfoList *infoList);//new call
+void getGraphData(InfoList *infoList);//new call
 
 //counts the number of completed proccesses by looking for status = 3
 int getFileCount(char *path);

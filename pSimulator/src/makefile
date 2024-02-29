@@ -1,9 +1,10 @@
 CFLAGS= -Wall -g
 CC= gcc 
 
-test: procSim
+test: procSim plotData
 	./files2.sh
 	./procSim
+	./plotData
 
 procSim: procSim.o dStruct.o
 	$(CC) $(CFLAGS) procSim.o dStruct.o -o procSim
@@ -34,6 +35,8 @@ clean:
 	rm -f ../log/log*
 	rm -f procSim
 	rm -f plotData
+	rm -f ../log/atest.png
+	rm -f ../log/RRtest.png
 	touch ../log/.gitkeep
 	touch ../newProc/.gitkeep
 testing: test #if we want a file to diff good.txt 
