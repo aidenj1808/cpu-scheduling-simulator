@@ -19,6 +19,8 @@
 float GLOBAL_TIME = 0.00;
 float T_RESET = 0.00; //when hits max time rest the queues and add them to proper priority level
 
+void printLevels(Levels *levels);
+
 char *createLogFile() {
   	time_t t = time(NULL);
   	struct tm *tm_info = localtime(&t);
@@ -228,32 +230,123 @@ void destroyLevels(Levels **levelsList){
 	return;
 }
 */
-DataList *checkLevel(DataList *level, int priority){
-	Node *node = level->first;
-	DataList *newQueue = createDataList();
-	int index = 0;
-	//gonna need to do the check if queue is at max...
-	while(node != NULL){
-		//TODO need to find out if he will be using niceness 1-5 or if he will be using others and
-		//we need to define a range fitting into the priority levels
-		if(node->niceness == priority){
-			//get index and pop then push to the new queue
-			Node popped = popEntry(level, index);
-			pushEntry(&newQueue, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
-		}
-		index++;
-		node = node->next;
-	}
-	return newQueue;
-}
+
 
 //TODO function to reset queues when treset hits
+//TODO need to add a when max
 void resetQueues(Levels *levels){
-	DataList *fiveNew = checkLevel(levels->five->ready_queue, 5);
-	DataList *fourNew = checkLevel(levels->four->ready_queue, 4);
-	DataList *threeNew = checkLevel(levels->three->ready_queue, 3);
-	DataList *twoNew = checkLevel(levels->two->ready_queue, 2);
-	DataList *oneNew = checkLevel(levels->one->ready_queue, 1);
+	printf("Starting Queue reset\n");//TODO erase
+	DataList *fiveNew = createDataList();
+	DataList *fourNew = createDataList();
+	DataList *threeNew = createDataList();
+	DataList *twoNew = createDataList();
+	DataList *oneNew = createDataList();
+	
+	//level 5
+	Node *node = levels->five->ready_queue->first;
+	while(node != NULL){
+		Node popped = popEntry(levels->five->ready_queue, levels->five->ready_queue->size - 1);
+		if(popped.niceness == 5){
+			pushEntry(&fiveNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 4){
+			pushEntry(&fourNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 3){
+			pushEntry(&threeNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 2){
+			pushEntry(&twoNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 1){
+			pushEntry(&oneNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		node = levels->five->ready_queue->first;
+	}
+	//level 4
+	node = levels->four->ready_queue->first;
+	while(node != NULL){
+		Node popped = popEntry(levels->four->ready_queue, levels->four->ready_queue->size - 1);
+		if(popped.niceness == 5){
+			pushEntry(&fiveNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 4){
+			pushEntry(&fourNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 3){
+			pushEntry(&threeNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 2){
+			pushEntry(&twoNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 1){
+			pushEntry(&oneNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		node = levels->four->ready_queue->first;
+	}
+	//level 3
+	node = levels->three->ready_queue->first;
+	while(node != NULL){
+		Node popped = popEntry(levels->three->ready_queue, levels->three->ready_queue->size - 1);
+		if(popped.niceness == 5){
+			pushEntry(&fiveNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 4){
+			pushEntry(&fourNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 3){
+			pushEntry(&threeNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 2){
+			pushEntry(&twoNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 1){
+			pushEntry(&oneNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		node = levels->three->ready_queue->first;
+	}
+	//level 2
+	node = levels->two->ready_queue->first;
+	while(node != NULL){
+		Node popped = popEntry(levels->two->ready_queue, levels->two->ready_queue->size - 1);
+		if(popped.niceness == 5){
+			pushEntry(&fiveNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 4){
+			pushEntry(&fourNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 3){
+			pushEntry(&threeNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 2){
+			pushEntry(&twoNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 1){
+			pushEntry(&oneNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		node = levels->two->ready_queue->first;
+	}
+	//level 1
+	node = levels->one->ready_queue->first;
+	while(node != NULL){
+		Node popped = popEntry(levels->one->ready_queue, levels->one->ready_queue->size - 1);
+		if(popped.niceness == 5){
+			pushEntry(&fiveNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 4){
+			pushEntry(&fourNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 3){
+			pushEntry(&threeNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 2){
+			pushEntry(&twoNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		else if(popped.niceness == 1){
+			pushEntry(&oneNew, popped.pid, popped.status, popped.niceness, popped.cpuTime, popped.procTime);
+		}
+		node = levels->one->ready_queue->first;
+	}
 
 	//free and assign
 	destroyDataList(&(levels->five->ready_queue));
@@ -267,6 +360,8 @@ void resetQueues(Levels *levels){
 	levels->three->ready_queue = threeNew;
 	levels->two->ready_queue = twoNew;
 	levels->one->ready_queue = oneNew;
+
+	printLevels(levels);
 
 	return;
 }
@@ -580,6 +675,8 @@ int main() {
 		//TODO create levels list 
 		Levels *levelsList = createLevels();
 		initLevels(levelsList);
+		printLevels(levelsList);
+		resetQueues(levelsList);
 		printLevels(levelsList);
 		/*
 		do {
