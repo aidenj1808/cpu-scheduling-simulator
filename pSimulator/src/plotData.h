@@ -24,6 +24,7 @@ typedef struct InfoList {
     float timeQuantum; //to find out how long a proc runs do like next_arr - current_arr something like that
     float Tturn; //= Text - Tarr (this is the avg saved)
     float Tresp; //= Trun - Tarr (this is the avg saved)
+    int drawn;
 } InfoList;
 
 //just creates the initial entry
