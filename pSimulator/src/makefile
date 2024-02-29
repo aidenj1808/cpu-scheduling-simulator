@@ -1,4 +1,4 @@
-CFLAGS= -Wall 
+CFLAGS= -Wall -g
 CC= gcc 
 
 test: procSim
@@ -6,10 +6,10 @@ test: procSim
 	./procSim
 
 procSim: procSim.o dStruct.o
-	$(CC) $(CFLAGS) -g procSim.o dStruct.o -o procSim
+	$(CC) $(CFLAGS) procSim.o dStruct.o -o procSim
 
 plotData: plotData.c
-	$(CC) $(CFLAGS) -g -lcairo plotData.c -o plotData
+	$(CC) $(CFLAGS) -lcairo plotData.c -o plotData
 
 dStruct.o: dStruct.c dStruct.h
 	$(CC) $(CFLAGS) -c dStruct.c 

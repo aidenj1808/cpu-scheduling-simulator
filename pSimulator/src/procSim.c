@@ -3,6 +3,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <math.h>
+#include <time.h>
 #include "dStruct.h"
 
 
@@ -18,21 +19,35 @@
 float GLOBAL_TIME = 0.00;
 float T_RESET = 0.00; //when hits max time rest the queues and add them to proper priority level
 
-//TODO saw lab marks saying only need one logfile too far into having enough time to correct
-void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
-	int len = snprintf(NULL, 0, "../log/log%.2f.txt", logTime);
-	char *fileName = malloc(len + 1);
-	snprintf(fileName, len + 1, "../log/log%.2f.txt", logTime);
-	
+char *createLogFile() {
+  	time_t t = time(NULL);
+  	struct tm *tm_info = localtime(&t);
+  	char date[20]; 
+  	strftime(date, sizeof(date), "%m-%d-%Y-%H:%M:%S", tm_info);
+  	char *filename = malloc(50);
+  	snprintf(filename, 50, "../log/log-%s.txt", date);
+
 	FILE *fptr;
-	fptr = fopen(fileName, "w");
+	fptr = fopen(filename, "w");
 	if (fptr == NULL) {
 		printf("File cannot be created.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	Node *readyNode = ready_queue->first;
 	fprintf(fptr, "time,PID,status,niceness,cputime,proctime\n");
+	fclose(fptr);
+	return filename;
+}
+
+void logFile(DataList *ready_queue, DataList *running_queue, float logTime, char *fileName) {
+	FILE *fptr;
+	fptr = fopen(fileName, "a");
+	if (fptr == NULL) {
+		printf("File cannot be opened.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	Node *readyNode = ready_queue->first;
 	while (readyNode != NULL) {
 		fprintf(fptr, "%.2f,%u,%u,%d,%.2f,%.2f\n", logTime, readyNode->pid,
 												   readyNode->status,
@@ -52,7 +67,6 @@ void logFile(DataList *ready_queue, DataList *running_queue, float logTime) {
 												   runningNode->procTime);
 	}
 	fclose(fptr);
-	free(fileName);
 }
 
 int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
@@ -98,8 +112,9 @@ int pushReadyQueue(DataList *ready_queue, unsigned int pid) {
 	}
 
 	fgets(buffer, 50, fptr);
-	float procTime = atoi(strtok(buffer, ","));
-	int niceness = atoi(strtok(NULL, ","));
+	char *ptr;
+	float procTime = strtol(strtok(buffer, ","), &ptr, 10);
+	int niceness = strtol(strtok(NULL, ","), &ptr, 10);
 	pushEntry(&ready_queue, pid, 1, niceness, 0.0, procTime);
 	fclose(fptr);
 	remove(path);
@@ -213,6 +228,7 @@ void resetQueues(Levels *levels){
 int main() {
 	DataList *ready_queue = createDataList();
 	DataList *running_queue = createDataList();
+	char *fileName = createLogFile();
 	unsigned int nextPID = 1;
 
 	if (!strcmp(ALGOR, "ALGOR_FIFO")) {
@@ -222,7 +238,10 @@ int main() {
 			int check = pushReadyQueue(ready_queue, nextPID);
 			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {
 				nextPID++;
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				Node *first = ready_queue->first;
+				printf("%f %u %u %d %f %f\n", GLOBAL_TIME, first->pid,
+						first->status, first->niceness, first->cpuTime, first->procTime);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 				continue;
 			}
 
@@ -242,10 +261,10 @@ int main() {
 			unsigned int runningProcPID = running_queue->first->pid;
 			if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
 				setStatus(running_queue, runningProcPID, 3);
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 				popEntry(running_queue, 0);
 			} else {
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 			}
 
 			if (!(check == -1)) {
@@ -259,7 +278,7 @@ int main() {
 			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {	
 				pushReadyQueue(ready_queue, nextPID);
 				nextPID++;
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 				continue;
 			} else {
 				if (running_queue->size == 0 && ready_queue->size != 0) {
@@ -281,10 +300,10 @@ int main() {
 			unsigned int runningProcPID = running_queue->first->pid;
 			if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
 				setStatus(running_queue, runningProcPID, 3);
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 				popEntry(running_queue, 0);
 			} else {
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 			}
 
 			if (!(check == -1)) {
@@ -299,7 +318,7 @@ int main() {
 			int check = pushReadyQueue(ready_queue, nextPID);
 			if (fabs(GLOBAL_TIME - (0.00 + TIME_DT)) < 0.0001) {
 				nextPID++;
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 				continue;
 			}
 
@@ -321,16 +340,16 @@ int main() {
 			unsigned int runningProcPID = running_queue->first->pid;
 			if (getCPUTime(running_queue, runningProcPID) >= running_queue->first->procTime) {
 				setStatus(running_queue, runningProcPID, 3);
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 				popEntry(running_queue, 0);
 			} else if (current_running >= TIME_JIFFY) {
 				setStatus(running_queue, runningProcPID, 1);
 				Node poppedNode = popEntry(running_queue, 0);
 				pushEntry(&ready_queue, poppedNode.pid, poppedNode.status,
 						  poppedNode.niceness, poppedNode.cpuTime, poppedNode.procTime);
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 			} else {
-				logFile(ready_queue, running_queue, GLOBAL_TIME);
+				logFile(ready_queue, running_queue, GLOBAL_TIME, fileName);
 			}
 
 			if (!(check == -1)) {
@@ -349,6 +368,7 @@ int main() {
 
 	destroyDataList(&ready_queue);
 	destroyDataList(&running_queue);
+	free(fileName);
 
     return 0;
 }
