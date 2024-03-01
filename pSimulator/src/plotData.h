@@ -9,6 +9,7 @@ typedef struct Info {
     float b;
     float cpuTime;
     float procTime;
+    int niceness;
     float Tarr;//first appearance s=1
     float Trun;//when s=2
     float Text;//when s=3

@@ -4,7 +4,7 @@ CC= gcc
 test: procSim plotData
 	./files2.sh
 	./procSim
-	#./plotData
+	./plotData
 
 procSim: procSim.o dStruct.o
 	$(CC) $(CFLAGS) procSim.o dStruct.o -o procSim
