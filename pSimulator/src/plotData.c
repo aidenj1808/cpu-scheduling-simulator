@@ -4,6 +4,7 @@
 #include <string.h>
 #include <cairo/cairo.h>
 #include <time.h>
+#include <math.h>
 
 #include "plotData.h"
 
@@ -63,8 +64,6 @@ float setScale(InfoList *infoList){
 			totalTime += node->cpuTime * scale;
 			node = node->next;
 		}
-		printf("total time: %f\n", totalTime);//TODO
-		printf("Scale: %f\n", scale);//TODO
 		if(totalTime <= 800 && totalTime <= 820){
 			scale += 1;
 			count++;
@@ -73,27 +72,6 @@ float setScale(InfoList *infoList){
 			break;
 		}
 	}while(count < maxCount);
-	//printf("total time: %f\n", totalTime);//TODO
-	//printf("Scale: %f\n", scale);//TODO
-	/*while (node != NULL) {
-		totalTime += node->cpuTime;// * scale
-		node = node->next;
-	}
-	while(totalTime < 800){
-		node = infoList->first;
-		totalTime = 0;
-		while (node != NULL) {
-		totalTime += node->cpuTime * scale;
-		node = node->next;
-	}
-
-	}
-	printf("total time: %f\n", totalTime);//TODO
-
-	if(totalTime > MAXWIDTH){
-		scale = totalTime / MAXWIDTH;
-	}
-	printf("Scale: %f\n", scale);//TODO*/
 	return scale;
 }
 
@@ -114,12 +92,12 @@ int searchEntryPID(InfoList *infoList, unsigned int pid){
 
 void printInfoList(InfoList *infoList){
     Info *current = infoList->first;
-    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text   drawn   procTotal\n");
+    printf("PID   R     G     B     CPU Time   Proc Time   Tarr   Trun   Text   drawn   procTotal   niceness\n");
     while (current != NULL) {
-        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f%-8d%-8.2f\n",
+        printf("%-6u%-6.2f%-6.2f%-6.2f%-12.2f%-12.2f%-8.2f%-8.2f%-8.2f%-8d%-8.2f%-8.d\n",
                current->pid, current->r, current->g, current->b,
                current->cpuTime, current->procTime, current->Tarr,
-               current->Trun, current->Text, current->drawn, current->totalProc);
+               current->Trun, current->Text, current->drawn, current->totalProc, current->niceness);
         current = current->next;
     }
 }
@@ -130,7 +108,7 @@ void getGraphData(InfoList *infoList){
 	struct dirent *dp;
 	DIR *dirptr = opendir("../log/");
 
-	for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & .. & .gitkeep
+	for (int i = 0; i < 3; i++) {dp = readdir(dirptr);} //skips . & .. & .gitkeep
 	dp = readdir(dirptr);
 	int len = strlen("../log/");
 	char *path = malloc(len + 1);
@@ -139,6 +117,7 @@ void getGraphData(InfoList *infoList){
 	int len2 = strlen(dp->d_name);
 	path = realloc(path, len + len2 + 1);
 	strcat(path, dp->d_name);
+	printf("%s\n", path);
 
 	fptr = fopen(path, "r");
 	char *buffer = malloc(100);
@@ -147,7 +126,7 @@ void getGraphData(InfoList *infoList){
 		float globalTime = atof(strtok(buffer, ","));
         unsigned int pid = atoi(strtok(NULL, ","));
 		unsigned int status = atoi(strtok(NULL, ","));
-		strtok(NULL, ",");//niceness dont need for now...
+		int niceness = atoi(strtok(NULL, ","));//niceness dont need for now...
 		float cpuTime = atof(strtok(NULL, ","));//as of now cpu and proc time the same
 		float procTime = atof(strtok(NULL, ","));
 
@@ -161,6 +140,7 @@ void getGraphData(InfoList *infoList){
 				newProc->pid = pid;
 				newProc->Tarr = 0.0;
 				newProc->procTime = procTime;
+				newProc->niceness = niceness;
 				newProc->r = -1;
 				newProc->g = -1;
 				newProc->b = -1;
@@ -193,6 +173,7 @@ void getGraphData(InfoList *infoList){
 				//newProc->Trun = -1;//TODO switched to very large number for testing...maybe try with -1 again 
 				newProc->Trun = 100;
 				newProc->totalProc = procTime;
+				newProc->niceness = niceness;
 				newProc->drawn = 0;
 
 				//linked list not a queue (insert at the back)
@@ -537,7 +518,6 @@ int RRplotData(InfoList *infoList){
 		else{
 			node->totalProc = node->totalProc - infoList->timeQuantum;//else subtract the time q from total for the next use
 		}
-		printf("counter: %d, time left for pid %d: %f\n", counter, node->pid, node->totalProc);//TODO test print
 
 		//now need to find the next node 
 		//if at the end of the list
@@ -635,6 +615,178 @@ int RRplotData(InfoList *infoList){
   	return 0;
 }
 
+int MLplotData(InfoList *infoList){
+	if(!infoList || infoList->size == 0){
+        printf("infolist is empty.\n");
+        return 0;
+    }
+
+	//initialize cairo
+  	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, WIDTH, HEIGHT);
+
+  	cairo_t *cr = cairo_create(surface);
+
+  	//set the background to white
+  	cairo_set_source_rgb(cr, 1, 1, 1);
+  	cairo_rectangle(cr, 0, 0, WIDTH, HEIGHT);
+  	cairo_fill(cr);
+
+  	//initial positions
+  	double x = 100;
+  	double y = 200;
+  	double label = 0;
+  
+  	srand((unsigned int) time(NULL));
+  	float scale = setScale(infoList);
+
+	int level = 5; //draw highest level first
+	int curdrawlevel = 5; //to help track order to draw 
+
+	int counter = 0;
+	infoList->drawn = 0;
+	Info *node = infoList->first;
+	
+	//set the timeq
+	infoList->timeQuantum = node->next->Trun - node->Trun;
+
+	while(counter < infoList->size){
+		if(node->niceness == curdrawlevel && !(node->drawn)){
+
+			double width;
+			//if the time left is less than the time q just use the remaining proc time for the width
+			if(fabs(node->totalProc - infoList->timeQuantum) < 0.0001){
+				width = node->totalProc * scale; //change the scale here or in the function?//*25;
+			}
+			else{
+				width = infoList->timeQuantum * scale; //scaling when jiffy .5//*25
+			}
+
+			//for RR set and save so that same colour used throughout
+			if(node->r == -1){
+				node->r = randCol();
+				node->g = randCol();
+				node->b = randCol();
+			}
+			float r = node->r;
+			float g = node->g;
+			float b = node->b;
+
+			cairo_rectangle(cr, x, y, width, 50);
+			//given colour based off of pid since pid unique
+			cairo_set_source_rgb(cr, r, g, b);
+			cairo_fill(cr);
+
+			//write pid label
+			char pidLabel[15];
+			sprintf(pidLabel, "%.d", node->pid);
+			cairo_set_font_size(cr, 7);//try a smaller size but make sure it isnt too small (22 tried)
+			cairo_move_to(cr, x + (width * 0.3), y + 25); 
+			cairo_set_source_rgba(cr, 0, 0, 0, 1);
+			cairo_show_text(cr, pidLabel);
+
+			x += width; //for starting position of next 
+			label = x;  
+			
+			//subtract from the total proc
+			if(fabs(node->totalProc - infoList->timeQuantum) < 0.0001){
+				node->totalProc = 0;//if the time is less than the time q just set it to 0
+				node->drawn = 1;//might not need this flag here i dont think it gets used tbh
+				counter++;//counter to track how many completed procs have been done 
+			}
+			else{
+				node->totalProc = node->totalProc - infoList->timeQuantum;//else subtract the time q from total for the next use
+			}
+
+		}
+		
+		if(node->next == NULL && counter != infoList->size){
+			node = infoList->first;//go back to the start
+			if(level == 1 && curdrawlevel == 5){
+				level = 5;
+				curdrawlevel = level;
+			}
+			else if(level == curdrawlevel && level != 5){
+				curdrawlevel++;
+			}
+			else if(curdrawlevel == 5){
+				level--;
+				curdrawlevel = level;
+			}
+			else{
+				curdrawlevel++;
+			}
+		}
+		else if(counter != infoList->size){
+			node = node->next;
+		}
+
+		
+	}
+
+	//everything below is the same as other....
+  	//line and label
+  	cairo_set_source_rgb(cr, 0, 0, 0);
+  	cairo_move_to(cr, 100, HEIGHT - 150);
+  	cairo_line_to(cr, label + 50, HEIGHT - 150);
+  	cairo_stroke(cr);
+
+  	//arrow head
+  	cairo_move_to(cr, label + 50, HEIGHT - 150);
+  	cairo_line_to(cr, label + 30, HEIGHT - 155);
+  	cairo_stroke(cr);
+  	cairo_move_to(cr, label + 50, HEIGHT - 150);
+  	cairo_line_to(cr, label + 30, HEIGHT - 145);
+  	cairo_stroke(cr);
+
+  	cairo_set_font_size(cr, 18);
+  	cairo_move_to(cr, label + 50, HEIGHT - 130);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+  	cairo_show_text(cr, "t");
+
+	//draw the calculations 
+	//Tresp
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 115);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	char respLabel[50];
+	sprintf(respLabel, "Average Response Time: %.3f", infoList->Tresp);//TODO 3 decimal places idk if want more or less
+  	cairo_show_text(cr, respLabel);
+
+	//Tturn
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 80);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	char turnLabel[50];
+	sprintf(turnLabel, "Average Turn-Around Time: %.3f", infoList->Tturn);//TODO 3 decimal places idk if want more or less
+  	cairo_show_text(cr, turnLabel);
+
+	//number of procs
+	cairo_set_font_size(cr, 20);
+  	cairo_move_to(cr, 100, HEIGHT - 50);
+  	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	char procsLabel[50];
+	sprintf(procsLabel, "Number of Processes: %.d", infoList->size);//TODO if change for RR may need to change this
+  	cairo_show_text(cr, procsLabel);
+	
+
+  	time_t t = time(NULL);
+  	struct tm *tm_info = localtime(&t);
+  	char date[20]; 
+  	strftime(date, sizeof(date), "%m-%d-%Y-%H:%M:%S", tm_info);
+  	char filename[50];
+  	snprintf(filename, sizeof(filename), "../log/log-%s.png", date);
+
+
+  	// save the image  
+  	cairo_surface_write_to_png(surface, filename); //TODO uncomment for hand in
+	//cairo_surface_write_to_png(surface, "../log/RRtest.png");//TODO erase test file name
+
+  	cairo_destroy(cr);
+  	cairo_surface_destroy(surface);
+
+  	return 0;
+}
+
 void calcAVG(InfoList *infoList){
 	Info *current = infoList->first;
 	float tmp;
@@ -682,24 +834,27 @@ int main() {
 
 	//will need to change getGrapData, no return just pass the infoList and parse file 
 	getGraphData(infoList);
+	MLplotData(infoList);
 
 	//check if RR is used
-	RRcheck(infoList);//TODO test logic works
+	//RRcheck(infoList);//TODO test logic works
 
 	//*****FORCE TO USE RR*******/
-	//infoList->flag = 1; //TODO remove this just here for RR testing while algo isnt ready in procSim
+	//infoList->flag = 1; //TODO remove this just here for MLFQ testing while algo isnt ready in procSim
 	
-	//TODO remove test prints
-	if(infoList->flag == 1){
+	//TODO 
+	/*if(infoList->flag == 1){
 		//printf("RR used\n");
 		RRplotData(infoList);
-		//might need to adjust the avgCalc to work with RR too????
+		
+		//MLplotData(infoList);
+
 	}
 	if(infoList->flag == 0){
 		//printf("SJF or FIFO used\n");
 		plotData(infoList);//TODO test
-	}
-	printInfoList(infoList); //TODO erase test
+	}*/
+	//printInfoList(infoList); //TODO erase test
 
 
 	//destroy info list

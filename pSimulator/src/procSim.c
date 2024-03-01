@@ -9,8 +9,8 @@
 
 //#define ALGOR "ALGOR_FIFO"
 //#define ALGOR "ALGOR_SJF"
-//#define ALGOR "ALGOR_RR"
-#define ALGOR "ALGOR_MLFQ" //5 level priority but uses RR 
+#define ALGOR "ALGOR_RR"
+//#define ALGOR "ALGOR_MLFQ" //5 level priority but uses RR 
 
 #define TIME_DT 0.10
 #define TIME_JIFFY 0.50
@@ -642,7 +642,7 @@ int main() {
 		*/
 
 		//TODO destroy the datalists in levels list
-		//destroyLevels(&levelsList);
+		destroyLevels(&levelsList);
 	}
 
 	destroyDataList(&ready_queue);
