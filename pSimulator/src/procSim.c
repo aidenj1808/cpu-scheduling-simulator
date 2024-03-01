@@ -233,7 +233,6 @@ void destroyLevels(Levels **levelsList){
 
 
 //TODO function to reset queues when treset hits
-//TODO need to add a when max
 void resetQueues(Levels *levels){
 	printf("Starting Queue reset\n");//TODO erase
 	DataList *fiveNew = createDataList();
@@ -415,76 +414,23 @@ int pushLevelQueue(Levels *levels, unsigned int pid) {
 	printf("Niceness for pid %d: %d\n", pid, niceness);
 	int tmpNice = niceness;
 	int pushed = 0;//flag for do while
-	do//only push to the queue if it is not at max otherwise push to the next level, if 1 check from the top..?
-	{
-		if (tmpNice == 5) {
-			if(levels->five->ready_queue->size < MAX_Q){
-				pushEntry(&(levels->five->ready_queue), pid, 1, niceness, 0.00, procTime);
-				pushed = 1;
-				break;
-			}
-			else{
-				tmpNice--;
-			}
-		}
-		if (tmpNice == 4) {
-			if(levels->four->ready_queue->size < MAX_Q){
-				pushEntry(&(levels->four->ready_queue), pid, 1, niceness, 0.00, procTime);
-				pushed = 1;
-				break;
-			}
-			else{
-				tmpNice--;
-			}
-		}
-		if (tmpNice == 3) {
-			if(levels->three->ready_queue->size < MAX_Q){
-				pushEntry(&(levels->three->ready_queue), pid, 1, niceness, 0.00, procTime);
-				pushed = 1;
-				break;
-			}
-			else{
-				tmpNice--;
-			}
-		}
-		if (tmpNice == 2) {
-			if(levels->two->ready_queue->size < MAX_Q){
-				pushEntry(&(levels->two->ready_queue), pid, 1, niceness, 0.00, procTime);
-				pushed = 1;
-				break;
-			}
-			else{
-				tmpNice--;
-			}
-		}
-		if (tmpNice == 1) {
-			if(levels->one->ready_queue->size < MAX_Q){
-				pushEntry(&(levels->one->ready_queue), pid, 1, niceness, 0.00, procTime);
-				pushed = 1;
-				break;
-			}
-			else{
-				tmpNice = 5;
-			}
-		}
-	} while (!pushed);
 
-	/*if (niceness == 5 && levels->five->ready_queue->size < MAX_Q) {
-		printf("Niceness 5\n");
+	if (niceness == 5) {
 		pushEntry(&(levels->five->ready_queue), pid, 1, niceness, 0.00, procTime);
-	} else if (niceness == 4 && levels->five->ready_queue->size < MAX_Q) {
-		printf("Niceness 4\n");
+	}
+	else if (niceness == 4) {
 		pushEntry(&(levels->four->ready_queue), pid, 1, niceness, 0.00, procTime);
-	} else if (niceness == 3 && levels->five->ready_queue->size < MAX_Q) {
-		printf("Niceness 3\n");
+	}
+	else if (niceness == 3) {
 		pushEntry(&(levels->three->ready_queue), pid, 1, niceness, 0.00, procTime);
-	} else if (niceness == 2 && levels->five->ready_queue->size < MAX_Q) {
-		printf("Niceness 2\n");
+	}
+	else if (niceness == 2) {
 		pushEntry(&(levels->two->ready_queue), pid, 1, niceness, 0.00, procTime);
-	} else if (niceness == 1 && levels->five->ready_queue->size < MAX_Q) {
-		printf("Niceness 1\n");
+	}
+	else if (niceness == 1) {
 		pushEntry(&(levels->one->ready_queue), pid, 1, niceness, 0.00, procTime);
-	}*/
+	}
+
 	fclose(fptr);
 	remove(path);
 	free(path);
