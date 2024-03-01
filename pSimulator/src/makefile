@@ -6,6 +6,9 @@ test: procSim plotData
 	./procSim
 	#./plotData
 
+test2: procSim 
+	./files2.sh
+
 procSim: procSim.o dStruct.o
 	$(CC) $(CFLAGS) procSim.o dStruct.o -o procSim
 
@@ -43,4 +46,4 @@ testing: test #if we want a file to diff good.txt
 	./procSim > testOut.txt 
 
 tar:
-	tar --exclude .git -czvf ../../../lab02.tar.gz -C ../../../ lab02
+	tar --exclude .git -czvf ../../../lab06.tar.gz -C ../../../ lab06

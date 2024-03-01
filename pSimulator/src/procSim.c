@@ -15,9 +15,9 @@
 #define TIME_DT 0.10
 #define TIME_JIFFY 0.50
 #define MAX_Q 2 //TODO for testing use 5 but should be 20 (20*5=100)
-#define MAX_RESET 5.00 //TODO not sure when we want to reset but can use this fo ease of value change
+#define T_RESET 1.00 //TODO not sure when we want to reset but can use this fo ease of value change
 float GLOBAL_TIME = 0.00;
-float T_RESET = 0.00; //when hits max time rest the queues and add them to proper priority level
+float T_SPENT = 0.00; //when hits max time rest the queues and add them to proper priority level
 
 void printLevels(Levels *levels);
 
@@ -185,6 +185,17 @@ Levels *createLevels(){
 	levelsList->two = queuesTwo;
 	levelsList->one = queuesOne;
 
+	levelsList->five->lowerLevel = queuesFour;
+	levelsList->four->lowerLevel = queuesThree;
+	levelsList->three->lowerLevel = queuesTwo;
+	levelsList->two->lowerLevel = queuesOne;
+	levelsList->one->lowerLevel = NULL;
+
+	levelsList->five->levelPriority = 5;
+	levelsList->four->levelPriority = 4;
+	levelsList->three->levelPriority = 3;
+	levelsList->two->levelPriority = 2;
+	levelsList->one->levelPriority = 1;
 
 	DataList *five_ready_queue = createDataList();
 	levelsList->five->ready_queue = five_ready_queue;
@@ -412,8 +423,6 @@ int pushLevelQueue(Levels *levels, unsigned int pid) {
 	float procTime = strtol(strtok(buffer, ","), &ptr, 10);
 	int niceness = strtol(strtok(NULL, ","), &ptr, 10);
 	printf("Niceness for pid %d: %d\n", pid, niceness);
-	int tmpNice = niceness;
-	int pushed = 0;//flag for do while
 
 	if (niceness == 5) {
 		pushEntry(&(levels->five->ready_queue), pid, 1, niceness, 0.00, procTime);
@@ -484,8 +493,27 @@ void printLevels(Levels *levels) {
 
 }
 
-int runRR(DataList *queue) {
-	;//timeStart = 0
+int isBothEmpty(Queues *currentLevel) {
+	int readyQueueSize = currentLevel->ready_queue->size;
+	int runningQueueSize = currentLevel->running_queue->size;
+	return !(readyQueueSize || runningQueueSize);
+}
+
+int isNotAllEmpty(Levels *levels) {
+	int oneReS = levels->one->ready_queue->size;
+	int twoReS = levels->two->ready_queue->size;
+	int threeReS = levels->three->ready_queue->size;
+	int fourReS = levels->four->ready_queue->size;
+	int fiveReS = levels->five->ready_queue->size;
+
+	int oneRunS = levels->one->running_queue->size;
+	int twoRunS = levels->two->running_queue->size;
+	int threeRunS = levels->three->running_queue->size;
+	int fourRunS = levels->four->running_queue->size;
+	int fiveRunS = levels->five->running_queue->size;
+
+	return oneReS || twoReS || threeReS || fourReS || fiveReS ||
+		   oneRunS || twoRunS || threeRunS || fourRunS || fiveRunS;
 }
 
 int main() {
@@ -621,15 +649,66 @@ int main() {
 		//TODO create levels list 
 		Levels *levelsList = createLevels();
 		initLevels(levelsList);
-		printLevels(levelsList);
-		resetQueues(levelsList);
-		printLevels(levelsList);
-		/*
+		Queues *currentLevel = levelsList->five;
+		float current_running;
+		
 		do {
 			GLOBAL_TIME = GLOBAL_TIME + TIME_DT;
+			T_SPENT = T_SPENT + TIME_DT;
+			
+			if (T_SPENT >= T_RESET && T_SPENT >= TIME_JIFFY) {
+				resetQueues(levelsList);
+				T_SPENT = 0.00;
+			}
 
-		} while (1);
-		*/
+			if (isBothEmpty(currentLevel)) {
+				currentLevel = currentLevel->lowerLevel;
+			}
+
+			// new time quantum run if running empty
+			if (currentLevel->running_queue->size == 0 && currentLevel->ready_queue->size != 0) {
+				Node entry = popEntry(currentLevel->ready_queue, currentLevel->ready_queue->size - 1);
+				pushRunningQueue(currentLevel->running_queue, entry);
+				float cpuTime = getCPUTime(currentLevel->running_queue, entry.pid);
+				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+				setCPUTime(currentLevel->running_queue, entry.pid, newTime);
+				current_running = TIME_DT;
+			} else { //update cputime of current running proc
+				unsigned int runningProcPID = currentLevel->running_queue->first->pid;
+				float cpuTime = getCPUTime(currentLevel->running_queue, runningProcPID);
+				float newTime = (int) ( (cpuTime + TIME_DT) * 100 + .5) / 100.0;
+				setCPUTime(currentLevel->running_queue, runningProcPID, newTime);
+				current_running += TIME_DT;
+			}
+			
+			// if done running, set status to 3, log current level queues, pop to remove entirely
+			unsigned int runningProcPID = currentLevel->running_queue->first->pid;
+			if (getCPUTime(currentLevel->running_queue, runningProcPID) >= currentLevel->running_queue->first->procTime) {
+				setStatus(running_queue, runningProcPID, 3);
+				logFile(currentLevel->ready_queue, currentLevel->running_queue, GLOBAL_TIME, fileName);
+				popEntry(running_queue, 0);
+			} else if (current_running >= TIME_JIFFY) { // if done RR, set status to 1, pop from running queue
+				setStatus(currentLevel->running_queue, runningProcPID, 1);
+				Node poppedNode = popEntry(currentLevel->running_queue, 0);
+				if (currentLevel->lowerLevel != NULL) {
+					pushEntry(&(currentLevel->lowerLevel->ready_queue), poppedNode.pid, poppedNode.status,
+						  	  poppedNode.niceness, poppedNode.cpuTime, poppedNode.procTime);
+				} else {
+					pushEntry(&ready_queue, poppedNode.pid, poppedNode.status,
+						  	  poppedNode.niceness, poppedNode.cpuTime, poppedNode.procTime);
+				}
+				// log currentLevel queues i believe
+				logFile(currentLevel->ready_queue, currentLevel->running_queue, GLOBAL_TIME, fileName); 
+			} else {
+				// log while still in time quantum
+				logFile(currentLevel->ready_queue, currentLevel->running_queue, GLOBAL_TIME, fileName);
+			}
+
+
+
+
+
+		} while (isNotAllEmpty(levelsList));
 
 		//TODO destroy the datalists in levels list
 		//destroyLevels(&levelsList);

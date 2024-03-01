@@ -25,6 +25,8 @@ typedef struct Levels {
 } Levels;
 
 typedef struct Queues {
+	int levelPriority;
+	struct Queues *lowerLevel;
 	struct DataList *ready_queue;
 	struct DataList *running_queue;
 } Queues;
