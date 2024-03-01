@@ -1,10 +1,6 @@
 CFLAGS= -Wall -g
 CC= gcc 
 
-test: procSim plotData
-	./files2.sh
-	./procSim
-	./plotData
 
 procSim: procSim.o dStruct.o
 	$(CC) $(CFLAGS) procSim.o dStruct.o -o procSim
@@ -20,6 +16,15 @@ procSim.o: procSim.c dStruct.h plotData.h
 
 plotData.o: plotData.c plotData.h
 	$(CC) $(CFLAGS) -c plotData.c
+
+test1: test.sh #this is for the test lab 6
+	chmod +x myscript.sh
+	./test.sh
+
+test: procSim plotData
+	./files2.sh
+	./procSim
+	./plotData
 
 valgrindTestProcSim: procSim
 	valgrind -s --leak-check=full --show-leak-kinds=all ./procSim
