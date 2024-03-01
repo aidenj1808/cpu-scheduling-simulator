@@ -211,7 +211,6 @@ Levels *createLevels(){
 	return levelsList;
 }
 //TODO need to test, implement after working
-/*
 void destroyLevels(Levels **levelsList){
 	if(!*levelsList){
 		printf("Levels list already empty.\n");
@@ -219,22 +218,36 @@ void destroyLevels(Levels **levelsList){
 	}
 
 	Levels *levels = *levelsList;
-	destroyDataList(&(levels->five));
-	destroyDataList(&(levels->four));
-	destroyDataList(&(levels->three));
-	destroyDataList(&(levels->two));
-	destroyDataList(&(levels->one));
+	destroyDataList(&(levels->five->ready_queue));
+	destroyDataList(&(levels->five->running_queue));
+	destroyDataList(&(levels->four->ready_queue));
+	destroyDataList(&(levels->four->running_queue));
+	destroyDataList(&(levels->three->ready_queue));
+	destroyDataList(&(levels->three->running_queue));
+	destroyDataList(&(levels->two->ready_queue));
+	destroyDataList(&(levels->two->running_queue));
+	destroyDataList(&(levels->one->ready_queue));
+	destroyDataList(&(levels->one->running_queue));
+
+	free(levels->five);
+	free(levels->four);
+	free(levels->three);
+	free(levels->two);
+	free(levels->one);
+	levels->five = NULL;
+	levels->four = NULL;
+	levels->three = NULL;
+	levels->two = NULL;
+	levels->one = NULL;
 
 	free(levels);
 	*levelsList = NULL;
 	return;
 }
-*/
-
 
 //TODO function to reset queues when treset hits
 void resetQueues(Levels *levels){
-	printf("Starting Queue reset\n");//TODO erase
+	//printf("Starting Queue reset\n");//TODO erase
 	DataList *fiveNew = createDataList();
 	DataList *fourNew = createDataList();
 	DataList *threeNew = createDataList();
@@ -360,8 +373,6 @@ void resetQueues(Levels *levels){
 	levels->two->ready_queue = twoNew;
 	levels->one->ready_queue = oneNew;
 
-	printLevels(levels);
-
 	return;
 }
 
@@ -411,9 +422,8 @@ int pushLevelQueue(Levels *levels, unsigned int pid) {
 	char *ptr;
 	float procTime = strtol(strtok(buffer, ","), &ptr, 10);
 	int niceness = strtol(strtok(NULL, ","), &ptr, 10);
-	printf("Niceness for pid %d: %d\n", pid, niceness);
-	int tmpNice = niceness;
-	int pushed = 0;//flag for do while
+  
+	//printf("Niceness for pid %d: %d\n", pid, niceness);//TODO erase
 
 	if (niceness == 5) {
 		pushEntry(&(levels->five->ready_queue), pid, 1, niceness, 0.00, procTime);
