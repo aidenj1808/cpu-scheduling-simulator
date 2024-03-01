@@ -246,7 +246,6 @@ void destroyLevels(Levels **levelsList){
 }
 
 //TODO function to reset queues when treset hits
-//TODO need to add a when max
 void resetQueues(Levels *levels){
 	//printf("Starting Queue reset\n");//TODO erase
 	DataList *fiveNew = createDataList();
@@ -423,6 +422,7 @@ int pushLevelQueue(Levels *levels, unsigned int pid) {
 	char *ptr;
 	float procTime = strtol(strtok(buffer, ","), &ptr, 10);
 	int niceness = strtol(strtok(NULL, ","), &ptr, 10);
+  
 	//printf("Niceness for pid %d: %d\n", pid, niceness);//TODO erase
 
 	if (niceness == 5) {
@@ -440,7 +440,7 @@ int pushLevelQueue(Levels *levels, unsigned int pid) {
 	else if (niceness == 1) {
 		pushEntry(&(levels->one->ready_queue), pid, 1, niceness, 0.00, procTime);
 	}
-	
+
 	fclose(fptr);
 	remove(path);
 	free(path);
