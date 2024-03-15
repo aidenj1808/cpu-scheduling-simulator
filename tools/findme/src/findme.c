@@ -19,7 +19,6 @@ int main(int argc, char *argv[]) {
 	int find_with_max_depth = 0;
 	int find_with_user = 0;
 	
-
 	int option;
 	char type;
 	char *start_file_path = argv[1]; // must be a directory
@@ -61,6 +60,24 @@ int main(int argc, char *argv[]) {
 	printf("max depth: %d\n", max_depth);
 	printf("find with user? %d\n", find_with_user);
 	printf("user: %s\n", user);
+
+	if (find_all_types && find_with_max_depth && find_with_user) {
+		;
+	} else if (find_all_types && find_with_max_depth && !find_with_user) {
+		;
+	} else if (find_all_types && !find_with_max_depth && find_with_user) {
+		;
+	} else if (find_all_types && !find_with_max_depth && !find_with_user) {
+		;
+	} else if (!find_all_types && find_with_max_depth && find_with_user) {
+		;
+	} else if (!find_all_types && find_with_max_depth && !find_with_user) {
+		;
+	} else if (!find_all_types && !find_with_max_depth && find_with_user) {
+		;
+	} else if (!find_all_types && !find_with_max_depth && !find_with_user) {
+		;
+	}
 
 	return 0;
 }
