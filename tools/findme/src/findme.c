@@ -49,7 +49,6 @@ int main(int argc, char *argv[]) {
 				find_with_user = 1;
 				user = optarg;
 				break;
-
 		}
 	}
 	printf("Starting file path: %s\n", start_file_path);
