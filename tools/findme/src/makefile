@@ -1,5 +1,5 @@
 findme: findme.c
-	gcc -Wall -g findme.c -o findme
+	gcc -Wall -g -pthread findme.c -o findme
 
 test_getopt: test_getopt.c
 	gcc -Wall test_getopt.c -o test_getopt

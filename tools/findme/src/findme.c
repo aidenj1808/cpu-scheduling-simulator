@@ -30,6 +30,7 @@ typedef struct{
 void *find_file(void *arg){
 	ThreadData *data = (ThreadData *)arg;
 	//do the logic...
+	return NULL;
 }
 
 int main(int argc, char *argv[]) {
