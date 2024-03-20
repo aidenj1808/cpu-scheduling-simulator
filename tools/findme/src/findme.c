@@ -7,12 +7,12 @@
 
 
 int option_index = 0;
-char *short_options = "t:n:m:u:";
+char *short_options = "t:n:u:m:";
 static struct option long_options[] = {
-	{"type", optional_argument, NULL, 't'},
+	{"type", required_argument, NULL, 't'},
 	{"name", required_argument, NULL, 'n'},
-	{"maxdepth", optional_argument, NULL, 'm'},
-	{"user", optional_argument, NULL, 'u'},
+	{"user", required_argument, NULL, 'u'},
+	{"maxdepth", required_argument, NULL, 'm'},
 	{NULL, 0, NULL, 0}
 };
 
@@ -36,22 +36,24 @@ void *find_file(void *arg){
 int main(int argc, char *argv[]) {
 	//usage message if not all provided
 	//>>./findme [start_dir] [type] [maxdepth] [user] [filename]
+	/*
 	if(argc != 6){//TODO do we need all options?//do you need this with getopt??
 		//not sure the format your doing tbh
 		printf("Usage: ./findme [start_dir] [type] [maxdepth] [user] [filename]\n");
 		exit(EXIT_FAILURE);
 	}
+	*/
 
 	int find_all_types = 1;
 	int find_with_max_depth = 0;
 	int find_with_user = 0;
 	
 	int option;
-	char type;
 	char *start_file_path = argv[1]; // must be a directory
+	char *type;
 	char *file_name;
-	int max_depth;
 	char *user;
+	long int max_depth;
 	while ( (option = getopt_long(argc, argv, short_options, 
 								  long_options, &option_index)) != -1) {
 		switch (option) {
@@ -64,26 +66,24 @@ int main(int argc, char *argv[]) {
 				file_name = optarg;
 				break;
 
-			case 'm':
-				find_with_max_depth = 1;
-				max_depth = optarg;
-				//char *ptr = NULL;
-				//max_depth = strtol(optarg, &ptr, 10);
-				//max_depth = atoi(optarg);
-				break;
-
 			case 'u':
 				find_with_user = 1;
 				user = optarg;
+				break;
+
+			case 'm':
+				find_with_max_depth = 1;
+				char *ptr;
+				max_depth = strtol(optarg, &ptr, 10);
 				break;
 		}
 	}
 	printf("Starting file path: %s\n", start_file_path);
 	printf("find all types? %d\n", find_all_types);
-	printf("type: %c\n", type);
+	printf("type: %s\n", type);
 	printf("file name to find: %s\n", file_name);
 	printf("find with max depth? %d\n", find_with_max_depth);
-	printf("max depth: %d\n", max_depth);
+	printf("max depth: %ld\n", max_depth);
 	printf("find with user? %d\n", find_with_user);
 	printf("user: %s\n", user);
 
