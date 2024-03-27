@@ -7,7 +7,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-bool found = false;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+bool found = false;//TODO for threads
 
 int option_index = 0;
 char *short_options = "t:n:u:m:";
@@ -38,17 +39,20 @@ typedef struct{
 //used to check flags, if no other flags set its a match return 1
 //else send to other helper functions for flags if ever not a match returns 0
 int verify(ThreadData *data, char *curr_path){
-	//ThreadData *data = (ThreadData *)arg;
+	pthread_mutex_lock(&mutex); //only allow one check at a time 
+
 	printf("flags--> user: %d type: %d\n",data->find_with_user, data->find_all_types);//TODO erase
 
 	//check if flags not set
 	//dont need to check max depth that is checked in prev func
 	if(data->find_with_user == 0 && data->find_all_types == 1){
 		printf("No other flags have been set, it is a match at %s\n", curr_path);//TODO erase
+		pthread_mutex_unlock(&mutex);
 		return 1;
 	}
 	//TODO if user flag
 	//TODO if type flag
+	pthread_mutex_unlock(&mutex);
 	return 0;
 }
 
@@ -63,22 +67,20 @@ void *search_dir(void *arg){
 	}
 
 	struct dirent *dp;
-	char *self = ".";
+
+	char *self = ".";//did these cause i was getting weird arg errors all over when ".." directly in check??
 	char *par = "..";
 
 	while((dp = readdir(dirptr)) != NULL){
-		//skip over the self and parent ?? if always first two could just skip?
-		//is there a case they arent the first two opened...
-		//for (int i = 0; i < 2; i++) {dp = readdir(dirptr);} //skips . & .. 
-		//dp = readdir(dirptr);
-
+		if(found){
+			//check the global if found then the threads can return
+			return;
+		}
+		//skip over the self and parent, did while incase they arent the first two in the dir
 		while((strcmp(dp->d_name, self) == 0 )|| (strcmp(dp->d_name, par) == 0)){
 			dp = readdir(dirptr);
 		}
 		
-		//if(strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0){
-			//continue;
-		//} 
 		if (!dp){
 			//if end of dir and no match return
 			closedir(dirptr);
@@ -103,12 +105,16 @@ void *search_dir(void *arg){
 				int ver = verify(data, curr_path); 
 				if(ver){
 					//TODO set gloab var to notify other threads
+					pthread_mutex_lock(&mutex);
+					found = true;
 					printf("Verify success!\n");//TODO erase
+					pthread_mutex_unlock(&mutex);
 					//TODO return curr_path?? add to struct??
 					break;
 				}
 				//TODO or maybe do verify if yes save path in struct and break else go to next file?
 				printf("Verify Fail\n");//TODO erase
+				//TODO maybe need to have a case that you go into the dir
 			}
 			//if maxdepth flag not set or max not reached go into the dir
 			else if(data->maxdepth == -1 || data->maxdepth > data->curr_depth){//not a match and create  new thread to search new dir
@@ -125,14 +131,13 @@ void *search_dir(void *arg){
 				newthread.filename = data->filename;
 				newthread.curr_depth = data->curr_depth + 1;
 
-				/********
 				pthread_t tid; 
 				pthread_create(&tid, NULL, search_dir, (void *)&newthread);
 				pthread_join(tid, NULL);
-				********///with threads
+				///with threads
 
 				//testing without thread call
-				search_dir((void *)&newthread);
+				//search_dir((void *)&newthread);
 			}
 			else if(data->maxdepth == data->curr_depth){
 				//TODO dont go into the dir.. so do nothing? could erase this check?
@@ -146,9 +151,11 @@ void *search_dir(void *arg){
 				printf("Found at %s now to verify\n", curr_path);//TODO erase
 				int ver = verify(data, curr_path); 
 				if(ver){
-					//TODO set glob var to notify other threads
+					pthread_mutex_lock(&mutex);
+					found = true;
 					printf("Verify success!\n");//TODO erase
-					//TODO return curr_path?? add to struct??
+					pthread_mutex_unlock(&mutex);
+					//TODO return path?? add to struct??
 					break;
 				}
 				//TODO or maybe do verify if yes save path in struct and break else go to next file?
@@ -223,14 +230,14 @@ int main(int argc, char *argv[]) {
 	data.curr_depth = 0;
 
 	//TODO maybe global flag to tell threads if file found, maybe if name found other threads go to wait and if match threads will break ??
-	/************
-	//pthread_t tid;
-	//pthread_create(&tid, NULL, search_dir, (void *)&data);
-	//pthread_join(tid, NULL);
-	*********///commented these out for now testing without thread...
+	
+	pthread_t tid;
+	pthread_create(&tid, NULL, search_dir, (void *)&data);
+	pthread_join(tid, NULL);
+	//commented these out for now testing without thread...
 
 	//testing without thread call
-	search_dir((void *)&data);
+	//search_dir((void *)&data);
 
 	//TODO need to remember to close dir!!
 
