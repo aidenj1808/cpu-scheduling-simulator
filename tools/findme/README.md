@@ -4,7 +4,7 @@
 
 ./findme [starting directory] [options] <br>
 
-To use requires the starting directory path and either -n or --name followed by the filename to be searched for <br>
+Providing no options will print every file and providing no max depth will print to as far down the file structure as its defined. <br>
 
 [options] <br>
 
