@@ -1,3 +1,6 @@
+test: test.c
+	gcc -Wall -g test.c -o testprog
+
 findme: findme.c
 	gcc -Wall -g -pthread findme.c -o findme
 
@@ -8,3 +11,7 @@ testGlob: testGlob.c
 clean:
 	rm -f findme
 	rm -f testGlob
+	rm -f testprog
+
+tar:
+	tar --exclude .git -czvf ../../lab10.tar.gz -C ../../ lab10
