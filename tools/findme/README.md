@@ -18,4 +18,6 @@ Providing no options will print every file and providing no max depth will print
 
 Note: <br>
 
-If as a user you are providing a --user or -u flag specifying to filter by a username, you need to provide a --name or -n file name in order for this to work. We ran into an efficiency error because we were calling ldapsearch for every file. So we had to resort to check if the file provided as a --name or -n flag and see if they match before checking if that file belongs to the user. Later implementations we may consider creating an array of structs to hold all the user information on the server and do a linear search in order to check if the file belongs to that given user.
+If as a user you are providing a --user or -u flag specifying to filter by a username, you need to provide a --name or -n file name in order for this to work. We ran into an efficiency error because we were calling ldapsearch for every file. So we had to resort to check if the file provided as a --name or -n flag and see if they match before checking if that file belongs to the user. Later implementations we may consider creating an array of structs to hold all the user information on the server and do a linear search in order to check if the file belongs to that given user. <br>
+
+If using globs you must surround the file_name --name flag argument with double quotes (""). Could not find a easy way for us to disable shells glob functionality and did not just want to tell you to disable yours on your own when testing. <br>
