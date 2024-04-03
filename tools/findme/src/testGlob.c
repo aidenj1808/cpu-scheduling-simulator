@@ -95,10 +95,11 @@ int main(int argc, char **argv) {
 	char **foundFiles;
 	
 	printf("file_name: %s\n", file_name);
-	result = glob(file_name, GLOB_ERR, NULL, &globStruct);
+	result = glob("./*", GLOB_ERR, NULL, &globStruct);
+	result = glob("../*", GLOB_ERR | GLOB_APPEND, NULL, &globStruct);
 
 	foundFiles = globStruct.gl_pathv;
-	/*
+	
 	if (result != 0) {
 		printf("glob didn't work\n");
 		exit(EXIT_FAILURE);
@@ -108,11 +109,11 @@ int main(int argc, char **argv) {
 			foundFiles++;
 		}
 	}
-	*/
+	/*
 	while(*foundFiles) {
 		printf("%s\n", *foundFiles);
 		foundFiles++;
 	}
-
+	*/
 	return 0;
 }

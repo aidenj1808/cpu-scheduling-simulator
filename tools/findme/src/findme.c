@@ -7,11 +7,14 @@
 #include <sys/stat.h>
 #include <sys/sysinfo.h>
 #include <dirent.h>
+#include <glob.h>
+#include <stdbool.h>
 
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 int thread_index = 0;
 
+glob_t globStruct;
 
 int option_index = 0;
 char *short_options = "t:n:u:m:";
@@ -37,6 +40,7 @@ typedef struct {
 	int find_with_max_depth;
 	int find_everything;
 	int find_with_user;
+	bool find_with_glob;
 } Cases;
 
 void *find_file(void *arg){
@@ -177,6 +181,21 @@ void isDirectoryCheck(char *file_name) {
 	}
 }
 
+void printFilesOrGlob(char *directory, struct dirent *file, Cases cases, glob_t *globStruct) {
+	char **foundFiles = globStruct->gl_pathv;
+	if (cases.find_with_glob) {
+		//char current_path[500];
+		//snprintf(current_path, 500, "%s/%s", directory, file->d_name);
+		if (globStruct->gl_pathc == 0) {
+			glob(directory, GLOB_ERR, NULL, &(*globStruct));
+		} else {
+			glob(directory, GLOB_ERR | GLOB_APPEND, NULL, &(*globStruct));
+		}
+	} else {
+		printf("%s/%s\n", directory, file->d_name);
+	}
+}
+
 void printFiles(char *directory, Cases cases, char *file_type, char *user,
 		char *file_name, int max_depth) {
 
@@ -197,23 +216,23 @@ void printFiles(char *directory, Cases cases, char *file_type, char *user,
 		char current_path[500];
 		snprintf(current_path, 500, "%s/%s", directory, file->d_name);
 		if (cases.find_everything) {
-			printf("%s/%s\n", directory, file->d_name);
+			printFilesOrGlob(directory, file, cases, &globStruct);
 		} else if (cases.find_all_types && cases.find_with_max_depth && cases.find_with_user
 				&& !strcmp(file->d_name, file_name)) {
-			printf("%s/%s\n", directory, file->d_name);
+			printFilesOrGlob(directory, file, cases, &globStruct);
 		} else if (cases.find_all_types && cases.find_with_max_depth && !cases.find_with_user) {
-			printf("%s/%s\n", directory, file->d_name);
+			printFilesOrGlob(directory, file, cases, &globStruct);
 		} else if (cases.find_all_types && !cases.find_with_max_depth && cases.find_with_user &&
 				!strcmp(file->d_name, file_name)) {
 			int userID = getUserIDNumber(current_path);
 			char *username = getUserName(userID);
 			if (!strcmp(user, username)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			free(username);
 		} else if (cases.find_all_types && !cases.find_with_max_depth && !cases.find_with_user) {
 			if (!strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 		} else if (!cases.find_all_types && cases.find_with_max_depth && cases.find_with_user &&
 				!strcmp(file->d_name, file_name)) {
@@ -221,62 +240,62 @@ void printFiles(char *directory, Cases cases, char *file_type, char *user,
 			char *username = getUserName(userID);
 			if (!strcmp(file_type, "f") && isRegularFile(current_path) 
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "d") && isDirectory(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "b") && isBlockDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			free(username);
 		} else if (!cases.find_all_types && cases.find_with_max_depth && !cases.find_with_user) {
 			if (file_name == NULL) {
 				if (!strcmp(file_type, "f") && isRegularFile(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "d") && isDirectory(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "b") && isBlockDevice(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 			}
 			else if (!strcmp(file_type, "f") && isRegularFile(current_path) 
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "d") && isDirectory(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "b") && isBlockDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 		} else if (!cases.find_all_types && !cases.find_with_max_depth && cases.find_with_user &&
 				!strcmp(file->d_name, file_name)) {
@@ -284,62 +303,62 @@ void printFiles(char *directory, Cases cases, char *file_type, char *user,
 			char *username = getUserName(userID);
 			if (!strcmp(file_type, "f") && isRegularFile(current_path) &&
 					!strcmp(user, username)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "d") && isDirectory(current_path) &&
 					!strcmp(user, username)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "s") && isSymbolicLink(current_path) &&
 					!strcmp(user, username)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "c") && isCharacterDevice(current_path) &&
 					!strcmp(user, username)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "b") && isBlockDevice(current_path) &&
 					!strcmp(user, username)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			free(username);
 		} else if (!cases.find_all_types && !cases.find_with_max_depth && !cases.find_with_user) {
 			if (file_name == NULL) {
 				if (!strcmp(file_type, "f") && isRegularFile(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "d") && isDirectory(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "b") && isBlockDevice(current_path)) {
-					printf("%s/%s\n", directory, file->d_name);
+					printFilesOrGlob(directory, file, cases, &globStruct);
 				}
 			}
 			else if (!strcmp(file_type, "f") && isRegularFile(current_path) 
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "d") && isDirectory(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "b") && isBlockDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printf("%s/%s\n", directory, file->d_name);
+				printFilesOrGlob(directory, file, cases, &globStruct);
 			}
 		}
 
@@ -348,6 +367,9 @@ void printFiles(char *directory, Cases cases, char *file_type, char *user,
 			strcat(path, directory);
 			strcat(path, "/");
 			strcat(path, file->d_name);
+			if (cases.find_with_glob) {
+				printFilesOrGlob(directory, file, cases, &globStruct);
+			}
 			printFiles(path, cases, file_type, user, file_name, max_depth - 1);
 		}
 	}
@@ -405,6 +427,7 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
+
 	ThreadData data;
 	data.start_dir = start_file_path;
 	data.maxdepth = max_depth;
@@ -416,8 +439,19 @@ int main(int argc, char *argv[]) {
 	cases.find_with_max_depth = find_with_max_depth;
 	cases.find_everything = find_everything;
 	cases.find_with_user = find_with_user;
+	if (file_name) {
+		cases.find_with_glob = strpbrk(file_name, "*?[]^") != NULL;
+	}
 
 	printFiles(start_file_path, cases, type, user, file_name, max_depth);
+	
+	char **foundFiles = globStruct.gl_pathv;
+	if (cases.find_with_glob) {
+		while (*foundFiles) {
+			printf("%s\n", *foundFiles);
+			foundFiles++;
+		}
+	}
 
 	return 0;
 }
