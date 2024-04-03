@@ -1,4 +1,5 @@
-test: test.c
+testprog: test.c findme.c
+	make findme
 	gcc -Wall -g test.c -o testprog
 
 findme: findme.c

@@ -431,6 +431,7 @@ int main(int argc, char *argv[]) {
 	data.filename = file_name;
 
 	Cases cases;
+	cases.find_everything = find_everything;
 	cases.find_all_types = find_all_types;
 	cases.find_with_max_depth = find_with_max_depth;
 	cases.find_with_user = find_with_user;
