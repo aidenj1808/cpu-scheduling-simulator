@@ -449,7 +449,7 @@ int main(int argc, char *argv[]) {
 	printFiles(start_file_path, cases, type, user, file_name, max_depth);
 	
 	char **foundFiles = globStruct.gl_pathv;
-	if (cases.find_with_glob) {
+	if (cases.find_with_glob && globStruct.gl_pathc != 0) {
 		while (*foundFiles) {
 			printf("%s\n", *foundFiles);
 			foundFiles++;
