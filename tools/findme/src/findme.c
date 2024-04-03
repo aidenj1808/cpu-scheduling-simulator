@@ -181,15 +181,14 @@ void isDirectoryCheck(char *file_name) {
 	}
 }
 
-void printFilesOrGlob(char *directory, struct dirent *file, Cases cases, glob_t *globStruct) {
-	char **foundFiles = globStruct->gl_pathv;
+void printFilesOrGlob(char *directory, char *file_name, struct dirent *file, Cases cases, glob_t *globStruct) {
 	if (cases.find_with_glob) {
-		//char current_path[500];
-		//snprintf(current_path, 500, "%s/%s", directory, file->d_name);
+		char current_path[500];
+		snprintf(current_path, 500, "%s/%s", directory, file_name);
 		if (globStruct->gl_pathc == 0) {
-			glob(directory, GLOB_ERR, NULL, &(*globStruct));
+			glob(current_path, GLOB_ERR, NULL, &(*globStruct));
 		} else {
-			glob(directory, GLOB_ERR | GLOB_APPEND, NULL, &(*globStruct));
+			glob(current_path, GLOB_ERR | GLOB_APPEND, NULL, &(*globStruct));
 		}
 	} else {
 		printf("%s/%s\n", directory, file->d_name);
@@ -216,23 +215,23 @@ void printFiles(char *directory, Cases cases, char *file_type, char *user,
 		char current_path[500];
 		snprintf(current_path, 500, "%s/%s", directory, file->d_name);
 		if (cases.find_everything) {
-			printFilesOrGlob(directory, file, cases, &globStruct);
+			printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 		} else if (cases.find_all_types && cases.find_with_max_depth && cases.find_with_user
 				&& !strcmp(file->d_name, file_name)) {
-			printFilesOrGlob(directory, file, cases, &globStruct);
+			printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 		} else if (cases.find_all_types && cases.find_with_max_depth && !cases.find_with_user) {
-			printFilesOrGlob(directory, file, cases, &globStruct);
+			printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 		} else if (cases.find_all_types && !cases.find_with_max_depth && cases.find_with_user &&
 				!strcmp(file->d_name, file_name)) {
 			int userID = getUserIDNumber(current_path);
 			char *username = getUserName(userID);
 			if (!strcmp(user, username)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			free(username);
 		} else if (cases.find_all_types && !cases.find_with_max_depth && !cases.find_with_user) {
 			if (!strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 		} else if (!cases.find_all_types && cases.find_with_max_depth && cases.find_with_user &&
 				!strcmp(file->d_name, file_name)) {
@@ -240,62 +239,62 @@ void printFiles(char *directory, Cases cases, char *file_type, char *user,
 			char *username = getUserName(userID);
 			if (!strcmp(file_type, "f") && isRegularFile(current_path) 
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "d") && isDirectory(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "b") && isBlockDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			free(username);
 		} else if (!cases.find_all_types && cases.find_with_max_depth && !cases.find_with_user) {
 			if (file_name == NULL) {
 				if (!strcmp(file_type, "f") && isRegularFile(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "d") && isDirectory(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "b") && isBlockDevice(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 			}
 			else if (!strcmp(file_type, "f") && isRegularFile(current_path) 
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "d") && isDirectory(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "b") && isBlockDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 		} else if (!cases.find_all_types && !cases.find_with_max_depth && cases.find_with_user &&
 				!strcmp(file->d_name, file_name)) {
@@ -303,62 +302,62 @@ void printFiles(char *directory, Cases cases, char *file_type, char *user,
 			char *username = getUserName(userID);
 			if (!strcmp(file_type, "f") && isRegularFile(current_path) &&
 					!strcmp(user, username)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "d") && isDirectory(current_path) &&
 					!strcmp(user, username)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "s") && isSymbolicLink(current_path) &&
 					!strcmp(user, username)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "c") && isCharacterDevice(current_path) &&
 					!strcmp(user, username)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "b") && isBlockDevice(current_path) &&
 					!strcmp(user, username)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			free(username);
 		} else if (!cases.find_all_types && !cases.find_with_max_depth && !cases.find_with_user) {
 			if (file_name == NULL) {
 				if (!strcmp(file_type, "f") && isRegularFile(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "d") && isDirectory(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 				else if (!strcmp(file_type, "b") && isBlockDevice(current_path)) {
-					printFilesOrGlob(directory, file, cases, &globStruct);
+					printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 				}
 			}
 			else if (!strcmp(file_type, "f") && isRegularFile(current_path) 
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "d") && isDirectory(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "s") && isSymbolicLink(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "c") && isCharacterDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 			else if (!strcmp(file_type, "b") && isBlockDevice(current_path)
 					&& !strcmp(file->d_name, file_name)) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(directory, file_name, file, cases, &globStruct);
 			}
 		}
 
@@ -368,7 +367,7 @@ void printFiles(char *directory, Cases cases, char *file_type, char *user,
 			strcat(path, "/");
 			strcat(path, file->d_name);
 			if (cases.find_with_glob) {
-				printFilesOrGlob(directory, file, cases, &globStruct);
+				printFilesOrGlob(path, file_name, file, cases, &globStruct);
 			}
 			printFiles(path, cases, file_type, user, file_name, max_depth - 1);
 		}
@@ -417,9 +416,6 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	
-	if (argc == 2) {
-		find_everything = 1;
-	}
 
 	if (find_with_user && file_name == NULL) {
 		printf("When using --user filter please also use --name filter\n");
@@ -437,8 +433,15 @@ int main(int argc, char *argv[]) {
 	Cases cases;
 	cases.find_all_types = find_all_types;
 	cases.find_with_max_depth = find_with_max_depth;
-	cases.find_everything = find_everything;
 	cases.find_with_user = find_with_user;
+
+	if (argc == 2) {
+		cases.find_everything = 1;
+		cases.find_with_glob = false;
+	} else {
+		cases.find_everything = 0;
+	}
+
 	if (file_name) {
 		cases.find_with_glob = strpbrk(file_name, "*?[]^") != NULL;
 	}
@@ -446,7 +449,7 @@ int main(int argc, char *argv[]) {
 	printFiles(start_file_path, cases, type, user, file_name, max_depth);
 	
 	char **foundFiles = globStruct.gl_pathv;
-	if (cases.find_with_glob) {
+	if (cases.find_with_glob && globStruct.gl_pathc != 0) {
 		while (*foundFiles) {
 			printf("%s\n", *foundFiles);
 			foundFiles++;
