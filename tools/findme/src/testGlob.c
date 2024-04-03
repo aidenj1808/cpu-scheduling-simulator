@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
 
 			case 'n':
 				file_name = optarg;
+				system("set +o noglob");
 				break;
 
 			case 'u':
@@ -92,7 +93,8 @@ int main(int argc, char **argv) {
 	glob_t globStruct;
 	int result;
 	char **foundFiles;
-
+	
+	printf("file_name: %s\n", file_name);
 	result = glob(file_name, GLOB_ERR, NULL, &globStruct);
 
 	foundFiles = globStruct.gl_pathv;
