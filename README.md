@@ -1,18 +1,16 @@
 # CPU Scheduling Simulator
 
-A simulator of CPU scheduling algorithms written in C, plus `findme`, a recreation of the `find`
-command. We built them across the labs of CMPT 360 at MacEwan University in winter 2024. Most labs
-added a new requirement to the simulator, and a few had us recreate terminal commands.
+A simulator of CPU scheduling algorithms written in C, plus `findme`, our own version of the `find`
+command. We built them for CMPT 360 at MacEwan University in winter 2024.
 
 ## CPU scheduler
 
 `pSimulator` simulates processes arriving, waiting in a ready queue and taking turns on one CPU. It
-steps through time in 0.1-unit ticks and implements four scheduling algorithms:
+steps through time in 0.1-unit ticks and implements three scheduling algorithms:
 
 - First in, first out (FIFO)
 - Shortest job first (SJF)
 - Round robin (RR), with a 0.5-unit time slice
-- A multilevel feedback queue (MLFQ) with five priority levels, round robin within each level
 
 Each process is a text file in `pSimulator/newProc/` holding its run time and niceness, like
 `4.00,3`. The simulator loads them into the ready queue, logs every tick to a CSV file in
@@ -51,8 +49,8 @@ make test
 ```
 
 That writes the log and the chart (`atest.png`) to `pSimulator/log/`. Pick the algorithm by
-uncommenting one `#define ALGOR` line at the top of `procSim.c`. Run `make clean` to clear the logs
-and process files.
+uncommenting the `ALGOR_FIFO`, `ALGOR_SJF` or `ALGOR_RR` line at the top of `procSim.c`. Run
+`make clean` to clear the logs and process files.
 
 To build `findme`:
 
