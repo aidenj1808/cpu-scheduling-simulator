@@ -69,12 +69,6 @@ make findme
 - `pSimulator/src/files.sh` and `files2.sh`: create process files with fixed or random values.
 - `tools/findme/src/findme.c`: the `find` recreation. `src/test/` is a folder tree to search.
 
-## History
-
-This repo combines the separate repos we used for each lab. Each lab's history continues from the
-previous lab's, and a tag marks each submission: `lab1`, `lab2`, `lab5` and `lab6` for the
-scheduler, and `lab9` and `lab10` for `findme`. Labs 3, 4, 7 and 8 have no code here.
-
 ## Built with
 
 C, cairo, POSIX threads, make and Bash.
@@ -82,4 +76,4 @@ C, cairo, POSIX threads, make and Bash.
 ## Team
 
 - Aiden Lumley ([@aidenj1808](https://github.com/aidenj1808))
-- [@TayCarr](https://github.com/TayCarr)
+- Taylor Carreiro ([@TayCarr](https://github.com/TayCarr))
